@@ -1,0 +1,101 @@
+exe:simil_test
+
+TESTNAME:parts weight
+arg:similarity.gen
+arg:0
+arg:1
+arg:0
+arg:0
+arg:0
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/parts_weight
+RUNTEST
+
+TESTNAME:degrees weight
+arg:similarity.gen
+arg:0
+arg:0
+arg:1
+arg:0
+arg:0
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/degrees_weight
+RUNTEST
+
+TESTNAME:neurons weight
+arg:similarity.gen
+arg:0
+arg:0
+arg:0
+arg:1
+arg:0
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/neurons_weight
+RUNTEST
+
+TESTNAME:distances weight greedy
+arg:similarity.gen
+arg:1
+arg:0
+arg:0
+arg:0
+arg:1
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/distances_weight_greedy
+RUNTEST
+
+TESTNAME:all weights greedy
+arg:similarity.gen
+arg:1
+arg:1
+arg:1
+arg:1
+arg:1
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/all_weights_greedy
+RUNTEST
+
+TESTNAME:all weights fixed z greedy
+arg:similarity.gen
+arg:1
+arg:1
+arg:1
+arg:1
+arg:1
+arg:1
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/all_weights_fixed_z_greedy
+RUNTEST
+
+TESTNAME:distances weight hungarian
+arg:similarity.gen
+arg:0
+arg:0
+arg:0
+arg:0
+arg:1
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/distances_weight_hungarian
+RUNTEST
+
+TESTNAME:all weights hungarian
+arg:similarity.gen
+arg:0
+arg:1
+arg:1
+arg:1
+arg:1
+arg:0
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/all_weights_hungarian
+RUNTEST
+
+TESTNAME:all weights fixed z hungarian
+arg:similarity.gen
+arg:0
+arg:1
+arg:1
+arg:1
+arg:1
+arg:1
+out:*INSERTPLATFORMDEPENDENTFILE*:similarity_goals/all_weights_fixed_z_hungarian
+RUNTEST
+

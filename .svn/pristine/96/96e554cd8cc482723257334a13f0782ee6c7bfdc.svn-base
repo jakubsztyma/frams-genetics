@@ -1,0 +1,220 @@
+CLASS(Model,f0_model,m)
+GROUP(Properties)
+GROUP(Visual)
+PROP(se,0,1024,startenergy,f,,,,startenergy)
+PROP(Vstyle,1,0,vis_style,s,0,0,,vis_style)
+ENDCLASS
+
+CLASS(Part,f0_part,p)
+GROUP(Geometry)
+GROUP(Other properties)
+GROUP(Visual)
+PROP(x,0,1024,position.x,f,,,,p.x)
+PROP(y,0,1024,position.y,f,,,,p.y)
+PROP(z,0,1024,position.z,f,,,,p.z)
+PROP(sh,1,0,shape,d,0,3,0,shape)
+PROP(s,1,0,size,f,0.1,10.0,1.0,size)
+PROP(sx,1,0,scale.x,f,0.001,1000.0,1.0,scale.x)
+PROP(sy,1,0,scale.y,f,0.001,1000.0,1.0,scale.y)
+PROP(sz,1,0,scale.z,f,0.001,1000.0,1.0,scale.z)
+XPROP(h,1,0,hollow,f,0,1,0,hollow)
+XPROP(dn,1,0,density,f,0.2,5.0,1.0,density)
+XPROP(fr,1,0,friction,f,0.0,4.0,0.4,friction)
+XPROP(ing,1,0,ingestion,f,0.0,1.0,0.25,ingest)
+XPROP(as,1,0,assimilation,f,0.0,1.0,0.25,assim)
+PROP(rx,0,0,rot.x,f,,,,rot.x)
+PROP(ry,0,1024,rot.y,f,,,,rot.y)
+PROP(rz,0,1024,rot.z,f,,,,rot.z)
+PROP(i,1,0,`info',s,,,,info)
+PROP(Vstyle,2,0,vis_style,s,0,0,part,vis_style)
+XPROP(vs,2,0,visual thickness,f,0.05,0.7,0.2,vsize)
+XPROP(vr,2,0,red component,f,0.0,1.0,1.0,vcolor.x)
+XPROP(vg,2,1024,green component,f,0.0,1.0,1.0,vcolor.y)
+XPROP(vb,2,1024,blue component,f,0.0,1.0,1.0,vcolor.z)
+ENDCLASS
+
+CLASS(Joint,f0_joint,j)
+GROUP(Connections)
+GROUP(Geometry)
+GROUP(Other properties)
+GROUP(Visual)
+PROP(p1,0,1024,`part1 ref#',d,-1,999999,-1,p1_refno)
+PROP(p2,0,1024,`part2 ref#',d,-1,999999,-1,p2_refno)
+PROP(rx,1,0,rotation.x,f,,,,rot.x)
+PROP(ry,1,1024,rotation.y,f,,,,rot.y)
+PROP(rz,1,1024,rotation.z,f,,,,rot.z)
+PROP(dx,1,0,delta.x,f,-2,2,0,d.x)
+PROP(dy,1,1024,delta.y,f,-2,2,0,d.y)
+PROP(dz,1,1024,delta.z,f,-2,2,0,d.z)
+PROP(sh,2,0,shape,d,0,1,0,shape)
+XPROP(stif,2,0,stiffness,f,0.0,1.0,1.0,stif)
+XPROP(rotstif,2,0,rotation stiffness,f,0.0,1.0,1.0,rotstif)
+PROP(stam,2,0,stamina,f,0.0,1.0,0.25,stamina)
+PROP(i,2,0,`info',s,,,,info)
+PROP(Vstyle,3,0,vis_style,s,0,0,joint,vis_style)
+XPROP(vr,3,0,red component,f,0.0,1.0,1.0,vcolor.x)
+XPROP(vg,3,1024,green component,f,0.0,1.0,1.0,vcolor.y)
+XPROP(vb,3,1024,blue component,f,0.0,1.0,1.0,vcolor.z)
+ENDCLASS
+
+CLASS(Joint,f0_nodeltajoint,j,NOXML)
+GROUP(Connections)
+GROUP(Geometry)
+GROUP(Other properties)
+GROUP(Visual)
+PROP(p1,0,1024,`part1 ref#',d,-1,999999,-1,p1_refno)
+PROP(p2,0,1024,`part2 ref#',d,-1,999999,-1,p2_refno)
+PROP(sh,2,0,shape,d,0,1,0,shape)
+XPROP(stif,2,0,stiffness,f,0.0,1.0,1.0,stif)
+XPROP(rotstif,2,0,rotation stiffness,f,0.0,1.0,1.0,rotstif)
+PROP(stam,2,0,stamina,f,0.0,1.0,0.25,stamina)
+PROP(i,2,0,`info',s,,,,info)
+PROP(Vstyle,3,0,vis_style,s,0,0,joint,vis_style)
+XPROP(vr,3,0,red component,f,0.0,1.0,1.0,vcolor.x)
+XPROP(vg,3,1024,green component,f,0.0,1.0,1.0,vcolor.y)
+XPROP(vb,3,1024,blue component,f,0.0,1.0,1.0,vcolor.z)
+ENDCLASS
+
+CLASS(Neuro,f0_neuro,n)
+GROUP(Connections)
+GROUP(Other)
+GROUP(Visual)
+PROP(p,0,0,`part ref#',d,-1,999999,-1,part_refno)
+PROP(j,0,0,`joint ref#',d,-1,999999,-1,joint_refno)
+PROP(d,1,0,details,s,,,N,details,GETSET)
+PROP(i,1,0,`info',s,,,,info)
+PROP(Vstyle,2,0,vis_style,s,0,0,neuro,vis_style)
+PROP(getInputCount,0,1+2,`input count',d,,,,inputCount,GETONLY)
+PROP(getInputNeuroDef,0,0,`get input neuron',p oNeuroDef(d),,,,p_getInputNeuroDef,PROCEDURE)
+PROP(getInputNeuroIndex,0,0,`get input neuron index',p d(d),,,,p_getInputNeuroIndex,PROCEDURE)
+PROP(getInputWeight,0,0,`get input weight',p f(d),,,,p_getInputWeight,PROCEDURE)
+PROP(classObject,0,1+2,`neuron class',oNeuroClass,,,,classObject,GETONLY)
+ENDCLASS
+
+CLASS(NeuroConn,f0_neuroconn,c)
+GROUP(Connection)
+GROUP(Other)
+PROP(n1,0,1024,`this neuro ref#',d,-1,999999,-1,n1_refno)
+PROP(n2,0,1024,`connected neuro ref#',d,-1,999999,-1,n2_refno)
+PROP(w,0,1024,weight,f,-999999,999999,1.0,weight)
+PROP(i,1,0,`info',s,,,,info)
+ENDCLASS
+
+NEUROCLASS(StdNeuron,N,Neuron,`Standard neuron',-1,1,0)
+VISUALHINTS(DontShowClass)
+NEUROPROP(in,1,0,Inertia,f,0.0,1.0,0.8,inertia)
+NEUROPROP(fo,1,0,Force,f,0.0,999.0,0.04,force)
+NEUROPROP(si,1,0,Sigmoid,f,-99999.0,99999.0,2.0,sigmo)
+NEUROPROP(s,2,0,State,f,-1.0,1.0,0.0,newstate)
+ENDNEUROCLASS
+
+NEUROCLASS(StdUNeuron,Nu,`Unipolar neuron [EXPERIMENTAL!]',`Works like standard neuron (N) but the output value is scaled to 0...+1 instead of -1...+1.\nHaving 0 as one of the saturation states should help in \"gate circuits\", where input signal is passed through or blocked depending on the other singal.',-1,1,0)
+NEUROPROP(in,1,0,Inertia,f,0.0,1.0,0.8,inertia)
+NEUROPROP(fo,1,0,Force,f,0.0,999.0,0.04,force)
+NEUROPROP(si,1,0,Sigmoid,f,-99999.0,99999.0,2.0,sigmo)
+NEUROPROP(s,2,0,State,f,-1.0,1.0,0.0,newstate)
+ENDNEUROCLASS
+
+NEUROCLASS(Gyro,G,Gyroscope,`Equilibrium sensor.\n0=the stick is horizontal\n+1/-1=the stick is vertical',0,1,2)
+VISUALHINTS(ReceptorClass)
+SYMBOL(`8,7,100,50,90,50,90,40,70,40,80,50,70,60,90,60,90,50,12,43,24,48,24,48,19,38,19,38,24,43,24,43,54,48,54,48,64,43,69,38,64,38,54,43,54,5,63,69,58,74,48,79,38,79,28,74,23,69,1,43,79,43,74,1,23,69,26,66,1,63,69,60,66,1,55,76,53,73,1,31,75,33,72')
+ENDNEUROCLASS
+
+NEUROCLASS(Touch,T,Touch,`Touch sensor.\n-1=no contact\n0=just touching\n>0=pressing, value depends on the force applied',0,1,1)
+VISUALHINTS(ReceptorClass)
+SYMBOL(`2,7,100,50,90,50,90,40,70,40,80,50,70,60,90,60,90,50,11,75,50,65,50,60,55,55,45,50,55,45,45,40,50,35,50,30,45,25,50,30,55,35,50')
+NEUROPROP(r,1,0,Range,f,0.0,1.0,1.0,range)
+ENDNEUROCLASS
+
+NEUROCLASS(Smell,S,Smell,`Smell sensor. Aggregated \"smell of energy\" experienced from all energy objects (creatures and food pieces).\nClose objects have bigger influence than the distant ones: for each energy source, its partial feeling is proportional to its energy/(distance^2)',0,1,1)
+VISUALHINTS(ReceptorClass)
+SYMBOL(`5,7,100,50,90,50,90,40,70,40,80,50,70,60,90,60,90,50,3,10,40,15,45,15,55,10,60,5,20,30,25,35,30,45,30,55,25,65,20,70,4,15,35,20,40,22,50,20,60,15,65,5,75,50,50,50,45,45,40,50,45,55,50,50')
+ENDNEUROCLASS
+
+NEUROCLASS(Const,*,Constant,Constant value,0,1,0)
+VISUALHINTS(Invisible)
+SYMBOL(`4,4,26,27,26,73,73,73,73,27,26,27,1,73,50,100,50,1,56,68,46,68,2,41,47,51,32,51,68')
+ENDNEUROCLASS
+
+NEUROCLASS(BendMuscle,|,Bend muscle,,1,0,2)
+VISUALHINTS(DontShowClass+EffectorClass+V1BendMuscle+AtFirstPart)
+SYMBOL(`6,5,25,40,35,40,45,50,35,60,25,60,25,40,4,65,85,65,50,75,50,75,85,65,85,3,65,56,49,29,57,24,72,50,4,68,53,70,53,70,55,68,55,68,53,5,50,21,60,15,70,14,79,15,87,20,81,10,1,86,20,77,21')
+NEUROPROP(p,0,0,power,f,0.01,1.0,0.25,power)
+NEUROPROP(r,0,0,bending range,f,0.0,1.0,1.0,bendrange)
+ENDNEUROCLASS
+
+NEUROCLASS(RotMuscle,@,Rotation muscle,,1,0,2)
+VISUALHINTS(DontShowClass+EffectorClass+V1RotMuscle+AtFirstPart)
+SYMBOL(`5,5,25,40,35,40,45,50,35,60,25,60,25,40,4,65,85,65,50,75,50,75,85,65,85,1,69,10,77,17,10,59,15,57,17,57,22,60,26,69,27,78,26,82,21,82,16,79,12,69,10,80,6,3,65,50,65,20,75,20,75,50')
+NEUROPROP(p,0,0,power,f,0.01,1.0,1.0,power)
+ENDNEUROCLASS
+
+NEUROCLASS(Diff,D,Differentiate,Calculate the difference between the current and previous input value. Multiple inputs are aggregated with respect to their weights,-1,1,0)
+SYMBOL(`3,3,25,0,25,100,75,50,25,0,1,75,50,100,50,3,44,42,51,57,36,57,44,42')
+ENDNEUROCLASS
+
+NEUROCLASS(FuzzyNeuro,Fuzzy,Fuzzy system [EXPERIMENTAL!],Refer to publications to learn more about this neuron.,-1,1,0)
+SYMBOL(`5,2,30,65,37,37,44,65,3,37,65,44,37,51,37,58,65,2,51,65,58,37,65,65,6,100,50,70,50,70,25,25,10,25,90,70,75,70,50,1,70,65,25,65')
+NEUROPROP(ns,0,0,number of fuzzy sets,d,1,,,fuzzySetsNr)
+NEUROPROP(nr,0,0,number of rules,d,1,,,rulesNr)
+NEUROPROP(fs,0,0,fuzzy sets,s,0,-1,,fuzzySetString)
+NEUROPROP(fr,0,0,fuzzy rules,s,0,-1,,fuzzyRulesString)
+ENDNEUROCLASS
+
+NEUROCLASS(VectorEye,VEye,Vector Eye [EXPERIMENTAL!],Refer to publications to learn more about this neuron.,1,1,1)
+SYMBOL(`11,7,100,50,90,50,90,40,70,40,80,50,70,60,90,60,90,50,14,70,50,65,40,60,35,45,30,30,30,15,35,10,40,5,50,10,60,15,65,30,70,45,70,60,65,65,60,70,50,8,38,67,28,62,23,52,28,42,38,37,48,42,53,52,48,62,38,67,4,33,52,38,47,43,52,38,57,33,52,5,70,50,60,40,45,35,30,35,15,40,5,50,1,53,33,58,22,1,62,36,68,26,1,45,30,47,19,1,35,30,35,19,1,27,31,24,20,1,18,34,12,24')
+NEUROPROP(tx,0,0,target.x,f,,,,target.x)
+NEUROPROP(ty,0,0,target.y,f,,,,target.y)
+NEUROPROP(tz,0,0,target.z,f,,,,target.z)
+NEUROPROP(ts,0,0,target shape,s,0,-1,,targetShape)
+NEUROPROP(p,0,0,perspective,f,0.1,10.0,1.0,perspz)
+NEUROPROP(s,0,0,scale,f,0.1,100.0,1.0,perspscale)
+NEUROPROP(h,0,0,show hidden lines,d,0,1,0,showhidden)
+NEUROPROP(o,0,0,`output lines count (each line needs four channels)',d,0,99,0,outputcount)
+NEUROPROP(d,0,0,debug,d,0,1,0,showdebug)
+ENDNEUROCLASS
+
+NEUROCLASS(VisualMotorNeuron,VMotor,Visual-Motor Cortex [EXPERIMENTAL!],`Must be connected to the VEye and properly set up. Refer to publications to learn more about this neuron.',-1,1,0)
+NEUROPROP(noIF,0,0,number of basic features,d,,,,noIF)
+NEUROPROP(noDim,0,0,number of degrees of freedom,d,,,,noDim)
+NEUROPROP(params,0,0,parameters,s,,,,params)
+ENDNEUROCLASS 
+
+NEUROCLASS(Sticky,Sti,Sticky [EXPERIMENTAL!],,1,0,1)
+VISUALHINTS(EffectorClass)
+ENDNEUROCLASS
+
+NEUROCLASS(LinearMuscle,LMu,Linear muscle [EXPERIMENTAL!],,1,0,2)
+VISUALHINTS(EffectorClass+LinearMuscleFlag)
+NEUROPROP(p,0,0,power,f,0.01,1.0,1.0,power)
+ENDNEUROCLASS
+
+NEUROCLASS(WaterDetect,Water,Water detector,`Output signal:\n0=on or above water surface\n1=under water (deeper than 1)\n0..1=in the transient area just below water surface',0,1,1)
+VISUALHINTS(ReceptorClass)
+ENDNEUROCLASS
+
+NEUROCLASS(Energy,Energy,Energy level,`The current energy level divided by the initial energy level.\nUsually falls from initial 1.0 down to 0.0 and then the creature dies. It can rise above 1.0 if enough food is ingested',0,1,0)
+VISUALHINTS(ReceptorClass)
+ENDNEUROCLASS
+
+NEUROCLASS(Channelize,Ch,Channelize,`Combines all input signals into a single multichannel output; Note: ChSel and ChMux are the only neurons which support multiple channels. Other neurons discard everything except the first channel.',-1,1,0)
+SYMBOL(`10,4,25,0,25,100,75,70,75,30,25,0,1,75,50,100,50,1,70,50,55,50,1,30,80,55,50,1,30,20,55,50,1,30,35,55,50,1,30,45,55,50,1,30,55,55,50,1,61,53,65,47,1,30,65,55,50')
+ENDNEUROCLASS
+
+NEUROCLASS(ChMux,ChMux,Channel multiplexer,`Outputs the selected channel from the second (multichannel) input. The first input is used as the selector value (-1=select first channel, .., 1=last channel)',2,1,0)
+SYMBOL(`7,4,25,0,25,100,75,70,75,30,25,0,1,75,50,100,50,1,70,50,55,50,3,50,55,55,50,50,45,50,55,3,30,67,45,67,45,50,50,50,1,35,70,39,64,2,30,33,53,33,53,48')
+ENDNEUROCLASS
+
+NEUROCLASS(ChSel,ChSel,Channel selector,`Outputs a single channel (selected by the \"ch\" parameter) from multichannel input',1,1,0)
+SYMBOL(`6,4,25,0,25,100,75,70,75,30,25,0,1,75,50,100,50,1,70,50,55,50,3,50,55,55,50,50,45,50,55,1,30,50,50,50,1,35,53,39,47')
+NEUROPROP(ch,0,0,channel,d,,,,ch)
+ENDNEUROCLASS
+
+NEUROCLASS(Random,Rnd,Random noise,`Generates random noise (subsequent random values in the range of -1..+1)',0,1,0)
+ENDNEUROCLASS
+
+NEUROCLASS(Sinus,Sin,Sinus generator,`Output frequency = f0+input',1,1,0)
+SYMBOL(`3,12,75,50,71,37,62,28,50,25,37,28,28,37,25,50,28,62,37,71,50,75,62,71,71,62,75,50,1,75,50,100,50,5,35,50,40,35,45,35,55,65,60,65,65,50')
+NEUROPROP(f0,0,0,base frequency,f,-1.0,1.0,0.06283185307,f0)
+NEUROPROP(t,0,0,time,f,0,6.283185307,0,t)
+ENDNEUROCLASS

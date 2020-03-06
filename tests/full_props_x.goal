@@ -1,0 +1,7 @@
+//0
+m:se=1.0, Vstyle=
+p:x=0.0, y=0.0, z=0.0, sh=0, s=1.0, sx=1.0, sy=1.0, sz=1.0, h=0.0, dn=1.0, fr=0.4, ing=0.25, as=0.25, rx=0.0, ry=0.0, rz=0.0, i=, Vstyle=part, vs=0.2, vr=0.5, vg=0.5, vb=0.5
+p:x=1.0, y=0.0, z=0.0, sh=0, s=1.0, sx=1.0, sy=1.0, sz=1.0, h=0.0, dn=1.0, fr=0.4, ing=0.25, as=0.25, rx=0.0, ry=0.0, rz=0.0, i=, Vstyle=part, vs=0.2, vr=0.5, vg=0.5, vb=0.5
+j:p1=0, p2=1, rx=0.0, ry=0.0, rz=0.0, dx=1.0, dy=0.0, dz=0.0, sh=0, stif=1.0, rotstif=1.0, stam=0.25, i=, Vstyle=joint, vr=0.5, vg=0.5, vb=0.5
+
+

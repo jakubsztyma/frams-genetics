@@ -1,0 +1,26 @@
+ifeq "$(SHELL)" "/bin/sh"
+        # because of bash-specific shell expansion used in 'clean':
+	SHELL=/bin/bash
+endif
+
+MISSING_ALL_DIRS=$(strip $(foreach DIR,$(shell echo $(ALL_DIRS)), $(if $(wildcard $(DIR)),,$(DIR))))
+
+clean:
+ifeq "$(ALL_DIRS)$(ALL_DIRS)" ""
+	@echo "Makefile-maintain clean: ALL_DIRS and/or EXTRA_CLEAN_FILES must be defined"
+else
+	@echo -e -n $(if $(MISSING_ALL_DIRS),\\nMissing ALL_DIRS paths:\\n$(MISSING_ALL_DIRS)\\n\\n)
+	rm -f $(EXTRA_CLEAN_FILES) $(ALL_DIRS)/*.{a,o,d}
+endif
+
+ALL_DEPS=$(ALL_OBJS:.o=.d)
+
+ifneq "$(MAKECMDGOALS)" "clean"
+-include $(ALL_DEPS)
+endif
+
+depend: $(ALL_DEPS)
+
+%.d: %.cpp
+	@set -e; rm -f $@; $(CXX) $(CXXFLAGS) -MM -MT $(<:.cpp=.o) $< > $@
+#	g++ $(CXXFLAGS) -MM -MT $(<:.o=.d) $< | sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' > $@

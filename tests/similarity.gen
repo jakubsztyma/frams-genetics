@@ -1,0 +1,245 @@
+org:
+name:Fast Lizard
+genotype:~
+lfffffffMMMMMMMMX(FFFMMMMMMMMX[|0:0.928, T:2.480], lfffffffMMMMMMMMX[0:-2.199](, lfffffffMMMMMMMMX[@0:3.390, 1:-1.521, 7:-2.227](FFFMMMMMMMMX[|3:-2.486, T:3.915], fffffffffffMMMMMMMMX[@1:1.029][0:-0.687][0:1.917, T:4.813]ffffffffffffMMMMMMMMX[|-1:2.880, -1:-2.879], FFFMMMMMMMMX[G:245.116, 1:1.309][|-3:2.369, 0:-0.817, T:-4.705]), ), FFFMMMMMMMMX[|T:-1.607, 0:0.286, -1:-0.309])~
+info_timestamp:946684800.0
+info_author:Ander Taylor
+info_author_ispublic:1
+info_email:Ander_Taylor@hotmail.com
+info_email_ispublic:1
+info:
+info_origin:2
+info_how_created:~
+I fist made the Framstick with 8 legs, I then realised that if I removed some of the legs that it would make quite a natural looking lizard.
+~
+info_performance:It looks natural and is fast.
+num:60
+instances:0
+data:
+
+org:
+name:Rolling Wheel
+genotype:~
+//0
+p:-0.5,0,-1.2071,rx=1.57
+p:0.5,0,-1.2071,rx=1.57
+p:1.2071,0,-0.5,rx=1.57
+p:1.2071,0,0.5,rx=1.57
+p:0.5,0,1.2071,rx=1.57
+p:-0.5,0,1.2071,rx=1.57
+p:-1.2071,0,0.5,rx=1.57
+p:-1.2071,0,-0.5,rx=1.57
+p:-0.5,1,-1.2071,rx=1.57
+p:0.5,1,-1.2071,rx=1.57
+p:1.2071,1,-0.5,rx=1.57
+p:1.2071,1,0.5,rx=1.57
+p:0.5,1,1.2071,rx=1.57
+p:-0.5,1,1.2071,rx=1.57
+p:-1.2071,1,0.5,rx=1.57
+p:-1.2071,1,-0.5,rx=1.57
+
+j:0,1
+j:1,2
+j:2,3
+j:3,4
+j:4,5
+j:5,6
+j:6,7
+j:7,0
+j:8,9
+j:9,10
+j:10,11
+j:11,12
+j:12,13
+j:13,14
+j:14,15
+j:15,8
+j:0,8
+j:1,9
+j:2,10
+j:3,11
+j:4,12
+j:5,13
+j:6,14
+j:7,15
+
+n:j=0,d="|:r=0.18"
+n:j=8,d="|:r=0.18"
+n:j=0,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:0,3
+c:1,3
+c:3,2
+
+n:j=1,d="|:r=0.18"
+n:j=9,d="|:r=0.18"
+n:j=1,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:4,7
+c:5,7
+c:7,6
+
+n:j=2,d="|:r=0.18"
+n:j=10,d="|:r=0.18"
+n:j=2,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:8,11
+c:9,11
+c:11,10
+
+n:j=3,d="|:r=0.18"
+n:j=11,d="|:r=0.18"
+n:j=3,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:12,15
+c:13,15
+c:15,14
+
+n:j=4,d="|:r=0.18"
+n:j=12,d="|:r=0.18"
+n:j=4,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:16,19
+c:17,19
+c:19,18
+
+n:j=5,d="|:r=0.18"
+n:j=13,d="|:r=0.18"
+n:j=5,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:20,23
+c:21,23
+c:23,22
+
+n:j=6,d="|:r=0.18"
+n:j=14,d="|:r=0.18"
+n:j=6,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:24,27
+c:25,27
+c:27,26
+
+n:j=7,d="|:r=0.18"
+n:j=15,d="|:r=0.18"
+n:j=7,d="G:"
+n:d="Thr: t=-0.01,lo=-1,hi=1"
+c:28,31
+c:29,31
+c:31,30~
+info_timestamp:1178928000.0
+info_author:Juan A. Medina
+info_author_ispublic:1
+info_email:jamt3@hotmail.com
+info_email_ispublic:1
+info:A wheel that runs on a straight line.
+info_origin:1
+info_how_created:~
+Every joint has a bending muscle controlled by a gyroscope through a threshold neuron.
+I've found the range of the bending muscles = 0.18 as an optimal value.
+In 2015, Maciej Komosinski fixed neuron types (there were 8 invalid "Trh" neurons which the original author probably wanted to be "Thr"), so the conclusion about the optimal value of 0.18 may be no longer valid. Would be nice to optimize the four parameters (three for Thr and one muscle range) again.~
+info_performance:~
+An example of a modular design: every side of the creature is identical to any other.~
+num:434
+instances:0
+data:
+
+org:
+name:Table
+genotype:~
+//0
+p:
+p:1
+p:1,1
+p:0,1
+j:0,1
+j:1,2
+j:2,3
+j:0,3
+p:z=-1
+p:1,z=-1
+p:1,1,-1
+p:0,1,-1
+j:0,4
+j:1,5
+j:2,6
+j:3,7
+~
+info_timestamp:915148800.0
+info_author:Szymon Ulatowski
+info_author_ispublic:1
+info_email:
+info_email_ispublic:0
+info:An example of a table - described by format #0 (f0) genotype.
+info_origin:1
+info_how_created:
+info_performance:
+num:105
+instances:0
+data:
+
+org:
+name:Spiral plant
+genotype:~
+//0
+p:sh=2,sx=0.6,sy=0.6,sz=0.3,z=3.4,vr=0.8,0.8,0.4
+p:sh=2,sx=0.1,sy=0.1,sz=0.1,vr=0.8,0.8,0.4
+p:sh=2,sx=0.1,sy=0.1,sz=0.1,vr=0.8,0.8,0.4
+p:sh=2,sx=0.1,sy=0.1,sz=0.1,vr=0.8,0.8,0.4
+p:sh=2,sx=0.1,sy=0.1,sz=0.1,vr=0.8,0.8,0.4
+p:sh=1,sx=0.5,sy=0.5,sz=0.5,vr=0.6,0.3,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+p:sh=3,sx=0.05,sy=0.3,sz=0.3,vr=0.3,0.8,0.1
+j:0,1,sh=1,dx=0.45,dy=0.45,dz=-0.4
+j:0,2,sh=1,dx=-0.45,dy=0.45,dz=-0.4
+j:0,3,sh=1,dx=0.45,dy=-0.45,dz=-0.4
+j:0,4,sh=1,dx=-0.45,dy=-0.45,dz=-0.4
+j:0,5,sh=1,dz=0.6
+j:5,6,sh=1,dx=-0.5,dy=0.35,dz=0.1,ry=-1.0,rx=1.3
+j:6,7,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:7,8,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:8,9,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:9,10,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:10,11,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:11,12,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:12,13,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:13,14,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+j:14,15,sh=1,dx=0.15,dy=0.55,rx=0.63,ry=0.63,rz=0.2
+~
+info_timestamp:1442966400.0
+info_author:Szymon Ulatowski
+info_author_ispublic:1
+info_email:
+info_email_ispublic:0
+info:A demo model with ellipsoids, cuboids, cylinders.
+info_origin:1
+info_how_created:~
+This model uses all available shape Part types (ellipsoids, cuboids, cylinders) and also delta Joints (Part positions and orientations are defined relative to previous Parts using dx/dy/dz and rx/ry/rz in Joints).~
+info_performance:
+num:467
+instances:0
+data:
+
+org:
+name:Foraminifera (planispiral)
+genotype:/*F*/13,0.1,0.1,0.1,1.1,1.1,1.1,0.54,2.75,0
+info_timestamp:1442966400.0
+info_author:Maciej Komosinski
+info_author_ispublic:1
+info_email:
+info_email_ispublic:0
+info:http://www.framsticks.com/foraminifera
+info_origin:1
+info_how_created:
+info_performance:
+num:456
+instances:0
+data:
+
