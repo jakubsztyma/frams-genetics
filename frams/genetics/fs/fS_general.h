@@ -17,6 +17,7 @@ private:
     SString rest;
     Part::Shape part_type;
     vector<Node*> children;
+    vector<SString> getBranches();
 public:
 
     Node(const SString &genotype);

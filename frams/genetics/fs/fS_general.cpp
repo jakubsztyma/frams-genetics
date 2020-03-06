@@ -29,7 +29,8 @@ vector<SString> split(SString str, char delim)
             cont.push_back(str.substr(index, str.len()));
             break;
         }
-        cont.push_back(str.substr(index, new_index));
+        cout<<index<<new_index<<str.substr(index, new_index - index).c_str()<<endl;
+        cont.push_back(str.substr(index, new_index - index));
         index = new_index + 1;
     }
     return cont;
@@ -48,22 +49,46 @@ Node::Node(const SString &genotype) {
             part_type = Part::Shape::SHAPE_CYLINDER;
             break;
     }
-    get_children();
+    if(rest.len() > 0)
+        get_children();
 }
 
 void Node::get_children() {
-    if (rest.len() > 0) {
-        if(rest[0] == '('){
-            vector<SString> branches = split(rest.substr(1, rest.len() - 2), ',');
-            for(unsigned int i=0; i<branches.size(); i++){
-                Node *child_node = new Node(branches[i]);
-                children.push_back(child_node);
-            }
-        }
-        else{
-            children.push_back(new Node(rest));
-        }
+    vector<SString> branches = getBranches();
+    cout<<branches.size()<<endl;
+    for(unsigned int i=0; i<branches.size(); i++){
+        cout<<branches[i].c_str()<<endl;
+        Node *child_node = new Node(branches[i]);
+        children.push_back(child_node);
     }
+}
+
+vector<SString> Node::getBranches() {
+    if(rest[0] != BRANCH_START){
+        vector<SString> result{rest};  // Only one child
+        return result;
+    }
+//    if(sequence[-1] != BRANCH_END) {
+//        raise
+//        InvalidGenotypeException(f
+//        'Missing "{self.BRANCH_END}" sign')
+//    }
+
+    int depth = 0;
+    int start = 1;
+    vector<SString> children;
+    for(int i=0; i<rest.len(); i++){
+        char c = rest[i];
+        if(c == BRANCH_START)
+            depth += 1;
+        else if((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == rest.len()){
+            children.push_back(rest.substr(start, i - start));
+            start = i + 1;
+        }
+        else if(c == BRANCH_END)
+            depth -= 1;
+        }
+    return children;
 }
 
 Part* Node::buildModel(Model *model) {
