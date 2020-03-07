@@ -8,7 +8,6 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <math.h>
 #include "common/Convert.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
@@ -21,14 +20,14 @@ public:
     Pt3D location, v;
     State(Pt3D _location, Pt3D _v);
     void addVector(double length);
-    void rotate(float rx, float ry, float rz);
+    void rotate(double rx, double ry, double rz);
 };
 
 class Node{
 private:
     bool isStart;
     Part::Shape part_type;
-    map<string, float> params;
+    map<string, double> params;
     vector<Node*> children;
     vector<SString> getBranches(SString restOfGenotype);
     void getState(State *_state);

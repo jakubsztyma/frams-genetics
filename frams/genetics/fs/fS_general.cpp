@@ -20,6 +20,11 @@ string PART_TYPES = "EPC";
 string OTHER_JOINTS = "bcd";
 string MODIFIERS = "xyz";
 
+double round2(double var) {
+    double value = (int) (var * 100 + .5);
+    return (double) value / 100;
+}
+
 vector <SString> split(SString str, char delim) {
     vector <SString> cont;
     int index = 0, new_index;
@@ -44,15 +49,13 @@ void State::addVector(double length) {
     location += v * length;
 }
 
-void State::rotate(float rx, float ry, float rz) {
-
+void State::rotate(double rx, double ry, double rz) {
     Orient rotmatrix = Orient_1;
-
-//    rotmatrix.rotate(Pt3D(rx,0,0));
-//    rotmatrix.rotate(Pt3D(0,ry,0));
-//    rotmatrix.rotate(Pt3D(0,0,rz));
-    rotmatrix.rotate(Pt3D(rx, Convert::toRadians(ry), rz));
-    cout << rx << " " << ry << " " << rz << endl;
+    rotmatrix.rotate(Pt3D(
+            Convert::toRadians(rx),
+            Convert::toRadians(ry),
+            Convert::toRadians(rz)
+    ));
     v = rotmatrix.transform(v);
     v.normalize();
 }
@@ -95,7 +98,7 @@ SString Node::extractParams(SString restOfGenotype) {
     for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
         vector <SString> keyValue = split(keyValuePairs[i], '=');
         // TODO handle wrong length exception
-        float value = atof(keyValue[1].c_str());
+        double value = atof(keyValue[1].c_str());
         params[keyValue[0].c_str()] = value;
     }
 
@@ -136,7 +139,9 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 Part *Node::buildModel(Model *model) {
     Part *newpart = new Part(part_type);
 
-    state->location.x = round(state->location.x);
+    state->location.x = round2(state->location.x);
+    state->location.y = round2(state->location.y);
+    state->location.z = round2(state->location.z);
     newpart->p = Pt3D(state->location);
     // TODO debug why params are not working
     if (params["m"]) {
