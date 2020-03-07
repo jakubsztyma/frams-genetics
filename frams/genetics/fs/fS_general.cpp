@@ -36,7 +36,18 @@ vector<SString> split(SString str, char delim)
     return cont;
 }
 
-Node::Node(const SString &genotype) {
+void State::addVector(double length){
+    x += vx * length;
+    y += vy * length;
+    z += vz * length;
+}
+
+void State::rotate(){
+
+}
+
+Node::Node(const SString &genotype, State *_state, bool _isStart=false) {
+    isStart = _isStart;
     switch (genotype[0]) {
         case 'E':
             part_type = Part::Shape::SHAPE_ELLIPSOID;
@@ -48,11 +59,22 @@ Node::Node(const SString &genotype) {
             part_type = Part::Shape::SHAPE_CYLINDER;
             break;
     }
+    getState(_state);
     SString restOfGenotype = genotype.substr(1, genotype.len());
     if(restOfGenotype.len() > 0 && restOfGenotype[0] == '{')
         restOfGenotype = extractParams(restOfGenotype);
     if(restOfGenotype.len() > 0)
         getChildren(restOfGenotype);
+}
+
+void Node::getState(State *_state){
+    if(isStart){
+        state = _state;
+    }
+    else{
+        state = new State(_state->x, _state->y, _state->z, _state->vx, _state->vy, _state->vz);
+        state->addVector(1.0);
+    }
 }
 
 SString Node::extractParams(SString restOfGenotype){
@@ -62,9 +84,8 @@ SString Node::extractParams(SString restOfGenotype){
     for(unsigned int i=0; i<keyValuePairs.size(); i++){
         vector<SString> keyValue = split(keyValuePairs[i], '=');
         // TODO handle wrong length exception
-        string key = keyValue[0].c_str();
         float value = atof(keyValue[1].c_str());
-        params.insert(pair<string, float>(key, value));
+        params[keyValue[0].c_str()] = value;
     }
 
     return restOfGenotype.substr(paramsEndIndex + 1, restOfGenotype.len());
@@ -73,7 +94,7 @@ SString Node::extractParams(SString restOfGenotype){
 void Node::getChildren(SString restOfGenotype) {
     vector<SString> branches = getBranches(restOfGenotype);
     for(unsigned int i=0; i<branches.size(); i++){
-        Node *child_node = new Node(branches[i]);
+        Node *child_node = new Node(branches[i], state);
         children.push_back(child_node);
     }
 }
@@ -104,6 +125,8 @@ vector<SString> Node::getBranches(SString restOfGenotype) {
 
 Part* Node::buildModel(Model *model) {
     Part *newpart = new Part(part_type);
+    newpart->p = Pt3D(state->x, state->y, state->z);
+    cout<<newpart->p.x<<endl;
     // TODO debug why params are not working
     if(params["m"]) {
         newpart->mass = params["m"];
@@ -122,7 +145,8 @@ Part* Node::buildModel(Model *model) {
 }
 
 int fS_Genotype::parseGenotype(const SString &genotype) {
-    start_node = new Node(genotype);
+    State *initialState = new State(0, 0, 0, 1, 0, 0);
+    start_node = new Node(genotype, initialState, true);
     return 0;
 }
 
