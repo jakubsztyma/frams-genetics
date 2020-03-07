@@ -472,7 +472,6 @@ void Model::makeGeno(Geno &g, MultiMap *map, bool handle_defaults)
 		gen += "m:";
 		gen += mod_props;
 	}
-    cout<<"Geno1:\n"<<gen.c_str()<<endl;
 	for (i = 0; p = (Part *)parts(i); i++)
 	{
 		partparam.select(p);
@@ -482,7 +481,6 @@ void Model::makeGeno(Geno &g, MultiMap *map, bool handle_defaults)
 		if (map)
 			map->add(len, gen.len() - 1, partToMap(i));
 	}
-    cout<<"Geno2:\n"<<gen.c_str()<<endl;
 	for (i = 0; j = (Joint *)joints(i); i++)
 	{
 		jointparam.select(j);
@@ -600,9 +598,9 @@ int Model::close(bool building_live_model)
 {
 	if (buildstatus != building)
 		logPrintf("Model", "close", LOG_WARN, "Unexpected close() - no open()");
-	if (internalcheck(is_checkpoint ? CHECKPOINT_CHECK : (building_live_model ? LIVE_CHECK : FINAL_CHECK)) > 0)
+    if (internalcheck(is_checkpoint ? CHECKPOINT_CHECK : (building_live_model ? LIVE_CHECK : FINAL_CHECK)) > 0)
 	{
-		buildstatus = valid;
+        buildstatus = valid;
 
 		if (partmappingchanged)
 		{

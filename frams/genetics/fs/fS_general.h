@@ -20,7 +20,10 @@ using namespace std;
 class State{
 public:
     Pt3D location, v;
-    State(Pt3D _location, Pt3D _v);
+    bool modifierMode;
+    double fr;
+    State(State *_state);
+    State(Pt3D _location, Pt3D _v, bool modifierMode);
     void addVector(double length);
     void rotate(double rx, double ry, double rz);
 };

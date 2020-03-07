@@ -39,9 +39,18 @@ vector <SString> split(SString str, char delim) {
     return cont;
 }
 
-State::State(Pt3D _location, Pt3D _v) {
+State::State(State *_state){
+    location = Pt3D(_state->location);
+    v = Pt3D(_state->v);
+    fr = 1.0;
+    modifierMode = _state->modifierMode;
+}
+
+State::State(Pt3D _location, Pt3D _v, bool _modifierMode) {
     location = Pt3D(_location);
     v = Pt3D(_v);
+    fr = 1.0;
+    modifierMode = _modifierMode;
 }
 
 void State::addVector(double length) {
@@ -117,7 +126,7 @@ void Node::getState(State *_state) {
     if (isStart) {
         state = _state;
     } else {
-        state = new State(_state->location, _state->v);
+        state = new State(_state);
         state->rotate(params["rx"], params["ry"], params["rz"]);
         state->addVector(2.0);
     }
@@ -162,9 +171,8 @@ Part *Node::buildModel(Model *model) {
     state->location.z = round2(state->location.z);
     part->p = Pt3D(state->location);
     // TODO debug why params are not working
-    if (params["m"]) {
-        part->mass = params["m"];
-    }
+    if (params["fr"])
+        part->friction = params["fr"];
     model->addPart(part);
 
     for (unsigned int i = 0; i < children.size(); i++) {
@@ -198,8 +206,10 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 }
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
-    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-    start_node = new Node(genotype, initialState, true);
+    // M - modifier mode, S - standard mode
+    bool modifierMode = genotype[0] == 'M';
+    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0), modifierMode);
+    start_node = new Node(genotype.substr(1, genotype.len()), initialState, true);
 }
 
 void fS_Genotype::buildModel(Model *model) {
