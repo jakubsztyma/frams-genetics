@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include<bits/stdc++.h>
 #include "fS_general.h"
 
 using namespace std;
@@ -30,7 +31,7 @@ vector <SString> split(SString str, char delim) {
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
-            cont.push_back(str.substr(index, str.len()));
+            cont.push_back(str.substr(index, INT_MAX));
             break;
         }
         cont.push_back(str.substr(index, new_index - index));
@@ -90,7 +91,7 @@ SString Node::extractJoints(SString restOfGenotype) {
         jointTypes.insert(jTypes[i]);
     if (jointTypes.empty())
         jointTypes.insert(DEFAULT_JOINT);
-    return restOfGenotype.substr(partTypePosition, restOfGenotype.len());
+    return restOfGenotype.substr(partTypePosition, INT_MAX);
 }
 
 SString Node::extractPartType(SString restOfGenotype) {
@@ -105,7 +106,7 @@ SString Node::extractPartType(SString restOfGenotype) {
             part_type = Part::Shape::SHAPE_CYLINDER;
             break;
     }
-    return restOfGenotype.substr(1, restOfGenotype.len());
+    return restOfGenotype.substr(1, INT_MAX);
 }
 
 SString Node::extractParams(SString restOfGenotype) {
@@ -119,7 +120,7 @@ SString Node::extractParams(SString restOfGenotype) {
         params[keyValue[0].c_str()] = value;
     }
 
-    return restOfGenotype.substr(paramsEndIndex + 1, restOfGenotype.len());
+    return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
 }
 
 void Node::getState(State *_state) {
@@ -209,7 +210,7 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     bool modifierMode = genotype[0] == 'M';
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0), modifierMode);
-    start_node = new Node(genotype.substr(1, genotype.len()), initialState, true);
+    start_node = new Node(genotype.substr(1, INT_MAX), initialState, true);
 }
 
 void fS_Genotype::buildModel(Model *model) {
