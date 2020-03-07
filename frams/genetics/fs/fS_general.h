@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
 
@@ -14,16 +15,16 @@ using namespace std;
 
 class Node{
 private:
-    SString rest;
     Part::Shape part_type;
+    map<string, float> params;
     vector<Node*> children;
-    vector<SString> getBranches();
+    vector<SString> getBranches(SString restOfGenotype);
 public:
 
     Node(const SString &genotype);
-    //void init(const SString &genotype);
     Part* buildModel(Model *model);
-    void get_children();
+    void getChildren(SString restOfGenotype);
+    SString extractParams(SString restOfGenotype);
 };
 
 class fS_Genotype{
