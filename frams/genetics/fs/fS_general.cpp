@@ -9,17 +9,23 @@
 
 using namespace std;
 
-char BRANCH_START = '(';
-char BRANCH_END = ')';
-char BRANCH_SEPARATOR = ',';
-char PARAM_START = '{';
-char PARAM_END = '}';
-char PARAM_SEPARATOR = ';';
-char DEFAULT_JOINT = 'a';
-string PART_TYPES = "EPC";
+#define MODIFIER_MODE 'M'
+#define STANDARD_MODE 'S'
+#define BRANCH_START '('
+#define BRANCH_END ')'
+#define BRANCH_SEPARATOR ','
+#define PARAM_START '{'
+#define PARAM_END '}'
+#define PARAM_SEPARATOR ';'
+#define PARAM_KEY_VALUE_SEPARATOR '='
+#define DEFAULT_JOINT 'a'
+#define PART_TYPES "EPC"
+#define MULTIPLIER 1.1
+
 string JOINTS = "abcd";
 string MODIFIERS = "xyz";
-double MULTIPLIER = 1.1;
+
+double DEFAULT_FR = 0.4;
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -41,7 +47,7 @@ vector <SString> split(SString str, char delim) {
     return cont;
 }
 
-State::State(State *_state){
+State::State(State *_state) {
     location = Pt3D(_state->location);
     v = Pt3D(_state->v);
     fr = _state->fr;
@@ -51,7 +57,7 @@ State::State(State *_state){
 State::State(Pt3D _location, Pt3D _v, bool _modifierMode) {
     location = Pt3D(_location);
     v = Pt3D(_v);
-    fr = 0.4;
+    fr = DEFAULT_FR;
     modifierMode = _modifierMode;
 }
 
@@ -86,16 +92,18 @@ SString Node::extractModifiers(SString restOfGenotype) {
     string s(restOfGenotype.c_str());
     regex_search(s, m, regex("E|P|C"));
     int partTypePosition = m.position();
+    // Get a string containing all modifiers and joints for this node
     SString jointTypes = restOfGenotype.substr(0, partTypePosition);
 
     for (int i = 0; i < jointTypes.len(); i++) {
+        // Extract modifiers and joints
         char jType = jointTypes[i];
-        if(JOINTS.find(jType) != string::npos)
+        if (JOINTS.find(jType) != string::npos)
             joints.insert(jType);
         else
             modifiers.push_back(jType);
     }
-    if (joints.empty())
+    if (joints.empty()) // Add default joint if no others were specified
         joints.insert(DEFAULT_JOINT);
     return restOfGenotype.substr(partTypePosition, INT_MAX);
 }
@@ -116,11 +124,11 @@ SString Node::extractPartType(SString restOfGenotype) {
 }
 
 SString Node::extractParams(SString restOfGenotype) {
-    int paramsEndIndex = restOfGenotype.indexOf('}');
+    int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
     vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
     for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
-        vector <SString> keyValue = split(keyValuePairs[i], '=');
+        vector <SString> keyValue = split(keyValuePairs[i], PARAM_KEY_VALUE_SEPARATOR);
         // TODO handle wrong length exception
         double value = atof(keyValue[1].c_str());
         params[keyValue[0].c_str()] = value;
@@ -139,21 +147,23 @@ void Node::getState(State *_state) {
     }
 
     // Update state by modifiers
-    for(unsigned int i=0; i<modifiers.size(); i++){
+    for (unsigned int i = 0; i < modifiers.size(); i++) {
         char mod = modifiers[i];
-        if (mod == 'F')
-            state->fr *= MULTIPLIER;
-        else if (mod == 'f')
-            state->fr /= MULTIPLIER;
+        switch (mod) {
+            case 'F':
+                state->fr *= MULTIPLIER;
+                break;
+            case 'f':
+                state->fr /= MULTIPLIER;
+                break;
+        }
     }
 }
 
 void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
-    for (unsigned int i = 0; i < branches.size(); i++) {
-        Node *child_node = new Node(branches[i], state);
-        children.push_back(child_node);
-    }
+    for (unsigned int i = 0; i < branches.size(); i++)
+        children.push_back(new Node(branches[i], state));
 }
 
 vector <SString> Node::getBranches(SString restOfGenotype) {
@@ -166,11 +176,12 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     int depth = 0;
     int start = 1;
     vector <SString> children;
+    int length = restOfGenotype.len();
     for (int i = 0; i < restOfGenotype.len(); i++) {
         char c = restOfGenotype[i];
         if (c == BRANCH_START)
             depth += 1;
-        else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len()) {
+        else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length) {
             children.push_back(restOfGenotype.substr(start, i - start));
             start = i + 1;
         } else if (c == BRANCH_END)
@@ -181,12 +192,7 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 
 Part *Node::buildModel(Model *model) {
     Part *part = new Part(part_type);
-
-    state->location.x = round2(state->location.x);
-    state->location.y = round2(state->location.y);
-    state->location.z = round2(state->location.z);
-    part->p = Pt3D(state->location);
-    addParamsToPart(part);
+    setParamsOnPart(part);
     model->addPart(part);
 
     for (unsigned int i = 0; i < children.size(); i++) {
@@ -197,13 +203,16 @@ Part *Node::buildModel(Model *model) {
     return part;
 }
 
-void Node::addParamsToPart(Part *part){
-    cout<<"Mode: "<<state->modifierMode<<endl;
-    if(state->modifierMode){
-        if(state->fr != 0.4)
+void Node::setParamsOnPart(Part *part) {
+    part->p = Pt3D(round2(state->location.x),
+                   round2(state->location.y),
+                   round2(state->location.z)
+    );
+
+    if (state->modifierMode) {
+        if (state->fr != DEFAULT_FR)
             part->friction = round2(state->fr);
-    }
-    else{
+    } else {
         if (params["fr"])
             part->friction = params["fr"];
     }
@@ -233,7 +242,7 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
-    bool modifierMode = genotype[0] == 'M';
+    bool modifierMode = genotype[0] == MODIFIER_MODE;
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0), modifierMode);
     start_node = new Node(genotype.substr(1, INT_MAX), initialState, true);
 }

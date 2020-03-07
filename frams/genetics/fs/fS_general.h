@@ -43,7 +43,7 @@ private:
     vector<SString> getBranches(SString restOfGenotype);
     void getState(State *_state);
     void getChildren(SString restOfGenotype);
-    void addParamsToPart(Part *part);
+    void setParamsOnPart(Part *part);
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
 public:
     State *state;
