@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <math.h>
+#include "common/Convert.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
@@ -16,11 +18,10 @@ using namespace std;
 
 class State{
 public:
-    double x, y, z, vx, vy, vz;
-    State(double _x, double _y, double _z, double _vx, double _vy, double _vz):
-    x(_x), y(_y), z(_z), vx(_vx), vy(_vy), vz(_vz) {}
+    Pt3D location, v;
+    State(Pt3D _location, Pt3D _v);
     void addVector(double length);
-    void rotate();
+    void rotate(float rx, float ry, float rz);
 };
 
 class Node{
