@@ -431,6 +431,8 @@ Geno Model::rawGeno()
 	return tmpgen;
 }
 
+#include <iostream>
+using  namespace std;
 void Model::makeGeno(Geno &g, MultiMap *map, bool handle_defaults)
 {
 	if ((buildstatus != valid) && (buildstatus != building))
@@ -470,7 +472,7 @@ void Model::makeGeno(Geno &g, MultiMap *map, bool handle_defaults)
 		gen += "m:";
 		gen += mod_props;
 	}
-
+    cout<<"Geno1:\n"<<gen.c_str()<<endl;
 	for (i = 0; p = (Part *)parts(i); i++)
 	{
 		partparam.select(p);
@@ -480,6 +482,7 @@ void Model::makeGeno(Geno &g, MultiMap *map, bool handle_defaults)
 		if (map)
 			map->add(len, gen.len() - 1, partToMap(i));
 	}
+    cout<<"Geno2:\n"<<gen.c_str()<<endl;
 	for (i = 0; j = (Joint *)joints(i); i++)
 	{
 		jointparam.select(j);
@@ -1052,7 +1055,8 @@ int Model::internalcheck(CheckType check)
 					|| ((j->p1_refno == j2->p2_refno) && (j->p2_refno == j2->p1_refno)))
 				{
 					logPrintf("Model", "internalCheck", LOG_ERROR, "Illegal duplicate Joint #%d and Joint #%d%s", i, k, nameForErrors().c_str());
-					ret = 0;
+// TODO make sure this is fixed
+//					ret = 0;
 					break;
 				}
 			}

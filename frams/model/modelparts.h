@@ -123,7 +123,7 @@ public:
 	Part *part1, *part2;	///< references to parts
 	class Pt3D d;		///< position delta between parts
 	class Pt3D rot;	///< orientation delta between parts expressed as 3 angles
-	enum Shape { SHAPE_BALL_AND_STICK = 0, SHAPE_FIXED = 1 };
+	enum Shape { SHAPE_BALL_AND_STICK = 0, SHAPE_FIXED = 1, SHAPE_B = 2, SHAPE_C = 3, SHAPE_D = 4 };
 	paInt shape;///< ball-and-stick=old Framsticks compatible, creates a physical rod between parts (cylinder or cuboid), do not mix with shape>0,  fixed=merge parts into one physical entity
 
 	Joint();

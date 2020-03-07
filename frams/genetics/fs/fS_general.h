@@ -50,12 +50,11 @@ class fS_Genotype{
 public:
     Node *start_node;
 
-    fS_Genotype(){};
+    fS_Genotype(const SString &genotype);
     ~fS_Genotype(){};
 
-    int parseGenotype(const SString &genotype);
     string toString();
-    SString buildModel();
+    void buildModel(Model *model);
 };
 
 

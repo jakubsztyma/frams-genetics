@@ -59,16 +59,33 @@ int main() {
                                              "j:0, 5, sh=1\n"
                                              "j:0, 8, sh=1\n"
             },
+            {"EbE",                          "p:sh=1\n"
+                                             "p:2.0, sh=1\n"
+                                             "j:0, 1, sh=2\n"}, // Parametrized joints
+            {"PbcdP",                        "p:sh=2\n"
+                                             "p:2.0, sh=2\n"
+                                             "j:0, 1, sh=2\n"
+                                             "j:0, 1, sh=3\n"
+                                             "j:0, 1, sh=4\n"}, // Many parametrized joints
+            {"ECbCcPdCbcPbcdE", "p:sh=1\n"
+                                "p:2.0, sh=3\n"
+                                "p:4.0, sh=3\n"
+                                "p:6.0, sh=2\n"
+                                "p:8.0, sh=3\n"
+                                "p:10.0, sh=2\n"
+                                "p:12.0, sh=1\n"
+                                "j:5, 6, sh=2\n"
+                                "j:5, 6, sh=3\n"
+                                "j:5, 6, sh=4\n"
+                                "j:4, 5, sh=2\n"
+                                "j:4, 5, sh=3\n"
+                                "j:3, 4, sh=4\n"
+                                "j:2, 3, sh=3\n"
+                                "j:1, 2, sh=2\n"
+                                "j:0, 1, sh=1\n"},
 //            {"E{m=2.1}E{m=3.2}",             "p:sh=1, m=2\n"
 //                                             "p:2.0, sh=1, m=3\n"
 //                                             "j:0, 1, sh=1\n"},
-            {"PbcdP", "p:sh=2\n"
-                      "p:2.0, sh=2\n"
-                      "j:0, 1, sh=1\n"
-                      "j:0, 1, sh=1\n"
-                      "j:0, 1, sh=1"},
-//            {"", ""},
-//            {"", ""},
 //            {"", ""},
 //            {"", ""},
 //            {"", ""},
@@ -79,7 +96,7 @@ int main() {
 //            {"", ""},
 //            {"", ""},
     };
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 14; i++) {
         SString *test = test_cases[i];
         SString genotype_str = test[0];
         SString result = converter.convert(genotype_str);

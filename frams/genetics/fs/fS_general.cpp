@@ -5,7 +5,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include "fS_general.h"
-#include "frams/util/multimap.h"
 
 using namespace std;
 
@@ -71,21 +70,21 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
         getChildren(restOfGenotype);
 }
 
-SString Node::extractJoints(SString restOfGenotype){
+SString Node::extractJoints(SString restOfGenotype) {
     smatch m;
     string s(restOfGenotype.c_str());
     regex_search(s, m, regex("E|P|C"));
     int partTypePosition = m.position();
     SString jTypes = restOfGenotype.substr(0, partTypePosition);
-    cout<<jTypes.c_str()<<endl;
-    for(int i=0; i<jTypes.len(); i++)
+
+    for (int i = 0; i < jTypes.len(); i++)
         jointTypes.insert(jTypes[i]);
-    if(jointTypes.empty())
+    if (jointTypes.empty())
         jointTypes.insert(DEFAULT_JOINT);
     return restOfGenotype.substr(partTypePosition, restOfGenotype.len());
 }
 
-SString Node::extractPartType(SString restOfGenotype){
+SString Node::extractPartType(SString restOfGenotype) {
     switch (restOfGenotype[0]) {
         case 'E':
             part_type = Part::Shape::SHAPE_ELLIPSOID;
@@ -176,31 +175,33 @@ Part *Node::buildModel(Model *model) {
     return part;
 }
 
-void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart){
-    for (set<char>::iterator it=child->jointTypes.begin(); it!=child->jointTypes.end(); ++it) {
+void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart) {
+    for (set<char>::iterator it = child->jointTypes.begin(); it != child->jointTypes.end(); ++it) {
         Joint *joint = new Joint();
         joint->attachToParts(part, childPart);
-        joint->shape = Joint::Shape::SHAPE_FIXED;
+        switch (*it) {
+            case 'a':
+                joint->shape = Joint::Shape::SHAPE_FIXED;
+                break;
+            case 'b':
+                joint->shape = Joint::Shape::SHAPE_B;
+                break;
+            case 'c':
+                joint->shape = Joint::Shape::SHAPE_C;
+                break;
+            case 'd':
+                joint->shape = Joint::Shape::SHAPE_D;
+                break;
+        }
         model->addJoint(joint);
     }
 }
 
-int fS_Genotype::parseGenotype(const SString &genotype) {
+fS_Genotype::fS_Genotype(const SString &genotype) {
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
     start_node = new Node(genotype, initialState, true);
-    return 0;
 }
 
-SString fS_Genotype::buildModel() {
-    Model *model = new Model();
-    model->open(false);
-
+void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
-    //TODO check why multiple joints don't show
-    //cout<<model->getPartCount()<<" "<<model->getJointCount()<<endl;
-
-    MultiMap map;
-    model->getCurrentToF0Map(map);
-    model->close();
-    return model->getF0Geno().getGenes();
 }
