@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <regex>
+#include <set>
 #include "common/Convert.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
@@ -29,14 +31,19 @@ private:
     Part::Shape part_type;
     map<string, double> params;
     vector<Node*> children;
+    set<char> jointTypes;
+
+    SString extractJoints(SString restOfGenotype);
+    SString extractPartType(SString restOfGenotype);
+    SString extractParams(SString restOfGenotype);
     vector<SString> getBranches(SString restOfGenotype);
     void getState(State *_state);
+    void getChildren(SString restOfGenotype);
+    void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
 public:
     State *state;
     Node(const SString &genotype, State *state, bool _isStart);
     Part* buildModel(Model *model);
-    void getChildren(SString restOfGenotype);
-    SString extractParams(SString restOfGenotype);
 };
 
 class fS_Genotype{

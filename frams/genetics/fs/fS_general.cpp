@@ -62,7 +62,31 @@ void State::rotate(double rx, double ry, double rz) {
 
 Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
     isStart = _isStart;
-    switch (genotype[0]) {
+    SString restOfGenotype = extractJoints(genotype);
+    restOfGenotype = extractPartType(restOfGenotype);
+    if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
+        restOfGenotype = extractParams(restOfGenotype);
+    getState(_state);
+    if (restOfGenotype.len() > 0)
+        getChildren(restOfGenotype);
+}
+
+SString Node::extractJoints(SString restOfGenotype){
+    smatch m;
+    string s(restOfGenotype.c_str());
+    regex_search(s, m, regex("E|P|C"));
+    int partTypePosition = m.position();
+    SString jTypes = restOfGenotype.substr(0, partTypePosition);
+    cout<<jTypes.c_str()<<endl;
+    for(int i=0; i<jTypes.len(); i++)
+        jointTypes.insert(jTypes[i]);
+    if(jointTypes.empty())
+        jointTypes.insert(DEFAULT_JOINT);
+    return restOfGenotype.substr(partTypePosition, restOfGenotype.len());
+}
+
+SString Node::extractPartType(SString restOfGenotype){
+    switch (restOfGenotype[0]) {
         case 'E':
             part_type = Part::Shape::SHAPE_ELLIPSOID;
             break;
@@ -73,22 +97,7 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
             part_type = Part::Shape::SHAPE_CYLINDER;
             break;
     }
-    SString restOfGenotype = genotype.substr(1, genotype.len());
-    if (restOfGenotype.len() > 0 && restOfGenotype[0] == '{')
-        restOfGenotype = extractParams(restOfGenotype);
-    getState(_state);
-    if (restOfGenotype.len() > 0)
-        getChildren(restOfGenotype);
-}
-
-void Node::getState(State *_state) {
-    if (isStart) {
-        state = _state;
-    } else {
-        state = new State(_state->location, _state->v);
-        state->rotate(params["rx"], params["ry"], params["rz"]);
-        state->addVector(2.0);
-    }
+    return restOfGenotype.substr(1, restOfGenotype.len());
 }
 
 SString Node::extractParams(SString restOfGenotype) {
@@ -103,6 +112,16 @@ SString Node::extractParams(SString restOfGenotype) {
     }
 
     return restOfGenotype.substr(paramsEndIndex + 1, restOfGenotype.len());
+}
+
+void Node::getState(State *_state) {
+    if (isStart) {
+        state = _state;
+    } else {
+        state = new State(_state->location, _state->v);
+        state->rotate(params["rx"], params["ry"], params["rz"]);
+        state->addVector(2.0);
+    }
 }
 
 void Node::getChildren(SString restOfGenotype) {
@@ -137,27 +156,33 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 }
 
 Part *Node::buildModel(Model *model) {
-    Part *newpart = new Part(part_type);
+    Part *part = new Part(part_type);
 
     state->location.x = round2(state->location.x);
     state->location.y = round2(state->location.y);
     state->location.z = round2(state->location.z);
-    newpart->p = Pt3D(state->location);
+    part->p = Pt3D(state->location);
     // TODO debug why params are not working
     if (params["m"]) {
-        newpart->mass = params["m"];
+        part->mass = params["m"];
     }
-    model->addPart(newpart);
+    model->addPart(part);
 
     for (unsigned int i = 0; i < children.size(); i++) {
-        Part *childPart = children[i]->buildModel(model);
+        Node *child = children[i];
+        Part *childPart = child->buildModel(model);
+        addJointsToModel(model, child, part, childPart);
+    }
+    return part;
+}
 
+void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart){
+    for (set<char>::iterator it=child->jointTypes.begin(); it!=child->jointTypes.end(); ++it) {
         Joint *joint = new Joint();
-        joint->attachToParts(newpart, childPart);
+        joint->attachToParts(part, childPart);
         joint->shape = Joint::Shape::SHAPE_FIXED;
         model->addJoint(joint);
     }
-    return newpart;
 }
 
 int fS_Genotype::parseGenotype(const SString &genotype) {
@@ -171,6 +196,8 @@ SString fS_Genotype::buildModel() {
     model->open(false);
 
     start_node->buildModel(model);
+    //TODO check why multiple joints don't show
+    //cout<<model->getPartCount()<<" "<<model->getJointCount()<<endl;
 
     MultiMap map;
     model->getCurrentToF0Map(map);
