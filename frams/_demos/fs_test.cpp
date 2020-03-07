@@ -86,8 +86,13 @@ int main() {
             {"SE{fr=0.3}E{fr=0.5}",           "p:sh=1, fr=0.3\n"
                                               "p:2.0, sh=1, fr=0.5\n"
                                               "j:0, 1, sh=1\n"},
+// Modifier mode
+            {"ME",                            "p:sh=1\n"},  // Basic modifier mode
+            {"MFE",                            "p:sh=1, fr=0.44\n"},  // Friction modifier
+            {"MfE",                            "p:sh=1, fr=0.36\n"},  // Friction modifier
+            {"MFFFFffE",                            "p:sh=1, fr=0.48\n"},  // Friction modifier
     };
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 19; i++) {
         SString *test = test_cases[i];
         SString genotype_str = test[0];
         SString result = converter.convert(genotype_str);

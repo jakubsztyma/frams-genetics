@@ -34,14 +34,16 @@ private:
     Part::Shape part_type;
     map<string, double> params;
     vector<Node*> children;
-    set<char> jointTypes;
+    set<char> joints;
+    vector<char> modifiers;
 
-    SString extractJoints(SString restOfGenotype);
+    SString extractModifiers(SString restOfGenotype);
     SString extractPartType(SString restOfGenotype);
     SString extractParams(SString restOfGenotype);
     vector<SString> getBranches(SString restOfGenotype);
     void getState(State *_state);
     void getChildren(SString restOfGenotype);
+    void addParamsToPart(Part *part);
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
 public:
     State *state;

@@ -17,8 +17,9 @@ char PARAM_END = '}';
 char PARAM_SEPARATOR = ';';
 char DEFAULT_JOINT = 'a';
 string PART_TYPES = "EPC";
-string OTHER_JOINTS = "bcd";
+string JOINTS = "abcd";
 string MODIFIERS = "xyz";
+double MULTIPLIER = 1.1;
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -43,14 +44,14 @@ vector <SString> split(SString str, char delim) {
 State::State(State *_state){
     location = Pt3D(_state->location);
     v = Pt3D(_state->v);
-    fr = 1.0;
+    fr = _state->fr;
     modifierMode = _state->modifierMode;
 }
 
 State::State(Pt3D _location, Pt3D _v, bool _modifierMode) {
     location = Pt3D(_location);
     v = Pt3D(_v);
-    fr = 1.0;
+    fr = 0.4;
     modifierMode = _modifierMode;
 }
 
@@ -71,7 +72,7 @@ void State::rotate(double rx, double ry, double rz) {
 
 Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
     isStart = _isStart;
-    SString restOfGenotype = extractJoints(genotype);
+    SString restOfGenotype = extractModifiers(genotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
@@ -80,17 +81,22 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
         getChildren(restOfGenotype);
 }
 
-SString Node::extractJoints(SString restOfGenotype) {
+SString Node::extractModifiers(SString restOfGenotype) {
     smatch m;
     string s(restOfGenotype.c_str());
     regex_search(s, m, regex("E|P|C"));
     int partTypePosition = m.position();
-    SString jTypes = restOfGenotype.substr(0, partTypePosition);
+    SString jointTypes = restOfGenotype.substr(0, partTypePosition);
 
-    for (int i = 0; i < jTypes.len(); i++)
-        jointTypes.insert(jTypes[i]);
-    if (jointTypes.empty())
-        jointTypes.insert(DEFAULT_JOINT);
+    for (int i = 0; i < jointTypes.len(); i++) {
+        char jType = jointTypes[i];
+        if(JOINTS.find(jType) != string::npos)
+            joints.insert(jType);
+        else
+            modifiers.push_back(jType);
+    }
+    if (joints.empty())
+        joints.insert(DEFAULT_JOINT);
     return restOfGenotype.substr(partTypePosition, INT_MAX);
 }
 
@@ -130,6 +136,15 @@ void Node::getState(State *_state) {
         state = new State(_state);
         state->rotate(params["rx"], params["ry"], params["rz"]);
         state->addVector(2.0);
+    }
+
+    // Update state by modifiers
+    for(unsigned int i=0; i<modifiers.size(); i++){
+        char mod = modifiers[i];
+        if (mod == 'F')
+            state->fr *= MULTIPLIER;
+        else if (mod == 'f')
+            state->fr /= MULTIPLIER;
     }
 }
 
@@ -171,9 +186,7 @@ Part *Node::buildModel(Model *model) {
     state->location.y = round2(state->location.y);
     state->location.z = round2(state->location.z);
     part->p = Pt3D(state->location);
-    // TODO debug why params are not working
-    if (params["fr"])
-        part->friction = params["fr"];
+    addParamsToPart(part);
     model->addPart(part);
 
     for (unsigned int i = 0; i < children.size(); i++) {
@@ -184,8 +197,20 @@ Part *Node::buildModel(Model *model) {
     return part;
 }
 
+void Node::addParamsToPart(Part *part){
+    cout<<"Mode: "<<state->modifierMode<<endl;
+    if(state->modifierMode){
+        if(state->fr != 0.4)
+            part->friction = round2(state->fr);
+    }
+    else{
+        if (params["fr"])
+            part->friction = params["fr"];
+    }
+}
+
 void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart) {
-    for (set<char>::iterator it = child->jointTypes.begin(); it != child->jointTypes.end(); ++it) {
+    for (set<char>::iterator it = child->joints.begin(); it != child->joints.end(); ++it) {
         Joint *joint = new Joint();
         joint->attachToParts(part, childPart);
         switch (*it) {
