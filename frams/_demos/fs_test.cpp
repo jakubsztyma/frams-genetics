@@ -133,9 +133,17 @@ int main() {
         SString genotype_str = test_cases[i][0];
         fS_Genotype geno(genotype_str);
         bool success = geno.addJoint();
-        cout<<countJoints(genotype_str) << " " <<countJoints(geno.getGeno())<<endl;
         if(success)
             assert(countJoints(genotype_str) + 1 == countJoints(geno.getGeno()));
+
+    }
+    for(int i=0; i<size; i++){
+        SString genotype_str = test_cases[i][0];
+        fS_Genotype geno(genotype_str);
+        bool success = geno.removeJoint();
+        cout<<countJoints(genotype_str) <<" "<<geno.getGeno().c_str() <<endl;
+        if(success)
+            assert(countJoints(genotype_str) - 1 == countJoints(geno.getGeno()));
 
     }
     cout << "FINISHED" << endl;

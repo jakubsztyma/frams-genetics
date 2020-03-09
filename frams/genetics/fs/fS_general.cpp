@@ -320,25 +320,41 @@ int fS_Genotype::getPartCount() {
     return start_node->getTree().size();
 }
 
-int fS_Genotype::chooseIndex(int length, int from = 0) {
-    return from + rand() % (length - from);
+int fS_Genotype::randomFromRange(int to, int from = 0) {
+    return from + rand() % (to - from);
 }
 
 
 Node* fS_Genotype::chooseNode(int fromIndex = 0) {
     vector <Node*> allNodes = start_node->getTree();
-//    return start_node->children[0];
-    return allNodes[chooseIndex(allNodes.size(), fromIndex)];
+    return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
 
 bool fS_Genotype::addJoint() {
-    Node *randomNode = chooseNode();    // First part does not have joints
-    if (randomNode->isStart)
+    if(start_node->children.size() < 1)
         return false;
-    char randomJoint = JOINTS[chooseIndex(JOINT_COUNT, 1)];
+
+    Node *randomNode = chooseNode(1);    // First part does not have joints
+    char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
     if (randomNode->joints.count(randomJoint) != 0)
         return false;
+    
     randomNode->joints.insert(randomJoint);
+    return true;
+}
+
+
+bool fS_Genotype::removeJoint(){
+    if(start_node->children.size() < 1)
+        return false;
+
+    Node *randomNode = chooseNode(1);    // First part does not have joints
+    int jointsCount = randomNode->joints.size();
+    if (jointsCount < 1)
+        return false;
+    int index = *(randomNode->joints.begin()) + randomFromRange(jointsCount);
+    randomNode->joints.erase(index);
+
     return true;
 }

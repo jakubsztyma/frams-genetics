@@ -58,12 +58,12 @@ class fS_Genotype{
     friend class Node;
 public:
     int  getPartCount();
-    int chooseIndex(int length, int from);
+    int randomFromRange(int to, int from);
     Node* chooseNode(int fromIndex);
+    bool addJoint();
 
     void randomFromDistribution();
     bool addPart();
-    bool addJoint();
     bool removePart();
     bool removeJoint();
     bool addParameter();
