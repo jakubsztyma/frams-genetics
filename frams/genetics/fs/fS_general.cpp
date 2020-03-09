@@ -109,17 +109,7 @@ SString Node::extractModifiers(SString restOfGenotype) {
 }
 
 SString Node::extractPartType(SString restOfGenotype) {
-    switch (restOfGenotype[0]) {
-        case 'E':
-            part_type = Part::Shape::SHAPE_ELLIPSOID;
-            break;
-        case 'P':
-            part_type = Part::Shape::SHAPE_CUBOID;
-            break;
-        case 'C':
-            part_type = Part::Shape::SHAPE_CYLINDER;
-            break;
-    }
+    part_type = restOfGenotype[0];
     return restOfGenotype.substr(1, INT_MAX);
 }
 
@@ -191,7 +181,14 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 }
 
 Part *Node::buildModel(Model *model) {
-    Part *part = new Part(part_type);
+    Part::Shape model_part_type;
+    if (part_type == 'E')
+        model_part_type = Part::Shape::SHAPE_ELLIPSOID;
+    else if (part_type == 'P')
+        model_part_type = Part::Shape::SHAPE_CUBOID;
+    else if (part_type == 'C')
+        model_part_type = Part::Shape::SHAPE_CYLINDER;
+    Part *part = new Part(model_part_type);
     setParamsOnPart(part);
     model->addPart(part);
 
@@ -240,6 +237,28 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
     }
 }
 
+
+SString Node::getGeno() {
+    SString result = "";
+    for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it) {
+        if (*it != DEFAULT_JOINT)
+            result += *it;
+    }
+    for (vector<char>::iterator it = modifiers.begin(); it != modifiers.end(); ++it)
+        result += *it;
+    result += part_type;
+
+    unsigned int children_size = children.size();
+    if (children_size == 1)
+        result += children[0]->getGeno();
+    else if (children_size > 1) {
+        for (unsigned int i = 0; i < children_size; i++) {
+            result += children[i]->getGeno();
+        }
+    }
+    return result;
+}
+
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     bool modifierMode = genotype[0] == MODIFIER_MODE;
@@ -249,4 +268,10 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
 
 void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
+}
+
+string fS_Genotype::getGeno() {
+    char mode = start_node->state->modifierMode ? MODIFIER_MODE : STANDARD_MODE;
+    string actualGeno = start_node->getGeno().c_str();
+    return mode + actualGeno;
 }

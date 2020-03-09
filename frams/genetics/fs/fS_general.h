@@ -31,7 +31,7 @@ public:
 class Node{
 private:
     bool isStart;
-    Part::Shape part_type;
+    char part_type;
     map<string, double> params;
     vector<Node*> children;
     set<char> joints;
@@ -49,6 +49,7 @@ public:
     State *state;
     Node(const SString &genotype, State *state, bool _isStart);
     Part* buildModel(Model *model);
+    SString getGeno();
 };
 
 class fS_Genotype{
@@ -60,6 +61,7 @@ public:
 
     string toString();
     void buildModel(Model *model);
+    string getGeno();
 };
 
 
