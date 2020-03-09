@@ -3,9 +3,12 @@
 #include "frams/genetics/fs/fS_conv.h"
 #include "frams/genetics/fs/fS_general.h"
 
+
 using namespace std;
 
 int main() {
+    srand (time(NULL));
+
     GenoConv_fS0 converter = GenoConv_fS0();
 
     SString test_cases[][2] = {
@@ -92,7 +95,8 @@ int main() {
                                               "j:1, 2, sh=1\n"
                                               "j:0, 1, sh=1\n"},   // Negative rotations
     };
-    for (int i = 0; i < 19; i++) {
+    int size = 19;
+    for (int i = 0; i < size; i++) {
         SString *test = test_cases[i];
         SString genotype_str = test[0];
         SString result = converter.convert(genotype_str);
@@ -102,11 +106,18 @@ int main() {
              << endl;
         assert(expected_result == result);
     }
-    for (int i = 0; i < 19; i++) {
+    for (int i = 0; i < size; i++) {
         SString *test = test_cases[i];
         fS_Genotype geno(test[0]);
         cout << geno.getGeno().c_str() << " " << test[0].c_str() << endl;
         assert(geno.getGeno() == test[0]);
+    }
+
+    int expectedCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
+    for (int i = 0; i < 19; i++) {
+        fS_Genotype geno(test_cases[i][0]);
+        cout << geno.getPartCount() << " " << expectedCount[i]<<endl;
+        assert(geno.getPartCount() == expectedCount[i]);
     }
     cout << "FINISHED" << endl;
     return 0;

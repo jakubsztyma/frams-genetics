@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include<bits/stdc++.h>
+#include <time.h>
 #include "fS_general.h"
 
 using namespace std;
@@ -134,11 +135,11 @@ void Node::getState(State *_state) {
     } else {
         state = new State(_state);
         state->rotate(params["rx"], params["ry"], params["rz"]);
-        if(params["rx"] == 0.)
+        if (params["rx"] == 0.)
             params.erase("rx");
-        if(params["ry"] == 0.)
+        if (params["ry"] == 0.)
             params.erase("ry");
-        if(params["rz"] == 0.)
+        if (params["rz"] == 0.)
             params.erase("rz");
         state->addVector(2.0);
     }
@@ -255,13 +256,13 @@ SString Node::getGeno() {
         result += *it;
     result += part_type;
 
-    if(params.size() > 0){
+    if (params.size() > 0) {
         result += PARAM_START;
-        for (map<string, double>::iterator it = params.begin(); it != params.end(); it++ ) {
+        for (map<string, double>::iterator it = params.begin(); it != params.end(); it++) {
             result += it->first.c_str();
             result += PARAM_KEY_VALUE_SEPARATOR;
             string value_text = to_string(it->second);
-            result += value_text.substr(0, value_text.find(".")+2).c_str(); // ROund
+            result += value_text.substr(0, value_text.find(".") + 2).c_str(); // ROund
             result += PARAM_SEPARATOR;
         }
         result = result.substr(0, result.len() - 1);
@@ -283,6 +284,17 @@ SString Node::getGeno() {
     return result;
 }
 
+vector<Node> Node::getTree() {
+    vector <Node> allNodes;
+    allNodes.push_back(*this);
+    for (unsigned int i = 0; i < children.size(); i++) {
+        vector <Node> offspring = children[i]->getTree();
+        allNodes.reserve(allNodes.size() + distance(offspring.begin(), offspring.end())); // Improve performance
+        allNodes.insert(allNodes.end(), offspring.begin(), offspring.end());
+    }
+    return allNodes;
+}
+
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     bool modifierMode = genotype[0] == MODIFIER_MODE;
@@ -298,4 +310,24 @@ SString fS_Genotype::getGeno() {
     SString mode = start_node->state->modifierMode ? SString("M") : SString("S");
     SString actualGeno = start_node->getGeno();
     return mode + actualGeno;
+}
+
+int fS_Genotype::getPartCount(){
+    return start_node->getTree().size();
+}
+
+int fS_Genotype::chooseIndex(int length){
+    return rand() % length;
+}
+
+
+Node fS_Genotype::chooseNode(int fromIndex=0){
+    vector<Node> allNodes = start_node->getTree();
+    int index = fromIndex + rand() % (allNodes.size() - fromIndex);
+    return allNodes[index];
+}
+
+
+void fS_Genotype::addJoint(){
+    Node randomNode = chooseNode(1);    // First part does not have joints
 }

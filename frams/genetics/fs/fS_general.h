@@ -50,10 +50,24 @@ public:
     Node(const SString &genotype, State *state, bool _isStart);
     Part* buildModel(Model *model);
     SString getGeno();
+    vector<Node> getTree();
 };
 
 class fS_Genotype{
 public:
+    int  getPartCount();
+    int chooseIndex(int length);
+    Node chooseNode(int fromIndex);
+
+    void randomFromDistribution();
+    void addPart();
+    void addJoint();
+    void removePart();
+    void removeJoint();
+    void addParameter();
+    void removeParameter();
+    void changeParameter();
+
     Node *start_node;
 
     fS_Genotype(const SString &genotype);
@@ -62,6 +76,9 @@ public:
     string toString();
     void buildModel(Model *model);
     SString getGeno();
+
+    void mutate();
+    void crossover();
 };
 
 
