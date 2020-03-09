@@ -6,6 +6,17 @@
 
 using namespace std;
 
+int countJoints(SString genotype){
+    int result = 0;
+    char tmp;
+    for(int i=0; i<genotype.len(); i++){
+        tmp = genotype[i];
+        if(tmp == 'b' || tmp == 'c' || tmp == 'd')
+            result += 1;
+    }
+    return result;
+}
+
 int main() {
     srand (time(NULL));
 
@@ -114,10 +125,18 @@ int main() {
     }
 
     int expectedCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
-    for (int i = 0; i < 19; i++) {
+    for (int i = 0; i < size; i++) {
         fS_Genotype geno(test_cases[i][0]);
-        cout << geno.getPartCount() << " " << expectedCount[i]<<endl;
         assert(geno.getPartCount() == expectedCount[i]);
+    }
+    for(int i=0; i<size; i++){
+        SString genotype_str = test_cases[i][0];
+        fS_Genotype geno(genotype_str);
+        bool success = geno.addJoint();
+        cout<<countJoints(genotype_str) << " " <<countJoints(geno.getGeno())<<endl;
+        if(success)
+            assert(countJoints(genotype_str) + 1 == countJoints(geno.getGeno()));
+
     }
     cout << "FINISHED" << endl;
     return 0;

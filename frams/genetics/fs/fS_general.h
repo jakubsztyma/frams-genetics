@@ -29,12 +29,12 @@ public:
 };
 
 class Node{
+    friend class fS_Genotype;
 private:
     bool isStart;
     char part_type;
     map<string, double> params;
     vector<Node*> children;
-    set<char> joints;
     vector<char> modifiers;
 
     SString extractModifiers(SString restOfGenotype);
@@ -46,27 +46,29 @@ private:
     void setParamsOnPart(Part *part);
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
 public:
+    set<char> joints;
     State *state;
     Node(const SString &genotype, State *state, bool _isStart);
     Part* buildModel(Model *model);
     SString getGeno();
-    vector<Node> getTree();
+    vector<Node*> getTree();
 };
 
 class fS_Genotype{
+    friend class Node;
 public:
     int  getPartCount();
-    int chooseIndex(int length);
-    Node chooseNode(int fromIndex);
+    int chooseIndex(int length, int from);
+    Node* chooseNode(int fromIndex);
 
     void randomFromDistribution();
-    void addPart();
-    void addJoint();
-    void removePart();
-    void removeJoint();
-    void addParameter();
-    void removeParameter();
-    void changeParameter();
+    bool addPart();
+    bool addJoint();
+    bool removePart();
+    bool removeJoint();
+    bool addParameter();
+    bool removeParameter();
+    bool changeParameter();
 
     Node *start_node;
 

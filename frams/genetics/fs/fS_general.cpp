@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include<bits/stdc++.h>
+#include <regex>
 #include <time.h>
 #include "fS_general.h"
 
@@ -19,14 +20,16 @@ using namespace std;
 #define PARAM_END '}'
 #define PARAM_SEPARATOR ';'
 #define PARAM_KEY_VALUE_SEPARATOR '='
-#define DEFAULT_JOINT 'a'
+
 #define PART_TYPES "EPC"
+#define DEFAULT_JOINT 'a'
 #define MULTIPLIER 1.1
+#define JOINT_COUNT 4
+#define DEFAULT_FR 0.4
 
-string JOINTS = "abcd";
-string MODIFIERS = "xyz";
-
-double DEFAULT_FR = 0.4;
+const string JOINTS = "abcd";
+const string OTHER_JOINTS = "bcd";
+const string MODIFIERS = "xyz";
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -95,18 +98,16 @@ SString Node::extractModifiers(SString restOfGenotype) {
     regex_search(s, m, regex("E|P|C"));
     int partTypePosition = m.position();
     // Get a string containing all modifiers and joints for this node
-    SString jointTypes = restOfGenotype.substr(0, partTypePosition);
+    SString modifierString = restOfGenotype.substr(0, partTypePosition);
 
-    for (int i = 0; i < jointTypes.len(); i++) {
+    for (int i = 0; i < modifierString.len(); i++) {
         // Extract modifiers and joints
-        char jType = jointTypes[i];
-        if (JOINTS.find(jType) != string::npos)
-            joints.insert(jType);
+        char mType = modifierString[i];
+        if (OTHER_JOINTS.find(mType) != string::npos)
+            joints.insert(mType);
         else
-            modifiers.push_back(jType);
+            modifiers.push_back(mType);
     }
-    if (joints.empty()) // Add default joint if no others were specified
-        joints.insert(DEFAULT_JOINT);
     return restOfGenotype.substr(partTypePosition, INT_MAX);
 }
 
@@ -224,24 +225,28 @@ void Node::setParamsOnPart(Part *part) {
 }
 
 void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart) {
-    for (set<char>::iterator it = child->joints.begin(); it != child->joints.end(); ++it) {
+    if (child->joints.empty()) {
         Joint *joint = new Joint();
+        joint->shape = Joint::Shape::SHAPE_FIXED;
         joint->attachToParts(part, childPart);
-        switch (*it) {
-            case 'a':
-                joint->shape = Joint::Shape::SHAPE_FIXED;
-                break;
-            case 'b':
-                joint->shape = Joint::Shape::SHAPE_B;
-                break;
-            case 'c':
-                joint->shape = Joint::Shape::SHAPE_C;
-                break;
-            case 'd':
-                joint->shape = Joint::Shape::SHAPE_D;
-                break;
-        }
         model->addJoint(joint);
+    } else {
+        for (set<char>::iterator it = child->joints.begin(); it != child->joints.end(); ++it) {
+            Joint *joint = new Joint();
+            joint->attachToParts(part, childPart);
+            switch (*it) {
+                case 'b':
+                    joint->shape = Joint::Shape::SHAPE_B;
+                    break;
+                case 'c':
+                    joint->shape = Joint::Shape::SHAPE_C;
+                    break;
+                case 'd':
+                    joint->shape = Joint::Shape::SHAPE_D;
+                    break;
+            }
+            model->addJoint(joint);
+        }
     }
 }
 
@@ -249,8 +254,7 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 SString Node::getGeno() {
     SString result = "";
     for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it) {
-        if (*it != DEFAULT_JOINT)
-            result += *it;
+        result += *it;
     }
     for (vector<char>::iterator it = modifiers.begin(); it != modifiers.end(); ++it)
         result += *it;
@@ -284,11 +288,11 @@ SString Node::getGeno() {
     return result;
 }
 
-vector<Node> Node::getTree() {
-    vector <Node> allNodes;
-    allNodes.push_back(*this);
+vector <Node*> Node::getTree() {
+    vector <Node*> allNodes;
+    allNodes.push_back(this);
     for (unsigned int i = 0; i < children.size(); i++) {
-        vector <Node> offspring = children[i]->getTree();
+        vector <Node*> offspring = children[i]->getTree();
         allNodes.reserve(allNodes.size() + distance(offspring.begin(), offspring.end())); // Improve performance
         allNodes.insert(allNodes.end(), offspring.begin(), offspring.end());
     }
@@ -312,22 +316,29 @@ SString fS_Genotype::getGeno() {
     return mode + actualGeno;
 }
 
-int fS_Genotype::getPartCount(){
+int fS_Genotype::getPartCount() {
     return start_node->getTree().size();
 }
 
-int fS_Genotype::chooseIndex(int length){
-    return rand() % length;
+int fS_Genotype::chooseIndex(int length, int from = 0) {
+    return from + rand() % (length - from);
 }
 
 
-Node fS_Genotype::chooseNode(int fromIndex=0){
-    vector<Node> allNodes = start_node->getTree();
-    int index = fromIndex + rand() % (allNodes.size() - fromIndex);
-    return allNodes[index];
+Node* fS_Genotype::chooseNode(int fromIndex = 0) {
+    vector <Node*> allNodes = start_node->getTree();
+//    return start_node->children[0];
+    return allNodes[chooseIndex(allNodes.size(), fromIndex)];
 }
 
 
-void fS_Genotype::addJoint(){
-    Node randomNode = chooseNode(1);    // First part does not have joints
+bool fS_Genotype::addJoint() {
+    Node *randomNode = chooseNode();    // First part does not have joints
+    if (randomNode->isStart)
+        return false;
+    char randomJoint = JOINTS[chooseIndex(JOINT_COUNT, 1)];
+    if (randomNode->joints.count(randomJoint) != 0)
+        return false;
+    randomNode->joints.insert(randomJoint);
+    return true;
 }
