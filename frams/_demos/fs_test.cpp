@@ -56,35 +56,35 @@ int main() {
                                               "j:2, 3, sh=3\n"
                                               "j:1, 2, sh=2\n"
                                               "j:0, 1, sh=1\n"},
-            {"SE{fr=0.3}E{fr=0.5}",           "p:sh=1, fr=0.3\n"
-                                              "p:2.0, sh=1, fr=0.5\n"
-                                              "j:0, 1, sh=1\n"},
 // Modifier mode
             {"ME",                            "p:sh=1\n"},  // Basic modifier mode
             {"MFE",                           "p:sh=1, fr=0.44\n"},  // Friction modifier
             {"MfE",                           "p:sh=1, fr=0.36\n"},  // Friction modifier
             {"MFFFFffE",                      "p:sh=1, fr=0.48\n"},  // Friction modifier
-            {"SEE{ry=90}",                    "p:sh=1\n"
+            {"SE{fr=0.3}E{fr=0.5}",           "p:sh=1, fr=0.3\n"
+                                              "p:2.0, sh=1, fr=0.5\n"
+                                              "j:0, 1, sh=1\n"},
+            {"SEE{ry=90.0}",                    "p:sh=1\n"
                                               "p:z=2.0, sh=1\n"
                                               "j:0, 1, sh=1\n"},
-            {"SEE{rz=90}",                    "p:sh=1\n"
+            {"SEE{rz=90.0}",                    "p:sh=1\n"
                                               "p:y=2.0, sh=1\n"
                                               "j:0, 1, sh=1\n"},  // Z rotation
-            {"SEE{rz=90}E{rx=90}E{ry=90}",    "p:sh=1\n"
+            {"SEE{rz=90.0}E{rx=90.0}E{ry=90.0}",    "p:sh=1\n"
                                               "p:y=2.0, sh=1\n"
                                               "p:y=2.0, 2.0, sh=1\n"
                                               "p:-1.99, 2.0, 2.0, sh=1\n"
                                               "j:2, 3, sh=1\n"
                                               "j:1, 2, sh=1\n"
                                               "j:0, 1, sh=1\n"},  // All rotations
-            {"SEE{rz=45}E{rx=45}E{ry=45}",    "p:sh=1\n"
+            {"SEE{rz=45.0}E{rx=45.0}E{ry=45.0}",    "p:sh=1\n"
                                               "p:1.41, 1.41, sh=1\n"
                                               "p:2.83, 2.41, 1.0, sh=1\n"
                                               "p:3.12, 3.41, 2.71, sh=1\n"
                                               "j:2, 3, sh=1\n"
                                               "j:1, 2, sh=1\n"
                                               "j:0, 1, sh=1\n"},  // Acute angle rotations
-            {"SEE{rz=-90}E{rx=-90}E{ry=-90}", "p:sh=1\n"
+            {"SEE{rz=-90.0}E{rx=-90.0}E{ry=-90.0}", "p:sh=1\n"
                                               "p:y=-1.99, sh=1\n"
                                               "p:y=-1.99, 2.0, sh=1\n"
                                               "p:2.0, -1.99, 2.0, sh=1\n"
@@ -102,11 +102,11 @@ int main() {
              << endl;
         assert(expected_result == result);
     }
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 19; i++) {
         SString *test = test_cases[i];
         fS_Genotype geno(test[0]);
         cout << geno.getGeno().c_str() << " " << test[0].c_str() << endl;
-        assert(geno.getGeno() == test[0].c_str());
+        assert(geno.getGeno() == test[0]);
     }
     cout << "FINISHED" << endl;
     return 0;

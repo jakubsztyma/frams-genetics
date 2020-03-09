@@ -61,7 +61,7 @@ public:
 
     string toString();
     void buildModel(Model *model);
-    string getGeno();
+    SString getGeno();
 };
 
 

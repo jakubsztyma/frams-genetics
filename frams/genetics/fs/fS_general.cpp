@@ -82,6 +82,7 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
+
     getState(_state);
     if (restOfGenotype.len() > 0)
         getChildren(restOfGenotype);
@@ -133,6 +134,12 @@ void Node::getState(State *_state) {
     } else {
         state = new State(_state);
         state->rotate(params["rx"], params["ry"], params["rz"]);
+        if(params["rx"] == 0.)
+            params.erase("rx");
+        if(params["ry"] == 0.)
+            params.erase("ry");
+        if(params["rz"] == 0.)
+            params.erase("rz");
         state->addVector(2.0);
     }
 
@@ -248,13 +255,30 @@ SString Node::getGeno() {
         result += *it;
     result += part_type;
 
+    if(params.size() > 0){
+        result += PARAM_START;
+        for (map<string, double>::iterator it = params.begin(); it != params.end(); it++ ) {
+            result += it->first.c_str();
+            result += PARAM_KEY_VALUE_SEPARATOR;
+            string value_text = to_string(it->second);
+            result += value_text.substr(0, value_text.find(".")+2).c_str(); // ROund
+            result += PARAM_SEPARATOR;
+        }
+        result = result.substr(0, result.len() - 1);
+        result += PARAM_END;
+    }
+
     unsigned int children_size = children.size();
     if (children_size == 1)
         result += children[0]->getGeno();
     else if (children_size > 1) {
-        for (unsigned int i = 0; i < children_size; i++) {
+        result += BRANCH_START;
+        for (unsigned int i = 0; i < children_size - 1; i++) {
             result += children[i]->getGeno();
+            result += BRANCH_SEPARATOR;
         }
+        result += children[children_size - 1]->getGeno();
+        result += BRANCH_END;
     }
     return result;
 }
@@ -270,8 +294,8 @@ void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
 }
 
-string fS_Genotype::getGeno() {
-    char mode = start_node->state->modifierMode ? MODIFIER_MODE : STANDARD_MODE;
-    string actualGeno = start_node->getGeno().c_str();
+SString fS_Genotype::getGeno() {
+    SString mode = start_node->state->modifierMode ? SString("M") : SString("S");
+    SString actualGeno = start_node->getGeno();
     return mode + actualGeno;
 }
