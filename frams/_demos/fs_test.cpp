@@ -114,39 +114,56 @@ int main() {
                                               "j:1, 2, sh=1\n"
                                               "j:0, 1, sh=1\n"},   // Negative rotations
     };
-    int size = 19;
+    bool success = false;
+    int tmp = -1;
+    const int size = 19;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
     for (int i = 0; i < size; i++) {
+        // Test translate
         SString *test = test_cases[i];
         SString genotype_str = test[0];
         SString result = converter.convert(genotype_str);
         SString expected_result = test[1];
-
         assert(expected_result == result);
-    }
-    for (int i = 0; i < size; i++) {
-        SString *test = test_cases[i];
-        fS_Genotype geno(test[0]);
-        assert(geno.getGeno() == test[0]);
-    }
 
-    int expectedCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
-    for (int i = 0; i < size; i++) {
-        fS_Genotype geno(test_cases[i][0]);
-        assert(geno.getPartCount() == expectedCount[i]);
-    }
-    for(int i=0; i<size; i++){
-        SString genotype_str = test_cases[i][0];
-        fS_Genotype geno(genotype_str);
-        bool success = geno.addJoint();
+        // Test get geno
+        fS_Genotype geno1(test[0]);
+        assert(geno1.getGeno() == test[0]);
+
+        // Test part count
+        fS_Genotype geno2(test_cases[i][0]);
+        assert(geno2.getPartCount() == expectedPartCount[i]);
+
+        // Test add joint
+        fS_Genotype geno3(genotype_str);
+        success = geno3.addJoint();
         if(success)
-            assert(countJoints(genotype_str) + 1 == countJoints(geno.getGeno()));
-    }
-    for(int i=0; i<size; i++){
-        SString genotype_str = test_cases[i][0];
-        fS_Genotype geno(genotype_str);
-        bool success = geno.removeJoint();
+            assert(countJoints(genotype_str) + 1 == countJoints(geno3.getGeno()));
+
+        // Test remove joint
+        fS_Genotype geno4(genotype_str);
+        success = geno4.removeJoint();
         if(success)
-            assert(countJoints(genotype_str) - 1 == countJoints(geno.getGeno()));
+            assert(countJoints(genotype_str) - 1 == countJoints(geno4.getGeno()));
+
+        // Test add param
+        fS_Genotype geno5(genotype_str);
+        success = geno5.addParam();
+        if(success)
+            assert(countParams(genotype_str) + 1 == countParams(geno5.getGeno()));
+
+        // Test add part
+        fS_Genotype geno6(genotype_str);
+        tmp = geno6.getPartCount();
+        geno6.addPart();
+        assert(tmp + 1 == geno6.getPartCount());
+
+        // Test remove part
+        fS_Genotype geno7(genotype_str);
+        int tmp = geno7.getPartCount();
+        success = geno7.removePart();
+        if(success)
+            assert(tmp == 1 + geno7.getPartCount());
     }
 //    for(int i=0; i<size; i++){
 //        SString genotype_str = test_cases[i][0];
@@ -156,29 +173,6 @@ int main() {
 //        if(success)
 //            assert(countParams(genotype_str) - 1 == countParams(geno.getGeno()));
 //    }
-    for(int i=0; i<size; i++){
-        SString genotype_str = test_cases[i][0];
-        fS_Genotype geno(genotype_str);
-        bool success = geno.addParam();
-        if(success)
-            assert(countParams(genotype_str) + 1 == countParams(geno.getGeno()));
-    }
-    for(int i=0; i<size; i++){
-        SString genotype_str = test_cases[i][0];
-        fS_Genotype geno(genotype_str);
-        int initialCount = geno.getPartCount();
-        geno.addPart();
-        assert(initialCount + 1 == geno.getPartCount());
-    }
-    for(int i=0; i<size; i++){
-        SString genotype_str = test_cases[i][0];
-        fS_Genotype geno(genotype_str);
-        int initialCount = geno.getPartCount();
-        bool success = geno.removePart();
-        cout<<success<<" "<< initialCount << " "<<geno.getPartCount()<<endl;
-        if(success)
-            assert(initialCount == 1 + geno.getPartCount());
-    }
     cout << "FINISHED" << endl;
     return 0;
 }
