@@ -97,7 +97,9 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
 }
 
 Node::~Node(){
-    delete children;
+    delete state;
+    for(unsigned int i=0; i<children.size(); i++)
+        delete children[i];
 }
 
 SString Node::extractModifiers(SString restOfGenotype) {
@@ -424,7 +426,9 @@ bool fS_Genotype::removePart() {
     if (chosenNode->children.size() > 0)
         return false;
     swap(chosenNode, randomNode->children.back());
+    Node *lastElem = randomNode->children.back();
     randomNode->children.pop_back();
+    delete lastElem;
     return true;
 }
 

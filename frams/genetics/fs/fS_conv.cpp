@@ -17,5 +17,7 @@ SString GenoConv_fS0::convert(SString &i) {
     MultiMap map;
     model->getCurrentToF0Map(map);
     model->close();
-    return model->getF0Geno().getGenes();
+    SString genes = model->getF0Geno().getGenes();
+    delete model;
+    return genes;
 }
