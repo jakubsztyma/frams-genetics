@@ -426,9 +426,8 @@ bool fS_Genotype::removePart() {
     if (chosenNode->children.size() > 0)
         return false;
     swap(chosenNode, randomNode->children.back());
-    Node *lastElem = randomNode->children.back();
     randomNode->children.pop_back();
-    delete lastElem;
+    randomNode->children.shrink_to_fit();
     return true;
 }
 
@@ -440,6 +439,19 @@ bool fS_Genotype::addPart() {
     return true;
 }
 
-void fS_Genotype::mutate() {};
+bool fS_Genotype::changePartType(){
+    return false;
+}
+
+void fS_Genotype::mutate() {
+    addJoint();
+    addParam();
+    addParam();
+    changeParam();
+    removeJoint();
+    removeParam();
+    removePart();
+    changePartType();
+}
 
 void fS_Genotype::crossover() {};

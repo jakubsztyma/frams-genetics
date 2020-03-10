@@ -67,6 +67,7 @@ public:
     bool addJoint();
     bool removeJoint();
     bool addPart();
+    bool changePartType();
     bool removePart();
     bool addParam();
     bool removeParam();

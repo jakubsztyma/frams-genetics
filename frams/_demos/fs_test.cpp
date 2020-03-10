@@ -1,5 +1,6 @@
 #include <iostream>
 #include <assert.h>
+#include <chrono>
 #include "frams/genetics/fs/fS_conv.h"
 #include "frams/genetics/fs/fS_general.h"
 
@@ -121,6 +122,7 @@ int main() {
     int tmp = -1;
     const int size = 19;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
+    auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
         SString *test = test_cases[i];
@@ -178,7 +180,14 @@ int main() {
         success = geno9.removeParam();
         if (success)
             assert(countParams(genotype_str) == 1 + countParams(geno9.getGeno()));
+
+        for(int i=0; i<10000; i++) {
+            fS_Genotype geno10(genotype_str);
+            geno10.mutate();
+        }
     }
+    auto end = chrono::steady_clock::now();
+    cout<<chrono::duration_cast<chrono::milliseconds>(end - start).count()<<" ms"<<endl;
 
     cout << "FINISHED" << endl;
     return 0;
