@@ -28,11 +28,10 @@ using namespace std;
 
 
 const string PART_TYPES = "EPC";
-const string PARAMS[] = {"fr", "rx", "ry", "rz"};
+const vector <string> PARAMS{"fr", "rx", "ry", "rz"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "xyz";
-const int ALL_PARAMS_COUNT = sizeof(PARAMS) / sizeof(PARAMS[0]);
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
@@ -95,6 +94,10 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
     getState(_state);
     if (restOfGenotype.len() > 0)
         getChildren(restOfGenotype);
+}
+
+Node::~Node(){
+    delete children;
 }
 
 SString Node::extractModifiers(SString restOfGenotype) {
@@ -293,11 +296,11 @@ SString Node::getGeno() {
     return result;
 }
 
-vector <Node*> Node::getTree() {
-    vector <Node*> allNodes;
+vector<Node *> Node::getTree() {
+    vector < Node * > allNodes;
     allNodes.push_back(this);
     for (unsigned int i = 0; i < children.size(); i++) {
-        vector <Node*> offspring = children[i]->getTree();
+        vector < Node * > offspring = children[i]->getTree();
         allNodes.reserve(allNodes.size() + distance(offspring.begin(), offspring.end())); // Improve performance
         allNodes.insert(allNodes.end(), offspring.begin(), offspring.end());
     }
@@ -309,6 +312,10 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
     bool modifierMode = genotype[0] == MODIFIER_MODE;
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0), modifierMode);
     start_node = new Node(genotype.substr(1, INT_MAX), initialState, true);
+}
+
+fS_Genotype::~fS_Genotype() {
+    delete start_node;
 }
 
 void fS_Genotype::buildModel(Model *model) {
@@ -329,33 +336,33 @@ int fS_Genotype::randomFromRange(int to, int from = 0) {
     return from + rand() % (to - from);
 }
 
-double getRandomFromDistribution(){
+double getRandomFromDistribution() {
     return distribution(generator);
 }
 
 
-Node* fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector <Node*> allNodes = start_node->getTree();
+Node *fS_Genotype::chooseNode(int fromIndex = 0) {
+    vector < Node * > allNodes = start_node->getTree();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
 
 bool fS_Genotype::addJoint() {
-    if(start_node->children.size() < 1)
+    if (start_node->children.size() < 1)
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
     char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
-    if (randomNode->joints.count(randomJoint) != 0)
+    if (randomNode->joints.count(randomJoint) > 0)
         return false;
-    
+
     randomNode->joints.insert(randomJoint);
     return true;
 }
 
 
-bool fS_Genotype::removeJoint(){
-    if(start_node->children.size() < 1)
+bool fS_Genotype::removeJoint() {
+    if (start_node->children.size() < 1) // Only one node; there are no joints
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -369,60 +376,59 @@ bool fS_Genotype::removeJoint(){
 }
 
 
-//bool fS_Genotype::removeParam(){
-//    Node *randomNode = chooseNode();
-//    int paramCount = randomNode->params.size();
-//    if (paramCount < 1)
-//        return false;
-//    map<string,double>::iterator index = randomNode->params.begin();
-//    index += randomFromRange(paramCount);
-//    randomNode->params.erase(index);
-//
-//    return true;
-//}
-
-//bool fS_Genotype::changeParam(){
-//    Node *randomNode = chooseNode();
-//    int paramCount = randomNode->params.size();
-//    if (paramCount < 1)
-//        return false;
-//    map<string,double>::iterator index = randomNode->params.begin();
-//    index += randomFromRange(paramCount);
-//    randomNode->params[index] += getRandomFromDistribution();
-//
-//    return true;
-//}
-
-bool fS_Genotype::addParam(){
+bool fS_Genotype::removeParam() {
     Node *randomNode = chooseNode();
     int paramCount = randomNode->params.size();
-    if (paramCount == ALL_PARAMS_COUNT)
+    if (paramCount < 1)
         return false;
-    string chosenParam = PARAMS[randomFromRange(ALL_PARAMS_COUNT)];
-    if(randomNode->params.count(chosenParam) > 0)
+    map<string, double>::iterator item = randomNode->params.begin();
+    advance(item, randomFromRange(paramCount));
+    randomNode->params.erase(item->first);
+    return true;
+}
+
+bool fS_Genotype::changeParam() {
+    Node *randomNode = chooseNode();
+    int paramCount = randomNode->params.size();
+    if (paramCount < 1)
+        return false;
+    map<string, double>::iterator item = randomNode->params.begin();
+    advance(item, randomFromRange(paramCount));
+    // TODO sensible parameter changes
+    item->second += getRandomFromDistribution();
+    return true;
+}
+
+bool fS_Genotype::addParam() {
+    Node *randomNode = chooseNode();
+    unsigned int paramCount = randomNode->params.size();
+    if (paramCount == PARAMS.size())
+        return false;
+    string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
+    if (randomNode->params.count(chosenParam) > 0)
         return false;
     // TODO sensible values for params
     randomNode->params[chosenParam] = 0.5;
     return true;
 }
 
-bool fS_Genotype::removePart(){
-    if(start_node->children.size() < 1)
+bool fS_Genotype::removePart() {
+    if (start_node->children.size() < 1)
         return false;
 
     Node *randomNode = chooseNode();
     int childCount = randomNode->children.size();
-    if(childCount < 1)
+    if (childCount < 1)
         return false;
     Node *chosenNode = randomNode->children[randomFromRange(childCount)];
-    if(chosenNode->children.size() > 0)
+    if (chosenNode->children.size() > 0)
         return false;
     swap(chosenNode, randomNode->children.back());
     randomNode->children.pop_back();
     return true;
 }
 
-bool fS_Genotype::addPart(){
+bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType = PART_TYPES[0];
     Node *newNode = new Node(partType, randomNode->state);
@@ -430,5 +436,6 @@ bool fS_Genotype::addPart(){
     return true;
 }
 
-void fS_Genotype::mutate(){};
-void fS_Genotype::crossover(){};
+void fS_Genotype::mutate() {};
+
+void fS_Genotype::crossover() {};

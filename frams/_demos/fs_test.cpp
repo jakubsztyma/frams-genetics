@@ -6,113 +6,116 @@
 
 using namespace std;
 
-int countJoints(SString genotype){
+
+int countSigns(SString genotype, char *chars, int count) {
     int result = 0;
-    char tmp;
-    for(int i=0; i<genotype.len(); i++){
-        tmp = genotype[i];
-        if(tmp == 'b' || tmp == 'c' || tmp == 'd')
-            result += 1;
+    for (int i = 0; i < genotype.len(); i++) {
+        for (int j = 0; j < count; j++) {
+            if (genotype[i] == chars[j])
+                result += 1;
+        }
     }
     return result;
 }
 
-int countParams(SString genotype){
-    int result = 0;
-    for(int i=0; i<genotype.len(); i++){
-        if(genotype[i] == '=')
-            result += 1;
-    }
-    return result;
+int countJoints(SString genotype) {
+    char signs[3] = {'b', 'c', 'd'};
+    return countSigns(genotype, signs, 3);
 }
+
+int countParams(SString genotype) {
+    char signs[1] = {'='};
+    return countSigns(genotype, signs, 1);
+}
+
 int main() {
-    srand (time(NULL));
+    srand(time(NULL));
 
     GenoConv_fS0 converter = GenoConv_fS0();
 
     SString test_cases[][2] = {
-            {"SE",                            "p:sh=1\n"},
-            {"SP",                            "p:sh=2\n"},
-            {"SC",                            "p:sh=3\n"},
-            {"SEEE",                          "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:1, 2, sh=1\nj:0, 1, sh=1\n"},
-            {"SE(E,E)",                       "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
-            {"SE(E(E,E),E,E(E,E),E)",         "p:sh=1\n"
-                                              "p:2.0, sh=1\n"
-                                              "p:4.0, sh=1\n"
-                                              "p:4.0, sh=1\n"
-                                              "p:2.0, sh=1\n"
-                                              "p:2.0, sh=1\n"
-                                              "p:4.0, sh=1\n"
-                                              "p:4.0, sh=1\n"
-                                              "p:2.0, sh=1\n"
-                                              "j:1, 2, sh=1\n"
-                                              "j:1, 3, sh=1\n"
-                                              "j:0, 1, sh=1\n"
-                                              "j:0, 4, sh=1\n"
-                                              "j:5, 6, sh=1\n"
-                                              "j:5, 7, sh=1\n"
-                                              "j:0, 5, sh=1\n"
-                                              "j:0, 8, sh=1\n"
+            {"SE",                                  "p:sh=1\n"},
+            {"SP",                                  "p:sh=2\n"},
+            {"SC",                                  "p:sh=3\n"},
+            {"SEEE",                                "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:1, 2, sh=1\nj:0, 1, sh=1\n"},
+            {"SE(E,E)",                             "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
+            {"SE(E(E,E),E,E(E,E),E)",               "p:sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:1, 3, sh=1\n"
+                                                    "j:0, 1, sh=1\n"
+                                                    "j:0, 4, sh=1\n"
+                                                    "j:5, 6, sh=1\n"
+                                                    "j:5, 7, sh=1\n"
+                                                    "j:0, 5, sh=1\n"
+                                                    "j:0, 8, sh=1\n"
             },
-            {"SEbE",                          "p:sh=1\n"
-                                              "p:2.0, sh=1\n"
-                                              "j:0, 1, sh=2\n"}, // Parametrized joints
-            {"SPbcdP",                        "p:sh=2\n"
-                                              "p:2.0, sh=2\n"
-                                              "j:0, 1, sh=2\n"
-                                              "j:0, 1, sh=3\n"
-                                              "j:0, 1, sh=4\n"}, // Many parametrized joints
-            {"SECbCcPdCbcPbcdE",              "p:sh=1\n"
-                                              "p:2.0, sh=3\n"
-                                              "p:4.0, sh=3\n"
-                                              "p:6.0, sh=2\n"
-                                              "p:8.0, sh=3\n"
-                                              "p:10.0, sh=2\n"
-                                              "p:12.0, sh=1\n"
-                                              "j:5, 6, sh=2\n"
-                                              "j:5, 6, sh=3\n"
-                                              "j:5, 6, sh=4\n"
-                                              "j:4, 5, sh=2\n"
-                                              "j:4, 5, sh=3\n"
-                                              "j:3, 4, sh=4\n"
-                                              "j:2, 3, sh=3\n"
-                                              "j:1, 2, sh=2\n"
-                                              "j:0, 1, sh=1\n"},
+            {"SEbE",                                "p:sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "j:0, 1, sh=2\n"}, // Parametrized joints
+            {"SPbcdP",                              "p:sh=2\n"
+                                                    "p:2.0, sh=2\n"
+                                                    "j:0, 1, sh=2\n"
+                                                    "j:0, 1, sh=3\n"
+                                                    "j:0, 1, sh=4\n"}, // Many parametrized joints
+            {"SECbCcPdCbcPbcdE",                    "p:sh=1\n"
+                                                    "p:2.0, sh=3\n"
+                                                    "p:4.0, sh=3\n"
+                                                    "p:6.0, sh=2\n"
+                                                    "p:8.0, sh=3\n"
+                                                    "p:10.0, sh=2\n"
+                                                    "p:12.0, sh=1\n"
+                                                    "j:5, 6, sh=2\n"
+                                                    "j:5, 6, sh=3\n"
+                                                    "j:5, 6, sh=4\n"
+                                                    "j:4, 5, sh=2\n"
+                                                    "j:4, 5, sh=3\n"
+                                                    "j:3, 4, sh=4\n"
+                                                    "j:2, 3, sh=3\n"
+                                                    "j:1, 2, sh=2\n"
+                                                    "j:0, 1, sh=1\n"},
 // Modifier mode
-            {"ME",                            "p:sh=1\n"},  // Basic modifier mode
-            {"MFE",                           "p:sh=1, fr=0.44\n"},  // Friction modifier
-            {"MfE",                           "p:sh=1, fr=0.36\n"},  // Friction modifier
-            {"MFFFFffE",                      "p:sh=1, fr=0.48\n"},  // Friction modifier
-            {"SE{fr=0.3}E{fr=0.5}",           "p:sh=1, fr=0.3\n"
-                                              "p:2.0, sh=1, fr=0.5\n"
-                                              "j:0, 1, sh=1\n"},
-            {"SEE{ry=90.0}",                    "p:sh=1\n"
-                                              "p:z=2.0, sh=1\n"
-                                              "j:0, 1, sh=1\n"},
-            {"SEE{rz=90.0}",                    "p:sh=1\n"
-                                              "p:y=2.0, sh=1\n"
-                                              "j:0, 1, sh=1\n"},  // Z rotation
+            {"ME",                                  "p:sh=1\n"},  // Basic modifier mode
+            {"MFE",                                 "p:sh=1, fr=0.44\n"},  // Friction modifier
+            {"MfE",                                 "p:sh=1, fr=0.36\n"},  // Friction modifier
+            {"MFFFFffE",                            "p:sh=1, fr=0.48\n"},  // Friction modifier
+            {"SE{fr=0.3}E{fr=0.5}",                 "p:sh=1, fr=0.3\n"
+                                                    "p:2.0, sh=1, fr=0.5\n"
+                                                    "j:0, 1, sh=1\n"},
+            {"SEE{ry=90.0}",                        "p:sh=1\n"
+                                                    "p:z=2.0, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},
+            {"SEE{rz=90.0}",                        "p:sh=1\n"
+                                                    "p:y=2.0, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},  // Z rotation
             {"SEE{rz=90.0}E{rx=90.0}E{ry=90.0}",    "p:sh=1\n"
-                                              "p:y=2.0, sh=1\n"
-                                              "p:y=2.0, 2.0, sh=1\n"
-                                              "p:-1.99, 2.0, 2.0, sh=1\n"
-                                              "j:2, 3, sh=1\n"
-                                              "j:1, 2, sh=1\n"
-                                              "j:0, 1, sh=1\n"},  // All rotations
+                                                    "p:y=2.0, sh=1\n"
+                                                    "p:y=2.0, 2.0, sh=1\n"
+                                                    "p:-1.99, 2.0, 2.0, sh=1\n"
+                                                    "j:2, 3, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},  // All rotations
             {"SEE{rz=45.0}E{rx=45.0}E{ry=45.0}",    "p:sh=1\n"
-                                              "p:1.41, 1.41, sh=1\n"
-                                              "p:2.83, 2.41, 1.0, sh=1\n"
-                                              "p:3.12, 3.41, 2.71, sh=1\n"
-                                              "j:2, 3, sh=1\n"
-                                              "j:1, 2, sh=1\n"
-                                              "j:0, 1, sh=1\n"},  // Acute angle rotations
+                                                    "p:1.41, 1.41, sh=1\n"
+                                                    "p:2.83, 2.41, 1.0, sh=1\n"
+                                                    "p:3.12, 3.41, 2.71, sh=1\n"
+                                                    "j:2, 3, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},  // Acute angle rotations
             {"SEE{rz=-90.0}E{rx=-90.0}E{ry=-90.0}", "p:sh=1\n"
-                                              "p:y=-1.99, sh=1\n"
-                                              "p:y=-1.99, 2.0, sh=1\n"
-                                              "p:2.0, -1.99, 2.0, sh=1\n"
-                                              "j:2, 3, sh=1\n"
-                                              "j:1, 2, sh=1\n"
-                                              "j:0, 1, sh=1\n"},   // Negative rotations
+                                                    "p:y=-1.99, sh=1\n"
+                                                    "p:y=-1.99, 2.0, sh=1\n"
+                                                    "p:2.0, -1.99, 2.0, sh=1\n"
+                                                    "j:2, 3, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},   // Negative rotations
     };
     bool success = false;
     int tmp = -1;
@@ -130,6 +133,7 @@ int main() {
         fS_Genotype geno1(test[0]);
         assert(geno1.getGeno() == test[0]);
 
+        ////Test operations
         // Test part count
         fS_Genotype geno2(test_cases[i][0]);
         assert(geno2.getPartCount() == expectedPartCount[i]);
@@ -137,19 +141,19 @@ int main() {
         // Test add joint
         fS_Genotype geno3(genotype_str);
         success = geno3.addJoint();
-        if(success)
+        if (success)
             assert(countJoints(genotype_str) + 1 == countJoints(geno3.getGeno()));
 
         // Test remove joint
         fS_Genotype geno4(genotype_str);
         success = geno4.removeJoint();
-        if(success)
+        if (success)
             assert(countJoints(genotype_str) - 1 == countJoints(geno4.getGeno()));
 
         // Test add param
         fS_Genotype geno5(genotype_str);
         success = geno5.addParam();
-        if(success)
+        if (success)
             assert(countParams(genotype_str) + 1 == countParams(geno5.getGeno()));
 
         // Test add part
@@ -162,17 +166,20 @@ int main() {
         fS_Genotype geno7(genotype_str);
         int tmp = geno7.getPartCount();
         success = geno7.removePart();
-        if(success)
+        if (success)
             assert(tmp == 1 + geno7.getPartCount());
+
+        fS_Genotype geno8(genotype_str);
+        success = geno8.changeParam();
+        if (success)
+            assert(countParams(genotype_str) == countParams(geno8.getGeno()));
+
+        fS_Genotype geno9(genotype_str);
+        success = geno9.removeParam();
+        if (success)
+            assert(countParams(genotype_str) == 1 + countParams(geno9.getGeno()));
     }
-//    for(int i=0; i<size; i++){
-//        SString genotype_str = test_cases[i][0];
-//        fS_Genotype geno(genotype_str);
-//        bool success = geno.removeParam();
-//        cout<<countParams(genotype_str) <<" "<<geno.getGeno().c_str() <<endl;
-//        if(success)
-//            assert(countParams(genotype_str) - 1 == countParams(geno.getGeno()));
-//    }
+
     cout << "FINISHED" << endl;
     return 0;
 }

@@ -10,6 +10,7 @@
 #include <map>
 #include <regex>
 #include <set>
+#include <iterator>
 #include "common/Convert.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
@@ -49,6 +50,7 @@ public:
     set<char> joints;
     State *state;
     Node(const SString &genotype, State *state, bool _isStart);
+    ~Node();
     Part* buildModel(Model *model);
     SString getGeno();
     vector<Node*> getTree();
@@ -73,7 +75,7 @@ public:
     Node *start_node;
 
     fS_Genotype(const SString &genotype);
-    ~fS_Genotype(){};
+    ~fS_Genotype();
 
     string toString();
     void buildModel(Model *model);
