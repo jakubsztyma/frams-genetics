@@ -21,15 +21,20 @@ using namespace std;
 #define PARAM_SEPARATOR ';'
 #define PARAM_KEY_VALUE_SEPARATOR '='
 
-#define PART_TYPES "EPC"
 #define DEFAULT_JOINT 'a'
 #define MULTIPLIER 1.1
 #define JOINT_COUNT 4
 #define DEFAULT_FR 0.4
 
+
+const string PART_TYPES = "EPC";
+const string PARAMS[] = {"fr", "rx", "ry", "rz"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "xyz";
+const int ALL_PARAMS_COUNT = sizeof(PARAMS) / sizeof(PARAMS[0]);
+default_random_engine generator;
+normal_distribution<double> distribution(0.0, 0.1);
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -324,6 +329,10 @@ int fS_Genotype::randomFromRange(int to, int from = 0) {
     return from + rand() % (to - from);
 }
 
+double getRandomFromDistribution(){
+    return distribution(generator);
+}
+
 
 Node* fS_Genotype::chooseNode(int fromIndex = 0) {
     vector <Node*> allNodes = start_node->getTree();
@@ -358,3 +367,68 @@ bool fS_Genotype::removeJoint(){
 
     return true;
 }
+
+
+//bool fS_Genotype::removeParam(){
+//    Node *randomNode = chooseNode();
+//    int paramCount = randomNode->params.size();
+//    if (paramCount < 1)
+//        return false;
+//    map<string,double>::iterator index = randomNode->params.begin();
+//    index += randomFromRange(paramCount);
+//    randomNode->params.erase(index);
+//
+//    return true;
+//}
+
+//bool fS_Genotype::changeParam(){
+//    Node *randomNode = chooseNode();
+//    int paramCount = randomNode->params.size();
+//    if (paramCount < 1)
+//        return false;
+//    map<string,double>::iterator index = randomNode->params.begin();
+//    index += randomFromRange(paramCount);
+//    randomNode->params[index] += getRandomFromDistribution();
+//
+//    return true;
+//}
+
+bool fS_Genotype::addParam(){
+    Node *randomNode = chooseNode();
+    int paramCount = randomNode->params.size();
+    if (paramCount == ALL_PARAMS_COUNT)
+        return false;
+    string chosenParam = PARAMS[randomFromRange(ALL_PARAMS_COUNT)];
+    if(randomNode->params.count(chosenParam) > 0)
+        return false;
+    // TODO sensible values for params
+    randomNode->params[chosenParam] = 0.5;
+    return true;
+}
+
+bool fS_Genotype::removePart(){
+    if(start_node->children.size() < 1)
+        return false;
+
+    Node *randomNode = chooseNode();
+    int childCount = randomNode->children.size();
+    if(childCount < 1)
+        return false;
+    Node *chosenNode = randomNode->children[randomFromRange(childCount)];
+    if(chosenNode->children.size() > 0)
+        return false;
+    swap(chosenNode, randomNode->children.back());
+    randomNode->children.pop_back();
+    return true;
+}
+
+bool fS_Genotype::addPart(){
+    Node *randomNode = chooseNode();
+    SString partType = PART_TYPES[0];
+    Node *newNode = new Node(partType, randomNode->state);
+    randomNode->children.push_back(newNode);
+    return true;
+}
+
+void fS_Genotype::mutate(){};
+void fS_Genotype::crossover(){};

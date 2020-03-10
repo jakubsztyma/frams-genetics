@@ -60,15 +60,15 @@ public:
     int  getPartCount();
     int randomFromRange(int to, int from);
     Node* chooseNode(int fromIndex);
-    bool addJoint();
-
     void randomFromDistribution();
+
+    bool addJoint();
+    bool removeJoint();
     bool addPart();
     bool removePart();
-    bool removeJoint();
-    bool addParameter();
-    bool removeParameter();
-    bool changeParameter();
+    bool addParam();
+    bool removeParam();
+    bool changeParam();
 
     Node *start_node;
 

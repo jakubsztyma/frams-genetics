@@ -17,6 +17,14 @@ int countJoints(SString genotype){
     return result;
 }
 
+int countParams(SString genotype){
+    int result = 0;
+    for(int i=0; i<genotype.len(); i++){
+        if(genotype[i] == '=')
+            result += 1;
+    }
+    return result;
+}
 int main() {
     srand (time(NULL));
 
@@ -113,14 +121,11 @@ int main() {
         SString result = converter.convert(genotype_str);
         SString expected_result = test[1];
 
-        cout << test[0].c_str() << "\n Expected: \n" << expected_result.c_str() << "\n Result: \n" << result.c_str()
-             << endl;
         assert(expected_result == result);
     }
     for (int i = 0; i < size; i++) {
         SString *test = test_cases[i];
         fS_Genotype geno(test[0]);
-        cout << geno.getGeno().c_str() << " " << test[0].c_str() << endl;
         assert(geno.getGeno() == test[0]);
     }
 
@@ -135,16 +140,44 @@ int main() {
         bool success = geno.addJoint();
         if(success)
             assert(countJoints(genotype_str) + 1 == countJoints(geno.getGeno()));
-
     }
     for(int i=0; i<size; i++){
         SString genotype_str = test_cases[i][0];
         fS_Genotype geno(genotype_str);
         bool success = geno.removeJoint();
-        cout<<countJoints(genotype_str) <<" "<<geno.getGeno().c_str() <<endl;
         if(success)
             assert(countJoints(genotype_str) - 1 == countJoints(geno.getGeno()));
-
+    }
+//    for(int i=0; i<size; i++){
+//        SString genotype_str = test_cases[i][0];
+//        fS_Genotype geno(genotype_str);
+//        bool success = geno.removeParam();
+//        cout<<countParams(genotype_str) <<" "<<geno.getGeno().c_str() <<endl;
+//        if(success)
+//            assert(countParams(genotype_str) - 1 == countParams(geno.getGeno()));
+//    }
+    for(int i=0; i<size; i++){
+        SString genotype_str = test_cases[i][0];
+        fS_Genotype geno(genotype_str);
+        bool success = geno.addParam();
+        if(success)
+            assert(countParams(genotype_str) + 1 == countParams(geno.getGeno()));
+    }
+    for(int i=0; i<size; i++){
+        SString genotype_str = test_cases[i][0];
+        fS_Genotype geno(genotype_str);
+        int initialCount = geno.getPartCount();
+        geno.addPart();
+        assert(initialCount + 1 == geno.getPartCount());
+    }
+    for(int i=0; i<size; i++){
+        SString genotype_str = test_cases[i][0];
+        fS_Genotype geno(genotype_str);
+        int initialCount = geno.getPartCount();
+        bool success = geno.removePart();
+        cout<<success<<" "<< initialCount << " "<<geno.getPartCount()<<endl;
+        if(success)
+            assert(initialCount == 1 + geno.getPartCount());
     }
     cout << "FINISHED" << endl;
     return 0;
