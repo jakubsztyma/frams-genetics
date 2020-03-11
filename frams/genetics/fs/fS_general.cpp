@@ -40,20 +40,21 @@ double round2(double var) {
     return (double) value / 100;
 }
 
-vector <SString> split(SString str, char delim) {
+SString *split(SString str, char delim, int count) {
     // TODO optimize
-    vector <SString> cont;
-    int index = 0, new_index;
+    static SString *arr = new SString[count];
+    int index = 0, new_index=0, arrayIndex=0;
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
-            cont.push_back(str.substr(index, INT_MAX));
+            arr[arrayIndex] = str.substr(index, INT_MAX);
             break;
         }
-        cont.push_back(str.substr(index, new_index - index));
+        arr[arrayIndex] = str.substr(index, new_index - index);
+        arrayIndex += 1;
         index = new_index + 1;
     }
-    return cont;
+    return arr;
 }
 
 State::State(State *_state) {
@@ -137,12 +138,14 @@ SString Node::extractPartType(SString restOfGenotype) {
 SString Node::extractParams(SString restOfGenotype) {
     int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-    vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
-    for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
-        vector <SString> keyValue = split(keyValuePairs[i], PARAM_KEY_VALUE_SEPARATOR);
+    unsigned int size = 1;
+    SString *keyValuePairs = split(paramString, PARAM_SEPARATOR, size);
+    for (unsigned int i = 0; i < size; i++) {
+        SString keyValue = keyValuePairs[i];
+        int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
         // TODO handle wrong length exception
-        double value = atof(keyValue[1].c_str());
-        params[keyValue[0].c_str()] = value;
+        double value = atof(keyValue.substr(separatorIndex + 1, INT_MAX).c_str());
+        params[keyValue.substr(0, separatorIndex).c_str()] = value;
     }
 
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);

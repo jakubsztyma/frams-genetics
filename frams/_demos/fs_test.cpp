@@ -129,7 +129,7 @@ int main() {
         SString genotype_str = test[0];
         SString result = converter.convert(genotype_str);
         SString expected_result = test[1];
-        if (false)
+        if (true)
         {
             assert(expected_result == result);
 
@@ -168,23 +168,32 @@ int main() {
 
             // Test remove part
             fS_Genotype geno7(genotype_str);
-            int tmp = geno7.getPartCount();
+            tmp = geno7.getPartCount();
             success = geno7.removePart();
             if (success)
                 assert(tmp == 1 + geno7.getPartCount());
 
+            // Test change param
             fS_Genotype geno8(genotype_str);
             success = geno8.changeParam();
             if (success)
                 assert(countParams(genotype_str) == countParams(geno8.getGeno()));
 
+            // Test remove param
             fS_Genotype geno9(genotype_str);
             success = geno9.removeParam();
             if (success)
                 assert(countParams(genotype_str) == 1 + countParams(geno9.getGeno()));
+
+            // Test change part
+            fS_Genotype geno11(genotype_str);
+            tmp = geno11.getPartCount();
+            success = geno11.changePartType();
+            if (success)
+                assert(tmp == geno11.getPartCount());
         }
 
-        for(int i=0; i<10000; i++) {
+        for(int i=0; i<5000; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
         }
