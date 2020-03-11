@@ -317,15 +317,10 @@ SString Node::getGeno() {
     return result;
 }
 
-vector<Node *> Node::getTree() {
-    vector < Node * > allNodes;
+void Node::getTree(vector<Node*> &allNodes) {
     allNodes.push_back(this);
-    for (unsigned int i = 0; i < children.size(); i++) {
-        vector < Node * > offspring = children[i]->getTree();
-        allNodes.reserve(allNodes.size() + distance(offspring.begin(), offspring.end())); // Improve performance
-        allNodes.insert(allNodes.end(), offspring.begin(), offspring.end());
-    }
-    return allNodes;
+    for (unsigned int i = 0; i < children.size(); i++)
+        children[i]->getTree(allNodes);
 }
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
@@ -350,7 +345,9 @@ SString fS_Genotype::getGeno() {
 }
 
 int fS_Genotype::getPartCount() {
-    return start_node->getTree().size();
+    vector<Node*> allNodes;
+    start_node->getTree(allNodes);
+    return allNodes.size();
 }
 
 int fS_Genotype::randomFromRange(int to, int from = 0) {
@@ -363,7 +360,8 @@ double getRandomFromDistribution() {
 
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector < Node * > allNodes = start_node->getTree();
+    vector<Node*> allNodes;
+    start_node->getTree(allNodes);
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -468,14 +466,14 @@ bool fS_Genotype::changePartType(){
 }
 
 void fS_Genotype::mutate() {
-//    addJoint();
-//    addParam();
-//    addParam();
-//    changeParam();
-//    removeJoint();
-//    removeParam();
-//    removePart();
-//    changePartType();
+    addJoint();
+    addParam();
+    addParam();
+    changeParam();
+    removeJoint();
+    removeParam();
+    removePart();
+    changePartType();
 }
 
 void fS_Genotype::crossover() {};

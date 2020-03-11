@@ -54,7 +54,7 @@ public:
     ~Node();
     Part* buildModel(Model *model);
     SString getGeno();
-    vector<Node*> getTree();
+    void getTree(vector<Node*> &allNodes);
 };
 
 class fS_Genotype{
