@@ -440,18 +440,23 @@ bool fS_Genotype::addPart() {
 }
 
 bool fS_Genotype::changePartType(){
-    return false;
+    Node *randomNode = chooseNode();
+    char newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
+    if(newType == randomNode->part_type)
+        return false;
+    randomNode->part_type = newType;
+    return true;
 }
 
 void fS_Genotype::mutate() {
-    addJoint();
-    addParam();
-    addParam();
-    changeParam();
-    removeJoint();
-    removeParam();
-    removePart();
-    changePartType();
+//    addJoint();
+//    addParam();
+//    addParam();
+//    changeParam();
+//    removeJoint();
+//    removeParam();
+//    removePart();
+//    changePartType();
 }
 
 void fS_Genotype::crossover() {};
