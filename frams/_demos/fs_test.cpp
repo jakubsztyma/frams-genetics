@@ -181,7 +181,7 @@ int main() {
         if (success)
             assert(countParams(genotype_str) == 1 + countParams(geno9.getGeno()));
 
-        for(int i=0; i<10000; i++) {
+        for(int i=0; i<5000; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
         }

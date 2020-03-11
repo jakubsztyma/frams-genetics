@@ -102,11 +102,17 @@ Node::~Node(){
         delete children[i];
 }
 
+int Node::getPartPosition(SString restOfGenotype){
+    for(int i=0; i<restOfGenotype.len(); i++){
+        char tmp = restOfGenotype[i];
+        if(tmp == 'E' || tmp == 'P' || tmp == 'C')
+            return i;
+    }
+    return -1;
+}
+
 SString Node::extractModifiers(SString restOfGenotype) {
-    smatch m;
-    string s(restOfGenotype.c_str());
-    regex_search(s, m, regex("E|P|C"));
-    int partTypePosition = m.position();
+    int partTypePosition = getPartPosition(restOfGenotype);
     // Get a string containing all modifiers and joints for this node
     SString modifierString = restOfGenotype.substr(0, partTypePosition);
 
@@ -145,13 +151,15 @@ void Node::getState(State *_state) {
         state = _state;
     } else {
         state = new State(_state);
-        state->rotate(params["rx"], params["ry"], params["rz"]);
-        if (params["rx"] == 0.)
-            params.erase("rx");
-        if (params["ry"] == 0.)
-            params.erase("ry");
-        if (params["rz"] == 0.)
-            params.erase("rz");
+        float rx = 0, ry = 0, rz = 0;
+        auto paramsEnd = params.end();
+        if(params.find("rx") != paramsEnd)
+            rx = params["rx"];
+        if(params.find("ry") != paramsEnd)
+            ry = params["ry"];
+        if(params.find("rz") != paramsEnd)
+            rz = params["rz"];
+        state->rotate(rx, ry, rz);
         state->addVector(2.0);
     }
 

@@ -34,6 +34,7 @@ class Node{
 private:
     bool isStart;
     char part_type;
+    int getPartPosition(SString restOfGenotype);
     map<string, double> params;
     vector<Node*> children;
     vector<char> modifiers;
