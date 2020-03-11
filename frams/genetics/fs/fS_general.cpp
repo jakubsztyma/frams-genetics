@@ -41,6 +41,7 @@ double round2(double var) {
 }
 
 vector <SString> split(SString str, char delim) {
+    // TODO optimize
     vector <SString> cont;
     int index = 0, new_index;
     while (true) {
@@ -74,6 +75,7 @@ void State::addVector(double length) {
 }
 
 void State::rotate(double rx, double ry, double rz) {
+    // TOTO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
             Convert::toRadians(rx),
@@ -151,15 +153,21 @@ void Node::getState(State *_state) {
         state = _state;
     } else {
         state = new State(_state);
+
+        // Rotate
         float rx = 0, ry = 0, rz = 0;
         auto paramsEnd = params.end();
-        if(params.find("rx") != paramsEnd)
-            rx = params["rx"];
-        if(params.find("ry") != paramsEnd)
-            ry = params["ry"];
-        if(params.find("rz") != paramsEnd)
-            rz = params["rz"];
+        auto rxi = params.find("rx");
+        auto ryi = params.find("ry");
+        auto rzi = params.find("rz");
+        if(rxi != paramsEnd)
+            rx = rxi->second;
+        if(ryi != paramsEnd)
+            ry = ryi->second;
+        if(rzi != paramsEnd)
+            rz = rzi->second;
         state->rotate(rx, ry, rz);
+
         state->addVector(2.0);
     }
 
