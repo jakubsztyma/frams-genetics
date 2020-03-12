@@ -29,6 +29,11 @@ int countParams(SString genotype) {
     return countSigns(genotype, signs, 1);
 }
 
+int countModifiers(SString genotype) {
+    char signs[2] = {'F', 'f'};
+    return countSigns(genotype, signs, 2);
+}
+
 int main() {
     srand(time(NULL));
 
@@ -191,6 +196,18 @@ int main() {
             success = geno11.changePartType();
             if (success)
                 assert(tmp == geno11.getPartCount());
+
+            // Test remove modifier
+            fS_Genotype geno12(genotype_str);
+            success = geno12.removeModifier();
+            if (success)
+                assert(countModifiers(genotype_str) == 1 + countModifiers(geno12.getGeno()));
+
+            // Test add modifier
+            fS_Genotype geno13(genotype_str);
+            success = geno13.addModifier();
+            if (success)
+                assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
 
         for(int i=0; i<100; i++) {

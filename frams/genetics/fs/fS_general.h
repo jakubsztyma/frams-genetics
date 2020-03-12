@@ -73,6 +73,8 @@ public:
     bool addParam();
     bool removeParam();
     bool changeParam();
+    bool addModifier();
+    bool removeModifier();
 
     Node *start_node;
 

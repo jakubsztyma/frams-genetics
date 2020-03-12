@@ -31,7 +31,7 @@ const string PART_TYPES = "EPC";
 const vector <string> PARAMS{"fr", "rx", "ry", "rz"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "xyz";
+const string MODIFIERS = "Ff";
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
@@ -432,9 +432,6 @@ bool fS_Genotype::addParam() {
 }
 
 bool fS_Genotype::removePart() {
-    if (start_node->children.size() < 1)
-        return false;
-
     Node *randomNode = chooseNode();
     int childCount = randomNode->children.size();
     if (childCount < 1)
@@ -467,6 +464,21 @@ bool fS_Genotype::changePartType(){
     return true;
 }
 
+bool fS_Genotype::addModifier(){
+    Node *randomNode = chooseNode();
+    char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
+    randomNode->modifiers.push_back(randomModifier);
+    return true;
+}
+
+bool fS_Genotype::removeModifier(){
+    Node *randomNode = chooseNode();
+    if(randomNode->modifiers.empty())
+        return false;
+    randomNode->modifiers.pop_back();
+    return true;
+}
+
 void fS_Genotype::mutate() {
     addJoint();
     addParam();
@@ -476,6 +488,9 @@ void fS_Genotype::mutate() {
     removeParam();
     removePart();
     changePartType();
+
+    addModifier();
+    removeModifier();
 }
 
 void fS_Genotype::crossover() {};
