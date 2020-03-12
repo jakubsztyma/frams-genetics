@@ -5,6 +5,8 @@
 #ifndef CPP_FS_CONV_H
 #define CPP_FS_CONV_H
 
+#define FS_OPCOUNT 10
+
 #include <iostream>
 #include <vector>
 #include <map>
@@ -12,6 +14,7 @@
 #include <set>
 #include <iterator>
 #include "common/Convert.h"
+#include "frams/genetics/genooperators.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
@@ -38,6 +41,7 @@ private:
     map<string, double> params;
     vector<Node*> children;
     vector<char> modifiers;
+    set<char> joints;
 
     SString extractModifiers(SString restOfGenotype);
     SString extractPartType(SString restOfGenotype);
@@ -47,23 +51,33 @@ private:
     void getChildren(SString restOfGenotype);
     void setParamsOnPart(Part *part);
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
+    void getTree(vector<Node*> &allNodes);
+    Part* buildModel(Model *model);
 public:
-    set<char> joints;
     State *state;
+
     Node(const SString &genotype, State *state, bool _isStart);
     ~Node();
-    Part* buildModel(Model *model);
     SString getGeno();
-    void getTree(vector<Node*> &allNodes);
 };
 
 class fS_Genotype{
     friend class Node;
+
+private:
+    Node *start_node;
+
+    Node* chooseNode(int fromIndex);
+    int randomFromRange(int to, int from);
+    void randomFromDistribution();
 public:
     int  getPartCount();
-    int randomFromRange(int to, int from);
-    Node* chooseNode(int fromIndex);
-    void randomFromDistribution();
+
+    fS_Genotype(const SString &genotype);
+    ~fS_Genotype();
+
+    void buildModel(Model *model);
+    SString getGeno();
 
     bool addJoint();
     bool removeJoint();
@@ -75,15 +89,6 @@ public:
     bool changeParam();
     bool addModifier();
     bool removeModifier();
-
-    Node *start_node;
-
-    fS_Genotype(const SString &genotype);
-    ~fS_Genotype();
-
-    string toString();
-    void buildModel(Model *model);
-    SString getGeno();
 
     void mutate();
     void crossover();

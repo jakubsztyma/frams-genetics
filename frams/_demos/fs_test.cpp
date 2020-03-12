@@ -210,9 +210,10 @@ int main() {
                 assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
 
-        for(int i=0; i<100; i++) {
+        for(int i=0; i<10000; i++) {
             fS_Genotype geno10(genotype_str);
-            geno10.mutate();
+            success = geno10.mutate();
+            assert(genotype_str != geno10.getGeno());
         }
     }
     auto end = chrono::steady_clock::now();

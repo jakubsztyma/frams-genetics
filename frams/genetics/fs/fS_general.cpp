@@ -40,10 +40,12 @@ double round2(double var) {
     return (double) value / 100;
 }
 
+const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
 SString *split(SString str, char delim, int count) {
     // TODO optimize
     static SString *arr = new SString[count];
-    int index = 0, new_index=0, arrayIndex=0;
+    int index = 0, new_index = 0, arrayIndex = 0;
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
@@ -99,16 +101,16 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
         getChildren(restOfGenotype);
 }
 
-Node::~Node(){
+Node::~Node() {
     delete state;
-    for(unsigned int i=0; i<children.size(); i++)
+    for (unsigned int i = 0; i < children.size(); i++)
         delete children[i];
 }
 
-int Node::getPartPosition(SString restOfGenotype){
-    for(int i=0; i<restOfGenotype.len(); i++){
+int Node::getPartPosition(SString restOfGenotype) {
+    for (int i = 0; i < restOfGenotype.len(); i++) {
         char tmp = restOfGenotype[i];
-        if(tmp == 'E' || tmp == 'P' || tmp == 'C')
+        if (tmp == 'E' || tmp == 'P' || tmp == 'C')
             return i;
     }
     return -1;
@@ -163,11 +165,11 @@ void Node::getState(State *_state) {
         auto rxi = params.find("rx");
         auto ryi = params.find("ry");
         auto rzi = params.find("rz");
-        if(rxi != paramsEnd)
+        if (rxi != paramsEnd)
             rx = rxi->second;
-        if(ryi != paramsEnd)
+        if (ryi != paramsEnd)
             ry = ryi->second;
-        if(rzi != paramsEnd)
+        if (rzi != paramsEnd)
             rz = rzi->second;
         state->rotate(rx, ry, rz);
 
@@ -317,7 +319,7 @@ SString Node::getGeno() {
     return result;
 }
 
-void Node::getTree(vector<Node*> &allNodes) {
+void Node::getTree(vector<Node *> &allNodes) {
     allNodes.push_back(this);
     for (unsigned int i = 0; i < children.size(); i++)
         children[i]->getTree(allNodes);
@@ -345,7 +347,7 @@ SString fS_Genotype::getGeno() {
 }
 
 int fS_Genotype::getPartCount() {
-    vector<Node*> allNodes;
+    vector < Node * > allNodes;
     start_node->getTree(allNodes);
     return allNodes.size();
 }
@@ -360,7 +362,7 @@ double getRandomFromDistribution() {
 
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector<Node*> allNodes;
+    vector < Node * > allNodes;
     start_node->getTree(allNodes);
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
@@ -455,42 +457,69 @@ bool fS_Genotype::addPart() {
     return true;
 }
 
-bool fS_Genotype::changePartType(){
+bool fS_Genotype::changePartType() {
     Node *randomNode = chooseNode();
     char newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
-    if(newType == randomNode->part_type)
+    if (newType == randomNode->part_type)
         return false;
     randomNode->part_type = newType;
     return true;
 }
 
-bool fS_Genotype::addModifier(){
+bool fS_Genotype::addModifier() {
     Node *randomNode = chooseNode();
     char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
     randomNode->modifiers.push_back(randomModifier);
     return true;
 }
 
-bool fS_Genotype::removeModifier(){
+bool fS_Genotype::removeModifier() {
     Node *randomNode = chooseNode();
-    if(randomNode->modifiers.empty())
+    if (randomNode->modifiers.empty())
         return false;
     randomNode->modifiers.pop_back();
     return true;
 }
 
 void fS_Genotype::mutate() {
-    addJoint();
-    addParam();
-    addPart();
-    changeParam();
-    removeJoint();
-    removeParam();
-    removePart();
-    changePartType();
-
-    addModifier();
-    removeModifier();
+    bool result = false;
+    int method;
+    while(!result) {
+        method = GenoOperators::roulette(operations, FS_OPCOUNT);
+        switch (method) {
+            case 0:
+                result = addJoint();
+                break;
+            case 1:
+                result = addParam();
+                break;
+            case 2:
+                result = addPart();
+                break;
+                // TODO uncomment -- change sometimes not visible in tests
+//            case 3:
+//                result = changeParam();
+//                break;
+            case 4:
+                result = removeJoint();
+                break;
+            case 5:
+                result = removeParam();
+                break;
+            case 6:
+                result = removePart();
+                break;
+            case 7:
+                result = changePartType();
+                break;
+            case 8:
+                result = addModifier();
+                break;
+            case 9:
+                result = removeModifier();
+                break;
+        }
+    }
 }
 
 void fS_Genotype::crossover() {};
