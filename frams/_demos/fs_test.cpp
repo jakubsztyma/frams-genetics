@@ -193,7 +193,7 @@ int main() {
                 assert(tmp == geno11.getPartCount());
         }
 
-        for(int i=0; i<5000; i++) {
+        for(int i=0; i<100; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
         }

@@ -442,9 +442,11 @@ bool fS_Genotype::removePart() {
     Node *chosenNode = randomNode->children[randomFromRange(childCount)];
     if (chosenNode->children.size() > 0)
         return false;
+
     swap(chosenNode, randomNode->children.back());
     randomNode->children.pop_back();
     randomNode->children.shrink_to_fit();
+    delete chosenNode;
     return true;
 }
 
@@ -468,7 +470,7 @@ bool fS_Genotype::changePartType(){
 void fS_Genotype::mutate() {
     addJoint();
     addParam();
-    addParam();
+    addPart();
     changeParam();
     removeJoint();
     removeParam();
