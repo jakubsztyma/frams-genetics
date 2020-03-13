@@ -208,12 +208,27 @@ int main() {
                 assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
 
-        for(int i=0; i<1000; i++) {
+        for(int i=0; i<1; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
             assert(genotype_str != geno10.getGeno());
             Model *model = new Model();
             geno10.buildModel(model);
+
+            float f1, f2;
+            char *arr1 = strdup(genotype_str.c_str());
+            char *arr2 = strdup(genotype_str.c_str());
+
+            fS_Genotype tmp("SEE");
+            int crossOverResult = tmp.crossOver(arr1, arr2, f1, f2);
+            if(crossOverResult == GENOPER_OK) {
+                cout << genotype_str.c_str() << " " << arr1 << " " << arr2 << endl;
+
+//                assert(SString(arr1) != genotype_str);
+//            assert(arr2 != genotype_str.c_str());
+            }
+            free(arr1);
+            free(arr2);
             delete model;
         }
     }

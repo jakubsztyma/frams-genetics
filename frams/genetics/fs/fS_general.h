@@ -92,7 +92,7 @@ public:
     bool removeModifier();
 
     void mutate();
-    void crossover();
+    int crossOver(char *&g1, char *&g2, float& chg1, float& chg2);
 };
 
 

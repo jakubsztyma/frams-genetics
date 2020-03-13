@@ -263,7 +263,7 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
         joint->attachToParts(part, childPart);
         model->addJoint(joint);
     } else {
-        for (set<char>::iterator it = child->joints.begin(); it != child->joints.end(); ++it) {
+        for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
             joint->attachToParts(part, childPart);
             switch (*it) {
@@ -286,15 +286,15 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 SString Node::getGeno(SString &result) {
 //    result.memoryHint(joints.size() + modifiers.size() + 7 * params.size() + 10 * childSize);
 
-    for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it)
+    for (auto it = joints.begin(); it != joints.end(); ++it)
         result += *it;
-    for (vector<char>::iterator it = modifiers.begin(); it != modifiers.end(); ++it)
+    for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
         result += *it;
     result += part_type;
 
     if (params.size() > 0) {
         result += PARAM_START;
-        for (map<string, double>::iterator it = params.begin(); it != params.end(); it++) {
+        for (auto it = params.begin(); it != params.end(); it++) {
             result += it->first.c_str();
             result += PARAM_KEY_VALUE_SEPARATOR;
             string value_text = to_string(it->second);
@@ -404,9 +404,9 @@ bool fS_Genotype::removeParam() {
     int paramCount = randomNode->params.size();
     if (paramCount < 1)
         return false;
-    map<string, double>::iterator item = randomNode->params.begin();
-    advance(item, randomFromRange(paramCount));
-    randomNode->params.erase(item->first);
+    auto it = randomNode->params.begin();
+    advance(it, randomFromRange(paramCount));
+    randomNode->params.erase(it->first);
     return true;
 }
 
@@ -415,10 +415,10 @@ bool fS_Genotype::changeParam() {
     int paramCount = randomNode->params.size();
     if (paramCount < 1)
         return false;
-    map<string, double>::iterator item = randomNode->params.begin();
-    advance(item, randomFromRange(paramCount));
+    auto it = randomNode->params.begin();
+    advance(it, randomFromRange(paramCount));
     // TODO sensible parameter changes
-    item->second += getRandomFromDistribution();
+    it->second += getRandomFromDistribution();
     return true;
 }
 
@@ -526,4 +526,36 @@ void fS_Genotype::mutate() {
     }
 }
 
-void fS_Genotype::crossover() {};
+int fS_Genotype::crossOver(char *&g1, char *&g2, float& chg1, float& chg2) {
+    fS_Genotype *geno1 = new fS_Genotype(g1);
+    fS_Genotype *geno2 = new fS_Genotype(g2);
+
+    if(geno1->start_node->childSize == 0 || geno2->start_node->childSize == 0) {
+        delete geno1;
+        delete geno2;
+        return GENOPER_OPFAIL;
+    }
+
+
+    Node *chosen1 = geno1->chooseNode();
+    Node *chosen2 = geno2->chooseNode();
+    while(chosen1->childSize == 0)
+        chosen1 = geno1->chooseNode();
+    while(chosen2->childSize == 0)
+        chosen2 = geno2->chooseNode();
+
+    int index1 = randomFromRange(chosen1->childSize);
+    int index2 = randomFromRange(chosen2->childSize);
+
+    // Swap
+    Node *tmp = chosen1->children[index1];
+    chosen1->children[index1] = chosen2->children[index2];
+    chosen2->children[index2] = tmp;
+
+    g1 = strdup(geno1->getGeno().c_str());
+    g2 = strdup(geno2->getGeno().c_str());
+
+    delete geno1;
+    delete geno2;
+    return GENOPER_OK;
+};
