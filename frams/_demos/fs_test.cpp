@@ -122,16 +122,25 @@ int main() {
                                                     "j:2, 3, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"},   // Negative rotations
-            {"SE{jd=9999}EE",                       "p:sh=1\n"
+            {"SE{jd=9999.0}EE",                       "p:sh=1\n"
                                                     "p:2.0, sh=1\n"
-                                                    "j:0, 2, sh=1\n"
+                                                    "p:4.0, sh=1\n"
                                                     "j:1, 2, sh=1\n"
-                                                    "j:0, 1, sh=1\n"},
+                                                    "j:0, 1, sh=1\n"
+                                                    "j:0, 2, sh=1\n"},
+            {"SE{jd=9999.0}EEE",                      "p:sh=1\n"
+                                                      "p:2.0, sh=1\n"
+                                                      "p:4.0, sh=1\n"
+                                                      "p:6.0, sh=1\n"
+                                                      "j:2, 3, sh=1\n"
+                                                      "j:1, 2, sh=1\n"
+                                                      "j:0, 1, sh=1\n"
+                                                      "j:0, 2, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 20;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
+    const int size = 21;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 4};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
@@ -139,11 +148,12 @@ int main() {
         SString genotype_str = test[0];
         if (true)
         {
-            cout<<converter.convert(genotype_str).c_str()<<endl;
+            cout<<test[1].c_str() <<" "<< converter.convert(genotype_str).c_str()<<endl;
             assert(test[1] == converter.convert(genotype_str).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
+            cout<<geno1.getGeno().c_str() <<" "<< test[0].c_str()<<endl;
             assert(geno1.getGeno() == test[0]);
 
             ////Test operations

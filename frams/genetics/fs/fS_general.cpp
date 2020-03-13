@@ -357,11 +357,16 @@ void fS_Genotype::buildModel(Model *model) {
 
 Node* fS_Genotype::getNearestNode(vector<Node*>allNodes, Node *node){
     Node *result;
+    double minDistance = 9999999.0, distance = 999999.0;
     for(unsigned int i=0; i<allNodes.size(); i++){
         Node *otherNode = allNodes[i];
         auto v = node->children;
-        if(otherNode != node && find(v.begin(), v.end(), otherNode) != v.end()) {
-            result = otherNode;
+        if(otherNode != node && find(v.begin(), v.end(), otherNode) == v.end()) {   // Not the same node and not a child
+            distance = node->state->location.distanceTo(otherNode->state->location);
+            if(distance < minDistance) {
+                minDistance = distance;
+                result = otherNode;
+            }
         }
     }
     return result;
