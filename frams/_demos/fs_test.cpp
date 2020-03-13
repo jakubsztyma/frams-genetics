@@ -132,11 +132,9 @@ int main() {
         // Test translate
         SString *test = test_cases[i];
         SString genotype_str = test[0];
-        SString result = converter.convert(genotype_str);
-        SString expected_result = test[1];
         if (true)
         {
-            assert(expected_result == result);
+            assert(test[1] == converter.convert(genotype_str));
 
             // Test get geno
             fS_Genotype geno1(test[0]);
@@ -210,11 +208,13 @@ int main() {
                 assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
 
-        for(int i=0; i<10000; i++) {
+        for(int i=0; i<1000; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
             assert(genotype_str != geno10.getGeno());
-            geno10.buildModel(new Model());
+            Model *model = new Model();
+            geno10.buildModel(model);
+            delete model;
         }
     }
     auto end = chrono::steady_clock::now();
