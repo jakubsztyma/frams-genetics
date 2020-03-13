@@ -103,7 +103,7 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
 
 Node::~Node() {
     delete state;
-    for (unsigned int i = 0; i < children.size(); i++)
+    for (unsigned int i = 0; i < childSize; i++)
         delete children[i];
 }
 
@@ -192,7 +192,8 @@ void Node::getState(State *_state) {
 
 void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
-    for (unsigned int i = 0; i < branches.size(); i++)
+    childSize = branches.size();
+    for (unsigned int i = 0; i < childSize; i++)
         children.push_back(new Node(branches[i], state));
 }
 
@@ -232,7 +233,7 @@ Part *Node::buildModel(Model *model) {
     setParamsOnPart(part);
     model->addPart(part);
 
-    for (unsigned int i = 0; i < children.size(); i++) {
+    for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
         Part *childPart = child->buildModel(model);
         addJointsToModel(model, child, part, childPart);
@@ -304,7 +305,7 @@ SString Node::getGeno() {
         result += PARAM_END;
     }
 
-    unsigned int children_size = children.size();
+    unsigned int children_size = childSize;
     if (children_size == 1)
         result += children[0]->getGeno();
     else if (children_size > 1) {
@@ -321,7 +322,7 @@ SString Node::getGeno() {
 
 void Node::getTree(vector<Node *> &allNodes) {
     allNodes.push_back(this);
-    for (unsigned int i = 0; i < children.size(); i++)
+    for (unsigned int i = 0; i < childSize; i++)
         children[i]->getTree(allNodes);
 }
 
@@ -369,7 +370,7 @@ Node *fS_Genotype::chooseNode(int fromIndex = 0) {
 
 
 bool fS_Genotype::addJoint() {
-    if (start_node->children.size() < 1)
+    if (start_node->childSize < 1)
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -383,7 +384,7 @@ bool fS_Genotype::addJoint() {
 
 
 bool fS_Genotype::removeJoint() {
-    if (start_node->children.size() < 1) // Only one node; there are no joints
+    if (start_node->childSize < 1) // Only one node; there are no joints
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -435,17 +436,18 @@ bool fS_Genotype::addParam() {
 
 bool fS_Genotype::removePart() {
     Node *randomNode = chooseNode();
-    int childCount = randomNode->children.size();
+    int childCount = randomNode->childSize;
     if (childCount < 1)
         return false;
     Node *chosenNode = randomNode->children[randomFromRange(childCount)];
-    if (chosenNode->children.size() > 0)
+    if (chosenNode->childSize > 0)
         return false;
 
     swap(chosenNode, randomNode->children.back());
     randomNode->children.pop_back();
     randomNode->children.shrink_to_fit();
     delete chosenNode;
+    randomNode->childSize -= 1;
     return true;
 }
 
@@ -454,6 +456,7 @@ bool fS_Genotype::addPart() {
     SString partType = PART_TYPES[0];
     Node *newNode = new Node(partType, randomNode->state);
     randomNode->children.push_back(newNode);
+    randomNode->childSize += 1;
     return true;
 }
 

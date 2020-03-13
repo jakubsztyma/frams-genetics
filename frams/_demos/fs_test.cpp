@@ -212,7 +212,7 @@ int main() {
 
         for(int i=0; i<10000; i++) {
             fS_Genotype geno10(genotype_str);
-            success = geno10.mutate();
+            geno10.mutate();
             assert(genotype_str != geno10.getGeno());
         }
     }
