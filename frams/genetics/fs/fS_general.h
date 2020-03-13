@@ -59,7 +59,7 @@ public:
 
     Node(const SString &genotype, State *state, bool _isStart);
     ~Node();
-    SString getGeno();
+    SString getGeno(SString &result);
 };
 
 class fS_Genotype{

@@ -283,11 +283,11 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 }
 
 
-SString Node::getGeno() {
-    SString result = "";
-    for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it) {
+SString Node::getGeno(SString &result) {
+//    result.memoryHint(joints.size() + modifiers.size() + 7 * params.size() + 10 * childSize);
+
+    for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it)
         result += *it;
-    }
     for (vector<char>::iterator it = modifiers.begin(); it != modifiers.end(); ++it)
         result += *it;
     result += part_type;
@@ -307,14 +307,14 @@ SString Node::getGeno() {
 
     unsigned int children_size = childSize;
     if (children_size == 1)
-        result += children[0]->getGeno();
+        children[0]->getGeno(result);
     else if (children_size > 1) {
         result += BRANCH_START;
         for (unsigned int i = 0; i < children_size - 1; i++) {
-            result += children[i]->getGeno();
+            children[i]->getGeno(result);
             result += BRANCH_SEPARATOR;
         }
-        result += children[children_size - 1]->getGeno();
+        children[children_size - 1]->getGeno(result);
         result += BRANCH_END;
     }
     return result;
@@ -343,7 +343,8 @@ void fS_Genotype::buildModel(Model *model) {
 
 SString fS_Genotype::getGeno() {
     SString mode = start_node->state->modifierMode ? SString("M") : SString("S");
-    SString actualGeno = start_node->getGeno();
+    SString actualGeno;
+    start_node->getGeno(actualGeno);
     return mode + actualGeno;
 }
 

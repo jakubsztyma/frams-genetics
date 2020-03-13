@@ -213,7 +213,8 @@ int main() {
         for(int i=0; i<10000; i++) {
             fS_Genotype geno10(genotype_str);
             geno10.mutate();
-            assert(genotype_str != geno10.getGeno());
+            for(int j=0; j<30; j++)
+                assert(genotype_str != geno10.getGeno());
         }
     }
     auto end = chrono::steady_clock::now();
