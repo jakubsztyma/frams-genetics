@@ -37,6 +37,7 @@ class Node{
 private:
     bool isStart;
     char part_type;
+    Part *part;
     unsigned int childSize = 0;
     int getPartPosition(SString restOfGenotype);
     map<string, double> params;
@@ -50,7 +51,7 @@ private:
     vector<SString> getBranches(SString restOfGenotype);
     void getState(State *_state);
     void getChildren(SString restOfGenotype);
-    void setParamsOnPart(Part *part);
+    void createPart();
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
     void getTree(vector<Node*> &allNodes);
     Part* buildModel(Model *model);
@@ -71,6 +72,7 @@ private:
     Node* chooseNode(int fromIndex);
     int randomFromRange(int to, int from);
     void randomFromDistribution();
+    Node *getNearestNode(vector<Node*>allNodes, Node *node);
 public:
     int  getPartCount();
 

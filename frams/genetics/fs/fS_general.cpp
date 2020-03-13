@@ -28,7 +28,7 @@ using namespace std;
 
 
 const string PART_TYPES = "EPC";
-const vector <string> PARAMS{"fr", "rx", "ry", "rz"};
+const vector <string> PARAMS{"fr", "rx", "ry", "rz", "jd"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "Ff";
@@ -146,6 +146,7 @@ SString Node::extractParams(SString restOfGenotype) {
         SString keyValue = keyValuePairs[i];
         int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
         // TODO handle wrong length exception
+        // TODO optimize
         double value = atof(keyValue.substr(separatorIndex + 1, INT_MAX).c_str());
         params[keyValue.substr(0, separatorIndex).c_str()] = value;
     }
@@ -222,6 +223,18 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 }
 
 Part *Node::buildModel(Model *model) {
+    createPart();
+    model->addPart(part);
+
+    for (unsigned int i = 0; i < childSize; i++) {
+        Node *child = children[i];
+        child->buildModel(model);
+        addJointsToModel(model, child, part, child->part);
+    }
+    return part;
+}
+
+void Node::createPart() {
     Part::Shape model_part_type;
     if (part_type == 'E')
         model_part_type = Part::Shape::SHAPE_ELLIPSOID;
@@ -229,19 +242,8 @@ Part *Node::buildModel(Model *model) {
         model_part_type = Part::Shape::SHAPE_CUBOID;
     else if (part_type == 'C')
         model_part_type = Part::Shape::SHAPE_CYLINDER;
-    Part *part = new Part(model_part_type);
-    setParamsOnPart(part);
-    model->addPart(part);
+    part = new Part(model_part_type);
 
-    for (unsigned int i = 0; i < childSize; i++) {
-        Node *child = children[i];
-        Part *childPart = child->buildModel(model);
-        addJointsToModel(model, child, part, childPart);
-    }
-    return part;
-}
-
-void Node::setParamsOnPart(Part *part) {
     part->p = Pt3D(round2(state->location.x),
                    round2(state->location.y),
                    round2(state->location.z)
@@ -284,8 +286,6 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 
 
 SString Node::getGeno(SString &result) {
-//    result.memoryHint(joints.size() + modifiers.size() + 7 * params.size() + 10 * childSize);
-
     for (auto it = joints.begin(); it != joints.end(); ++it)
         result += *it;
     for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
@@ -294,7 +294,7 @@ SString Node::getGeno(SString &result) {
 
     if (params.size() > 0) {
         result += PARAM_START;
-        for (auto it = params.begin(); it != params.end(); it++) {
+        for (auto it = params.begin(); it != params.end(); ++it) {
             result += it->first.c_str();
             result += PARAM_KEY_VALUE_SEPARATOR;
             string value_text = to_string(it->second);
@@ -338,6 +338,33 @@ fS_Genotype::~fS_Genotype() {
 
 void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
+
+    // Additional joint
+    vector <Node*> allNodes;
+    start_node->getTree(allNodes);
+    for(unsigned int i=0; i<allNodes.size(); i++) {
+        Node *node = allNodes[i];
+        if (node->params.find("jd") != node->params.end()) {
+            Joint *joint = new Joint();
+            Node *otherNode = getNearestNode(allNodes, node);
+            joint->attachToParts(node->part, otherNode->part);
+
+            joint->shape = Joint::Shape::SHAPE_FIXED;
+            model->addJoint(joint);
+        }
+    }
+}
+
+Node* fS_Genotype::getNearestNode(vector<Node*>allNodes, Node *node){
+    Node *result;
+    for(unsigned int i=0; i<allNodes.size(); i++){
+        Node *otherNode = allNodes[i];
+        auto v = node->children;
+        if(otherNode != node && find(v.begin(), v.end(), otherNode) != v.end()) {
+            result = otherNode;
+        }
+    }
+    return result;
 }
 
 SString fS_Genotype::getGeno() {

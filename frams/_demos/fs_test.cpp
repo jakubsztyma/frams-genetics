@@ -122,10 +122,15 @@ int main() {
                                                     "j:2, 3, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"},   // Negative rotations
+            {"SE{jd=9999}EE",                       "p:sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "j:0, 2, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 19;
+    const int size = 20;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
@@ -134,7 +139,8 @@ int main() {
         SString genotype_str = test[0];
         if (true)
         {
-            assert(test[1] == converter.convert(genotype_str));
+            cout<<converter.convert(genotype_str).c_str()<<endl;
+            assert(test[1] == converter.convert(genotype_str).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
@@ -222,7 +228,6 @@ int main() {
             fS_Genotype tmp("SEE");
             int crossOverResult = tmp.crossOver(arr1, arr2, f1, f2);
             if(crossOverResult == GENOPER_OK) {
-                cout << genotype_str.c_str() << " " << arr1 << " " << arr2 << endl;
 
 //                assert(SString(arr1) != genotype_str);
 //            assert(arr2 != genotype_str.c_str());
