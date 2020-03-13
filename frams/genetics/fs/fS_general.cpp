@@ -305,16 +305,15 @@ SString Node::getGeno(SString &result) {
         result += PARAM_END;
     }
 
-    unsigned int children_size = childSize;
-    if (children_size == 1)
+    if (childSize == 1)
         children[0]->getGeno(result);
-    else if (children_size > 1) {
+    else if (childSize > 1) {
         result += BRANCH_START;
-        for (unsigned int i = 0; i < children_size - 1; i++) {
+        for (unsigned int i = 0; i < childSize - 1; i++) {
             children[i]->getGeno(result);
             result += BRANCH_SEPARATOR;
         }
-        children[children_size - 1]->getGeno(result);
+        children[childSize - 1]->getGeno(result);
         result += BRANCH_END;
     }
     return result;
@@ -342,10 +341,11 @@ void fS_Genotype::buildModel(Model *model) {
 }
 
 SString fS_Genotype::getGeno() {
-    SString mode = start_node->state->modifierMode ? SString("M") : SString("S");
-    SString actualGeno;
-    start_node->getGeno(actualGeno);
-    return mode + actualGeno;
+    SString geno;
+    geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
+    geno += start_node->state->modifierMode ? SString("M") : SString("S");
+    start_node->getGeno(geno);
+    return geno;
 }
 
 int fS_Genotype::getPartCount() {
