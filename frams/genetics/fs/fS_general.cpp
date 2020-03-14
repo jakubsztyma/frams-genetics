@@ -340,8 +340,7 @@ void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
 
     // Additional joint
-    vector <Node*> allNodes;
-    start_node->getTree(allNodes);
+    vector <Node*> allNodes = getTree();
     for(unsigned int i=0; i<allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find("jd") != node->params.end()) {
@@ -381,8 +380,7 @@ SString fS_Genotype::getGeno() {
 }
 
 int fS_Genotype::getPartCount() {
-    vector < Node * > allNodes;
-    start_node->getTree(allNodes);
+    vector < Node * > allNodes = getTree();
     return allNodes.size();
 }
 
@@ -394,10 +392,14 @@ double getRandomFromDistribution() {
     return distribution(generator);
 }
 
-
-Node *fS_Genotype::chooseNode(int fromIndex = 0) {
+vector<Node*> fS_Genotype::getTree(){
     vector < Node * > allNodes;
     start_node->getTree(allNodes);
+    return allNodes;
+}
+
+Node *fS_Genotype::chooseNode(int fromIndex = 0) {
+    vector<Node*> allNodes = getTree();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -559,37 +561,32 @@ void fS_Genotype::mutate() {
 }
 
 int fS_Genotype::crossOver(char *&g1, char *&g2, float& chg1, float& chg2) {
-    fS_Genotype *geno1 = new fS_Genotype(g1);
-    fS_Genotype *geno2 = new fS_Genotype(g2);
+    int parentCount = 2;
+    fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
 
-    if(geno1->start_node->childSize == 0 || geno2->start_node->childSize == 0) {
-        delete geno1;
-        delete geno2;
+    if(parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
+        delete parents[0];
+        delete parents[1];
         return GENOPER_OPFAIL;
     }
 
-
-    Node *chosen1 = geno1->chooseNode();
-    Node *chosen2 = geno2->chooseNode();
-    while(chosen1->childSize == 0)
-        chosen1 = geno1->chooseNode();
-    while(chosen2->childSize == 0)
-        chosen2 = geno2->chooseNode();
-
-    int index1 = randomFromRange(chosen1->childSize);
-    int index2 = randomFromRange(chosen2->childSize);
-
-    // Swap
-    Node *tmp = chosen1->children[index1];
-    chosen1->children[index1] = chosen2->children[index2];
-    chosen2->children[index2] = tmp;
+    Node *chosen[parentCount];
+    int indexes[2];
+    for(int i=0; i<parentCount; i++) {
+        vector < Node * > allNodes = parents[i]->getTree();
+        do {
+            chosen[i] = allNodes[randomFromRange(allNodes.size())];
+        } while (chosen[i]->childSize == 0);
+        indexes[i] = randomFromRange(chosen[i]->childSize);
+    }
+    swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
 
     free(g1);
     free(g2);
-    g1 = strdup(geno1->getGeno().c_str());
-    g2 = strdup(geno2->getGeno().c_str());
+    g1 = strdup(parents[0]->getGeno().c_str());
+    g2 = strdup(parents[1]->getGeno().c_str());
 
-    delete geno1;
-    delete geno2;
+    delete parents[0];
+    delete parents[1];
     return GENOPER_OK;
 };

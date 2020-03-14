@@ -69,6 +69,7 @@ class fS_Genotype{
 private:
     Node *start_node;
 
+    vector<Node*> getTree();
     Node* chooseNode(int fromIndex);
     int randomFromRange(int to, int from);
     void randomFromDistribution();
