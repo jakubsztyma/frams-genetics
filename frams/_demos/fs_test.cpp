@@ -6,7 +6,47 @@
 
 
 using namespace std;
+class fS_Operators{
+public:
+    int mutate(char *&geno, float& chg, int &method){
+        fS_Genotype genotype(geno);
+        genotype.mutate();
 
+        free(geno);
+        geno = strdup(genotype.getGeno().c_str());
+        return GENOPER_OK;
+    }
+
+    int crossOver(char *&g1, char *&g2, float& chg1, float& chg2){int parentCount = 2;
+        fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
+
+        if(parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
+            delete parents[0];
+            delete parents[1];
+            return GENOPER_OPFAIL;
+        }
+
+        Node *chosen[parentCount];
+        int indexes[2];
+        for(int i=0; i<parentCount; i++) {
+            vector < Node * > allNodes = parents[i]->getTree();
+            do {
+                chosen[i] = allNodes[parents[i]->randomFromRange(allNodes.size(), 0)];
+            } while (chosen[i]->childSize == 0);
+            indexes[i] = parents[i]->randomFromRange(chosen[i]->childSize, 0);
+        }
+        swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+
+        free(g1);
+        free(g2);
+        g1 = strdup(parents[0]->getGeno().c_str());
+        g2 = strdup(parents[1]->getGeno().c_str());
+
+        delete parents[0];
+        delete parents[1];
+        return GENOPER_OK;
+    }
+};
 
 int countSigns(SString genotype, char *chars, int count) {
     int result = 0;
@@ -223,19 +263,20 @@ int main() {
                 assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
 
+        fS_Operators operators;
         for(int i=0; i<1; i++) {
-            fS_Genotype geno10(genotype_str);
-            geno10.mutate();
-            assert(genotype_str != geno10.getGeno());
-            Model *model = new Model();
-            geno10.buildModel(model);
-
-            float f1, f2;
+            int method;
+            float f1, f2, gp;
             char *arr1 = strdup(genotype_str.c_str());
-            char *arr2 = strdup(genotype_str.c_str());
+            char *arr2 = strdup(arr1);
+            char *forMutation = strdup(arr1);
+
+            operators.mutate(forMutation, gp, method);
+            assert(genotype_str.c_str() != forMutation);
+
 
             fS_Genotype tmp("SEE");
-            int crossOverResult = tmp.crossOver(arr1, arr2, f1, f2);
+            int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
             if(crossOverResult == GENOPER_OK) {
 
 //                assert(SString(arr1) != genotype_str);
@@ -243,7 +284,7 @@ int main() {
             }
             free(arr1);
             free(arr2);
-            delete model;
+            free(forMutation);
         }
     }
     auto end = chrono::steady_clock::now();

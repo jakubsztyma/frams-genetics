@@ -35,6 +35,7 @@ public:
 class Node{
     friend class fS_Genotype;
 private:
+public:
     bool isStart;
     char part_type;
     Part *part;
@@ -55,7 +56,7 @@ private:
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
     void getTree(vector<Node*> &allNodes);
     Part* buildModel(Model *model);
-public:
+//public:
     State *state;
 
     Node(const SString &genotype, State *state, bool _isStart);
@@ -67,6 +68,7 @@ class fS_Genotype{
     friend class Node;
 
 private:
+public:
     Node *start_node;
 
     vector<Node*> getTree();
@@ -74,7 +76,7 @@ private:
     int randomFromRange(int to, int from);
     void randomFromDistribution();
     Node *getNearestNode(vector<Node*>allNodes, Node *node);
-public:
+//public:
     int  getPartCount();
 
     fS_Genotype(const SString &genotype);
