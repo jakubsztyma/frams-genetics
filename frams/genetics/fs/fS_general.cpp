@@ -584,6 +584,8 @@ int fS_Genotype::crossOver(char *&g1, char *&g2, float& chg1, float& chg2) {
     chosen1->children[index1] = chosen2->children[index2];
     chosen2->children[index2] = tmp;
 
+    free(g1);
+    free(g2);
     g1 = strdup(geno1->getGeno().c_str());
     g2 = strdup(geno2->getGeno().c_str());
 

@@ -148,12 +148,10 @@ int main() {
         SString genotype_str = test[0];
         if (true)
         {
-            cout<<test[1].c_str() <<" "<< converter.convert(genotype_str).c_str()<<endl;
             assert(test[1] == converter.convert(genotype_str).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
-            cout<<geno1.getGeno().c_str() <<" "<< test[0].c_str()<<endl;
             assert(geno1.getGeno() == test[0]);
 
             ////Test operations
