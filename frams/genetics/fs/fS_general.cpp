@@ -28,10 +28,10 @@ using namespace std;
 
 
 const string PART_TYPES = "EPC";
-const vector <string> PARAMS{"fr", "rx", "ry", "rz"};
+const vector <string> PARAMS{"fr", "rx", "ry", "rz", "jd"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "xyz";
+const string MODIFIERS = "Ff";
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
@@ -40,19 +40,23 @@ double round2(double var) {
     return (double) value / 100;
 }
 
-vector <SString> split(SString str, char delim) {
-    vector <SString> cont;
-    int index = 0, new_index;
+const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+SString *split(SString str, char delim, int count) {
+    // TODO optimize
+    static SString *arr = new SString[count];
+    int index = 0, new_index = 0, arrayIndex = 0;
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
-            cont.push_back(str.substr(index, INT_MAX));
+            arr[arrayIndex] = str.substr(index, INT_MAX);
             break;
         }
-        cont.push_back(str.substr(index, new_index - index));
+        arr[arrayIndex] = str.substr(index, new_index - index);
+        arrayIndex += 1;
         index = new_index + 1;
     }
-    return cont;
+    return arr;
 }
 
 State::State(State *_state) {
@@ -74,6 +78,7 @@ void State::addVector(double length) {
 }
 
 void State::rotate(double rx, double ry, double rz) {
+    // TOTO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
             Convert::toRadians(rx),
@@ -96,17 +101,23 @@ Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
         getChildren(restOfGenotype);
 }
 
-Node::~Node(){
+Node::~Node() {
     delete state;
-    for(unsigned int i=0; i<children.size(); i++)
+    for (unsigned int i = 0; i < childSize; i++)
         delete children[i];
 }
 
+int Node::getPartPosition(SString restOfGenotype) {
+    for (int i = 0; i < restOfGenotype.len(); i++) {
+        char tmp = restOfGenotype[i];
+        if (tmp == 'E' || tmp == 'P' || tmp == 'C')
+            return i;
+    }
+    return -1;
+}
+
 SString Node::extractModifiers(SString restOfGenotype) {
-    smatch m;
-    string s(restOfGenotype.c_str());
-    regex_search(s, m, regex("E|P|C"));
-    int partTypePosition = m.position();
+    int partTypePosition = getPartPosition(restOfGenotype);
     // Get a string containing all modifiers and joints for this node
     SString modifierString = restOfGenotype.substr(0, partTypePosition);
 
@@ -129,12 +140,15 @@ SString Node::extractPartType(SString restOfGenotype) {
 SString Node::extractParams(SString restOfGenotype) {
     int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-    vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
-    for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
-        vector <SString> keyValue = split(keyValuePairs[i], PARAM_KEY_VALUE_SEPARATOR);
+    unsigned int size = 1;
+    SString *keyValuePairs = split(paramString, PARAM_SEPARATOR, size);
+    for (unsigned int i = 0; i < size; i++) {
+        SString keyValue = keyValuePairs[i];
+        int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
         // TODO handle wrong length exception
-        double value = atof(keyValue[1].c_str());
-        params[keyValue[0].c_str()] = value;
+        // TODO optimize
+        double value = atof(keyValue.substr(separatorIndex + 1, INT_MAX).c_str());
+        params[keyValue.substr(0, separatorIndex).c_str()] = value;
     }
 
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
@@ -145,13 +159,21 @@ void Node::getState(State *_state) {
         state = _state;
     } else {
         state = new State(_state);
-        state->rotate(params["rx"], params["ry"], params["rz"]);
-        if (params["rx"] == 0.)
-            params.erase("rx");
-        if (params["ry"] == 0.)
-            params.erase("ry");
-        if (params["rz"] == 0.)
-            params.erase("rz");
+
+        // Rotate
+        float rx = 0, ry = 0, rz = 0;
+        auto paramsEnd = params.end();
+        auto rxi = params.find("rx");
+        auto ryi = params.find("ry");
+        auto rzi = params.find("rz");
+        if (rxi != paramsEnd)
+            rx = rxi->second;
+        if (ryi != paramsEnd)
+            ry = ryi->second;
+        if (rzi != paramsEnd)
+            rz = rzi->second;
+        state->rotate(rx, ry, rz);
+
         state->addVector(2.0);
     }
 
@@ -171,7 +193,8 @@ void Node::getState(State *_state) {
 
 void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
-    for (unsigned int i = 0; i < branches.size(); i++)
+    childSize = branches.size();
+    for (unsigned int i = 0; i < childSize; i++)
         children.push_back(new Node(branches[i], state));
 }
 
@@ -200,6 +223,18 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
 }
 
 Part *Node::buildModel(Model *model) {
+    createPart();
+    model->addPart(part);
+
+    for (unsigned int i = 0; i < childSize; i++) {
+        Node *child = children[i];
+        child->buildModel(model);
+        addJointsToModel(model, child, part, child->part);
+    }
+    return part;
+}
+
+void Node::createPart() {
     Part::Shape model_part_type;
     if (part_type == 'E')
         model_part_type = Part::Shape::SHAPE_ELLIPSOID;
@@ -207,19 +242,8 @@ Part *Node::buildModel(Model *model) {
         model_part_type = Part::Shape::SHAPE_CUBOID;
     else if (part_type == 'C')
         model_part_type = Part::Shape::SHAPE_CYLINDER;
-    Part *part = new Part(model_part_type);
-    setParamsOnPart(part);
-    model->addPart(part);
+    part = new Part(model_part_type);
 
-    for (unsigned int i = 0; i < children.size(); i++) {
-        Node *child = children[i];
-        Part *childPart = child->buildModel(model);
-        addJointsToModel(model, child, part, childPart);
-    }
-    return part;
-}
-
-void Node::setParamsOnPart(Part *part) {
     part->p = Pt3D(round2(state->location.x),
                    round2(state->location.y),
                    round2(state->location.z)
@@ -241,7 +265,7 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
         joint->attachToParts(part, childPart);
         model->addJoint(joint);
     } else {
-        for (set<char>::iterator it = child->joints.begin(); it != child->joints.end(); ++it) {
+        for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
             joint->attachToParts(part, childPart);
             switch (*it) {
@@ -261,18 +285,16 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 }
 
 
-SString Node::getGeno() {
-    SString result = "";
-    for (set<char>::iterator it = joints.begin(); it != joints.end(); ++it) {
+SString Node::getGeno(SString &result) {
+    for (auto it = joints.begin(); it != joints.end(); ++it)
         result += *it;
-    }
-    for (vector<char>::iterator it = modifiers.begin(); it != modifiers.end(); ++it)
+    for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
         result += *it;
     result += part_type;
 
     if (params.size() > 0) {
         result += PARAM_START;
-        for (map<string, double>::iterator it = params.begin(); it != params.end(); it++) {
+        for (auto it = params.begin(); it != params.end(); ++it) {
             result += it->first.c_str();
             result += PARAM_KEY_VALUE_SEPARATOR;
             string value_text = to_string(it->second);
@@ -283,30 +305,24 @@ SString Node::getGeno() {
         result += PARAM_END;
     }
 
-    unsigned int children_size = children.size();
-    if (children_size == 1)
-        result += children[0]->getGeno();
-    else if (children_size > 1) {
+    if (childSize == 1)
+        children[0]->getGeno(result);
+    else if (childSize > 1) {
         result += BRANCH_START;
-        for (unsigned int i = 0; i < children_size - 1; i++) {
-            result += children[i]->getGeno();
+        for (unsigned int i = 0; i < childSize - 1; i++) {
+            children[i]->getGeno(result);
             result += BRANCH_SEPARATOR;
         }
-        result += children[children_size - 1]->getGeno();
+        children[childSize - 1]->getGeno(result);
         result += BRANCH_END;
     }
     return result;
 }
 
-vector<Node *> Node::getTree() {
-    vector < Node * > allNodes;
+void Node::getTree(vector<Node *> &allNodes) {
     allNodes.push_back(this);
-    for (unsigned int i = 0; i < children.size(); i++) {
-        vector < Node * > offspring = children[i]->getTree();
-        allNodes.reserve(allNodes.size() + distance(offspring.begin(), offspring.end())); // Improve performance
-        allNodes.insert(allNodes.end(), offspring.begin(), offspring.end());
-    }
-    return allNodes;
+    for (unsigned int i = 0; i < childSize; i++)
+        children[i]->getTree(allNodes);
 }
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
@@ -322,16 +338,50 @@ fS_Genotype::~fS_Genotype() {
 
 void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
+
+    // Additional joint
+    vector <Node*> allNodes = getTree();
+    for(unsigned int i=0; i<allNodes.size(); i++) {
+        Node *node = allNodes[i];
+        if (node->params.find("jd") != node->params.end()) {
+            Joint *joint = new Joint();
+            Node *otherNode = getNearestNode(allNodes, node);
+            joint->attachToParts(node->part, otherNode->part);
+
+            joint->shape = Joint::Shape::SHAPE_FIXED;
+            model->addJoint(joint);
+        }
+    }
+}
+
+Node* fS_Genotype::getNearestNode(vector<Node*>allNodes, Node *node){
+    Node *result;
+    double minDistance = 9999999.0, distance = 999999.0;
+    for(unsigned int i=0; i<allNodes.size(); i++){
+        Node *otherNode = allNodes[i];
+        auto v = node->children;
+        if(otherNode != node && find(v.begin(), v.end(), otherNode) == v.end()) {   // Not the same node and not a child
+            distance = node->state->location.distanceTo(otherNode->state->location);
+            if(distance < minDistance) {
+                minDistance = distance;
+                result = otherNode;
+            }
+        }
+    }
+    return result;
 }
 
 SString fS_Genotype::getGeno() {
-    SString mode = start_node->state->modifierMode ? SString("M") : SString("S");
-    SString actualGeno = start_node->getGeno();
-    return mode + actualGeno;
+    SString geno;
+    geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
+    geno += start_node->state->modifierMode ? SString("M") : SString("S");
+    start_node->getGeno(geno);
+    return geno;
 }
 
 int fS_Genotype::getPartCount() {
-    return start_node->getTree().size();
+    vector < Node * > allNodes = getTree();
+    return allNodes.size();
 }
 
 int fS_Genotype::randomFromRange(int to, int from = 0) {
@@ -342,15 +392,20 @@ double getRandomFromDistribution() {
     return distribution(generator);
 }
 
+vector<Node*> fS_Genotype::getTree(){
+    vector < Node * > allNodes;
+    start_node->getTree(allNodes);
+    return allNodes;
+}
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector < Node * > allNodes = start_node->getTree();
+    vector<Node*> allNodes = getTree();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
 
 bool fS_Genotype::addJoint() {
-    if (start_node->children.size() < 1)
+    if (start_node->childSize < 1)
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -364,7 +419,7 @@ bool fS_Genotype::addJoint() {
 
 
 bool fS_Genotype::removeJoint() {
-    if (start_node->children.size() < 1) // Only one node; there are no joints
+    if (start_node->childSize < 1) // Only one node; there are no joints
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -383,9 +438,9 @@ bool fS_Genotype::removeParam() {
     int paramCount = randomNode->params.size();
     if (paramCount < 1)
         return false;
-    map<string, double>::iterator item = randomNode->params.begin();
-    advance(item, randomFromRange(paramCount));
-    randomNode->params.erase(item->first);
+    auto it = randomNode->params.begin();
+    advance(it, randomFromRange(paramCount));
+    randomNode->params.erase(it->first);
     return true;
 }
 
@@ -394,10 +449,10 @@ bool fS_Genotype::changeParam() {
     int paramCount = randomNode->params.size();
     if (paramCount < 1)
         return false;
-    map<string, double>::iterator item = randomNode->params.begin();
-    advance(item, randomFromRange(paramCount));
+    auto it = randomNode->params.begin();
+    advance(it, randomFromRange(paramCount));
     // TODO sensible parameter changes
-    item->second += getRandomFromDistribution();
+    it->second += getRandomFromDistribution();
     return true;
 }
 
@@ -415,20 +470,19 @@ bool fS_Genotype::addParam() {
 }
 
 bool fS_Genotype::removePart() {
-    if (start_node->children.size() < 1)
-        return false;
-
     Node *randomNode = chooseNode();
-    int childCount = randomNode->children.size();
+    int childCount = randomNode->childSize;
     if (childCount < 1)
         return false;
     Node *chosenNode = randomNode->children[randomFromRange(childCount)];
-    if (chosenNode->children.size() > 0)
+    if (chosenNode->childSize > 0)
         return false;
+
     swap(chosenNode, randomNode->children.back());
-    Node *lastElem = randomNode->children.back();
     randomNode->children.pop_back();
-    delete lastElem;
+    randomNode->children.shrink_to_fit();
+    delete chosenNode;
+    randomNode->childSize -= 1;
     return true;
 }
 
@@ -437,9 +491,102 @@ bool fS_Genotype::addPart() {
     SString partType = PART_TYPES[0];
     Node *newNode = new Node(partType, randomNode->state);
     randomNode->children.push_back(newNode);
+    randomNode->childSize += 1;
     return true;
 }
 
-void fS_Genotype::mutate() {};
+bool fS_Genotype::changePartType() {
+    Node *randomNode = chooseNode();
+    char newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
+    if (newType == randomNode->part_type)
+        return false;
+    randomNode->part_type = newType;
+    return true;
+}
 
-void fS_Genotype::crossover() {};
+bool fS_Genotype::addModifier() {
+    Node *randomNode = chooseNode();
+    char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
+    randomNode->modifiers.push_back(randomModifier);
+    return true;
+}
+
+bool fS_Genotype::removeModifier() {
+    Node *randomNode = chooseNode();
+    if (randomNode->modifiers.empty())
+        return false;
+    randomNode->modifiers.pop_back();
+    return true;
+}
+
+void fS_Genotype::mutate() {
+    bool result = false;
+    int method;
+    while(!result) {
+        method = GenoOperators::roulette(operations, FS_OPCOUNT);
+        switch (method) {
+            case 0:
+                result = addJoint();
+                break;
+            case 1:
+                result = addParam();
+                break;
+            case 2:
+                result = addPart();
+                break;
+                // TODO uncomment -- change sometimes not visible in tests
+//            case 3:
+//                result = changeParam();
+//                break;
+            case 4:
+                result = removeJoint();
+                break;
+            case 5:
+                result = removeParam();
+                break;
+            case 6:
+                result = removePart();
+                break;
+            case 7:
+                result = changePartType();
+                break;
+            case 8:
+                result = addModifier();
+                break;
+            case 9:
+                result = removeModifier();
+                break;
+        }
+    }
+}
+
+int fS_Genotype::crossOver(char *&g1, char *&g2, float& chg1, float& chg2) {
+    int parentCount = 2;
+    fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
+
+    if(parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
+        delete parents[0];
+        delete parents[1];
+        return GENOPER_OPFAIL;
+    }
+
+    Node *chosen[parentCount];
+    int indexes[2];
+    for(int i=0; i<parentCount; i++) {
+        vector < Node * > allNodes = parents[i]->getTree();
+        do {
+            chosen[i] = allNodes[randomFromRange(allNodes.size())];
+        } while (chosen[i]->childSize == 0);
+        indexes[i] = randomFromRange(chosen[i]->childSize);
+    }
+    swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+
+    free(g1);
+    free(g2);
+    g1 = strdup(parents[0]->getGeno().c_str());
+    g2 = strdup(parents[1]->getGeno().c_str());
+
+    delete parents[0];
+    delete parents[1];
+    return GENOPER_OK;
+};

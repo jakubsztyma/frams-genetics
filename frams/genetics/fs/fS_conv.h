@@ -9,14 +9,22 @@
 #include <iostream>
 #include "fS_general.h"
 #include "frams/util/sstring.h"
+#include "frams/util/multimap.h"
 
 using namespace std;
 
-class GenoConv_fS0// : public GenoConverter
+class GenoConv_fS0 : public GenoConverter
 {
 public:
-    GenoConv_fS0() {}// :GenoConverter()
-    SString convert(SString &i);//(SString &i, MultiMap *map, bool using_checkpoints);
+    GenoConv_fS0() :GenoConverter()
+    {
+        name = "Solid encoding";
+
+        in_format = 'S';
+        out_format = '0';
+        mapsupport = 0;
+    }
+    SString convert(SString &i, MultiMap *map, bool using_checkpoints);
     ~GenoConv_fS0() {};
 };
 #endif //FS_FS_CONV_H
