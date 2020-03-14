@@ -148,7 +148,8 @@ int main() {
         SString genotype_str = test[0];
         if (true)
         {
-            assert(test[1] == converter.convert(genotype_str).c_str());
+            MultiMap map;
+            assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);

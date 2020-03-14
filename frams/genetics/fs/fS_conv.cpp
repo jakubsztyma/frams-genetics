@@ -3,19 +3,17 @@
 //
 
 #include "fS_conv.h"
-#include "frams/util/multimap.h"
 
 using namespace std;
 
-SString GenoConv_fS0::convert(SString &i) {
+SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints=false) {
     Model *model = new Model();
     model->open(false);
 
     fS_Genotype genotype = fS_Genotype(i);
     genotype.buildModel(model);
 
-    MultiMap map;
-    model->getCurrentToF0Map(map);
+    model->getCurrentToF0Map(*map);
     model->close();
     SString genes = model->getF0Geno().getGenes();
     delete model;
