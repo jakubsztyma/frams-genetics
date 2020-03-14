@@ -339,17 +339,20 @@ fS_Genotype::~fS_Genotype() {
 void fS_Genotype::buildModel(Model *model) {
     start_node->buildModel(model);
 
-    // Additional joint
+    // Additional joints
     vector <Node*> allNodes = getTree();
     for(unsigned int i=0; i<allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find("jd") != node->params.end()) {
             Joint *joint = new Joint();
             Node *otherNode = getNearestNode(allNodes, node);
-            joint->attachToParts(node->part, otherNode->part);
+            // If other node is close enough, add a joint
+            if(node->state->location.distanceTo(otherNode->state->location) < node->params["jd"]) {
+                joint->attachToParts(node->part, otherNode->part);
 
-            joint->shape = Joint::Shape::SHAPE_FIXED;
-            model->addJoint(joint);
+                joint->shape = Joint::Shape::SHAPE_FIXED;
+                model->addJoint(joint);
+            }
         }
     }
 }
@@ -560,33 +563,3 @@ void fS_Genotype::mutate() {
     }
 }
 
-int fS_Genotype::crossOver(char *&g1, char *&g2, float& chg1, float& chg2) {
-    int parentCount = 2;
-    fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
-
-    if(parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
-        delete parents[0];
-        delete parents[1];
-        return GENOPER_OPFAIL;
-    }
-
-    Node *chosen[parentCount];
-    int indexes[2];
-    for(int i=0; i<parentCount; i++) {
-        vector < Node * > allNodes = parents[i]->getTree();
-        do {
-            chosen[i] = allNodes[randomFromRange(allNodes.size())];
-        } while (chosen[i]->childSize == 0);
-        indexes[i] = randomFromRange(chosen[i]->childSize);
-    }
-    swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
-
-    free(g1);
-    free(g2);
-    g1 = strdup(parents[0]->getGeno().c_str());
-    g2 = strdup(parents[1]->getGeno().c_str());
-
-    delete parents[0];
-    delete parents[1];
-    return GENOPER_OK;
-};

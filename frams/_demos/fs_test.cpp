@@ -122,13 +122,18 @@ int main() {
                                                     "j:2, 3, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"},   // Negative rotations
-            {"SE{jd=9999.0}EE",                       "p:sh=1\n"
+            {"SE{jd=4.1}EE",                       "p:sh=1\n"
                                                     "p:2.0, sh=1\n"
                                                     "p:4.0, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"
                                                     "j:0, 2, sh=1\n"},
-            {"SE{jd=9999.0}EEE",                      "p:sh=1\n"
+            {"SE{jd=3.9}EE",                       "p:sh=1\n"
+                                                      "p:2.0, sh=1\n"
+                                                      "p:4.0, sh=1\n"
+                                                      "j:1, 2, sh=1\n"
+                                                      "j:0, 1, sh=1\n"},
+            {"SE{jd=4.1}EEE",                      "p:sh=1\n"
                                                       "p:2.0, sh=1\n"
                                                       "p:4.0, sh=1\n"
                                                       "p:6.0, sh=1\n"
@@ -139,8 +144,8 @@ int main() {
     };
     bool success = false;
     int tmp = -1;
-    const int size = 21;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 4};
+    const int size = 22;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
