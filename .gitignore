@@ -16,6 +16,10 @@ frams/userinput/*
 frams/util/*
 frams/vm/*
 
+README.txt
+LICENSE.txt
+CONTRIBUTORS.txt
+.svn/*
 f0_variants_test
 fs_test
 full_props
