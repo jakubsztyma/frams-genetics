@@ -2,6 +2,20 @@
 *.o
 *.d
 
+_old/*
+common/*
+PrintFloat/*
+tests/*
+frams/canvas/*
+frams/config/*
+frams/genetics/*
+frams/model/*
+frams/neuro/*
+frams/param/*
+frams/userinput/*
+frams/util/*
+frams/vm/*
+
 f0_variants_test
 fs_test
 full_props
