@@ -269,7 +269,7 @@ int main() {
     fS_Operators operators;
     SString *g1 = new SString("SEE{sx=3.0;sy=3.0;sz=3.0}");
     SString *g2 = new SString("SC{jd=3.9}CC");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10000; i++) {
         cout<< g1->c_str()<<endl;
         cout<< g2->c_str()<<endl;
         int method;
@@ -287,11 +287,17 @@ int main() {
             assert(SString(arr1) != *g1);
             assert(SString(arr2) != *g2);
         }
+
+        delete g1;
+        delete g2;
         g1 = new SString(arr1);
         g2 = new SString(arr2);
         free(arr1);
         free(arr2);
     }
+    delete g1;
+    delete g2;
+
     auto end = chrono::steady_clock::now();
     cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
 
