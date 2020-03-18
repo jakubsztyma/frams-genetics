@@ -25,7 +25,7 @@ using namespace std;
 #define MULTIPLIER 1.1
 #define JOINT_COUNT 4
 #define DEFAULT_FR 0.4
-
+#define DEFAULT_RADIUS 1.0
 
 const string PART_TYPES = "EPC";
 const vector <string> PARAMS{"fr", "rx", "ry", "rz", "jd"};
@@ -42,17 +42,17 @@ double round2(double var) {
 
 const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
-SString *split(SString str, char delim, int count) {
+vector<SString> split(SString str, char delim) {
     // TODO optimize
-    static SString *arr = new SString[count];
+    vector<SString> arr;
     int index = 0, new_index = 0, arrayIndex = 0;
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
-            arr[arrayIndex] = str.substr(index, INT_MAX);
+            arr.push_back(str.substr(index, INT_MAX));
             break;
         }
-        arr[arrayIndex] = str.substr(index, new_index - index);
+        arr.push_back(str.substr(index, new_index - index));
         arrayIndex += 1;
         index = new_index + 1;
     }
@@ -87,7 +87,7 @@ void State::rotate(double rx, double ry, double rz) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, State *_state, bool _modifierMode, bool _isStart = false) {
+Node::Node(const SString &genotype, bool _modifierMode, bool _isStart = false) {
     isStart = _isStart;
     modifierMode = _modifierMode;
     SString restOfGenotype = extractModifiers(genotype);
@@ -95,13 +95,13 @@ Node::Node(const SString &genotype, State *_state, bool _modifierMode, bool _isS
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
 
-    getState(_state);
     if (restOfGenotype.len() > 0)
         getChildren(restOfGenotype);
 }
 
 Node::~Node() {
-    delete state;
+    if (state != nullptr)
+        delete state;
     for (unsigned int i = 0; i < childSize; i++)
         delete children[i];
 }
@@ -139,9 +139,8 @@ SString Node::extractPartType(SString restOfGenotype) {
 SString Node::extractParams(SString restOfGenotype) {
     int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-    unsigned int size = 1;
-    SString *keyValuePairs = split(paramString, PARAM_SEPARATOR, size);
-    for (unsigned int i = 0; i < size; i++) {
+    vector<SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+    for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
         SString keyValue = keyValuePairs[i];
         int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
         // TODO handle wrong length exception
@@ -153,30 +152,31 @@ SString Node::extractParams(SString restOfGenotype) {
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
 }
 
-double Node::getParamWithDefault(string key, double defaultValue){
+double Node::getParam(string key, double defaultValue) {
     auto item = params.find(key);
-    if(item != params.end())
+    if (item != params.end())
         return item->second;
     else
         return defaultValue;
 }
 
-void Node::getState(State *_state) {
+void Node::getState(State *_state, double psx, double psy, double psz) {
     if (isStart) {
         state = _state;
     } else {
         state = new State(_state);
 
         // Rotate
-        double rx = getParamWithDefault("rx", 0.0);
-        double ry = getParamWithDefault("ry", 0.0);
-        double rz = getParamWithDefault("rz", 0.0);
-        double sx = getParamWithDefault("sx", 1.0);
-        double sy = getParamWithDefault("sy", 1.0);
-        double sz = getParamWithDefault("sz", 1.0);
+        double rx = getParam("rx", 0.0);
+        double ry = getParam("ry", 0.0);
+        double rz = getParam("rz", 0.0);
+        double sx = getParam("sx", DEFAULT_RADIUS);
+        double sy = getParam("sy", DEFAULT_RADIUS);
+        double sz = getParam("sz", DEFAULT_RADIUS);
         state->rotate(rx, ry, rz);
 
-        state->addVector(2.0);
+        double distance = (psx + psy + psz + sx + sy + sz) / 3;
+        state->addVector(distance);
     }
 
     // Update state by modifiers
@@ -197,7 +197,7 @@ void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
     childSize = branches.size();
     for (unsigned int i = 0; i < childSize; i++)
-        children.push_back(new Node(branches[i], state, modifierMode));
+        children.push_back(new Node(branches[i], modifierMode));
 }
 
 vector <SString> Node::getBranches(SString restOfGenotype) {
@@ -230,6 +230,10 @@ Part *Node::buildModel(Model *model) {
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
+        child->getState(state,
+                        getParam("sx", DEFAULT_RADIUS),
+                        getParam("sy", DEFAULT_RADIUS),
+                        getParam("sz", DEFAULT_RADIUS));
         child->buildModel(model);
         addJointsToModel(model, child, part, child->part);
     }
@@ -258,6 +262,9 @@ void Node::createPart() {
         if (params["fr"])
             part->friction = params["fr"];
     }
+    part->scale.x = getParam("sx", DEFAULT_RADIUS);
+    part->scale.y = getParam("sy", DEFAULT_RADIUS);
+    part->scale.z = getParam("sz", DEFAULT_RADIUS);
 }
 
 void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart) {
@@ -329,9 +336,8 @@ void Node::getTree(vector<Node *> &allNodes) {
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
-    bool modifierMode = genotype[0] == MODIFIER_MODE;
-    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-    start_node = new Node(genotype.substr(1, INT_MAX), initialState, modifierMode, true);
+    bool modifierMode = genotype[0] == MODIFIER_MODE;\
+    start_node = new Node(genotype.substr(1, INT_MAX), modifierMode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
@@ -339,17 +345,19 @@ fS_Genotype::~fS_Genotype() {
 }
 
 void fS_Genotype::buildModel(Model *model) {
+    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
+    start_node->getState(initialState, 1.0, 1.0, 1.0);
     start_node->buildModel(model);
 
     // Additional joints
-    vector <Node*> allNodes = getTree();
-    for(unsigned int i=0; i<allNodes.size(); i++) {
+    vector < Node * > allNodes = getTree();
+    for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find("jd") != node->params.end()) {
             Joint *joint = new Joint();
             Node *otherNode = getNearestNode(allNodes, node);
             // If other node is close enough, add a joint
-            if(node->state->location.distanceTo(otherNode->state->location) < node->params["jd"]) {
+            if (node->state->location.distanceTo(otherNode->state->location) < node->params["jd"]) {
                 joint->attachToParts(node->part, otherNode->part);
 
                 joint->shape = Joint::Shape::SHAPE_FIXED;
@@ -359,15 +367,16 @@ void fS_Genotype::buildModel(Model *model) {
     }
 }
 
-Node* fS_Genotype::getNearestNode(vector<Node*>allNodes, Node *node){
+Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node) {
     Node *result;
     double minDistance = 9999999.0, distance = 999999.0;
-    for(unsigned int i=0; i<allNodes.size(); i++){
+    for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *otherNode = allNodes[i];
         auto v = node->children;
-        if(otherNode != node && find(v.begin(), v.end(), otherNode) == v.end()) {   // Not the same node and not a child
+        if (otherNode != node &&
+            find(v.begin(), v.end(), otherNode) == v.end()) {   // Not the same node and not a child
             distance = node->state->location.distanceTo(otherNode->state->location);
-            if(distance < minDistance) {
+            if (distance < minDistance) {
                 minDistance = distance;
                 result = otherNode;
             }
@@ -397,14 +406,14 @@ double getRandomFromDistribution() {
     return distribution(generator);
 }
 
-vector<Node*> fS_Genotype::getTree(){
+vector<Node *> fS_Genotype::getTree() {
     vector < Node * > allNodes;
     start_node->getTree(allNodes);
     return allNodes;
 }
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector<Node*> allNodes = getTree();
+    vector < Node * > allNodes = getTree();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -494,7 +503,7 @@ bool fS_Genotype::removePart() {
 bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType = PART_TYPES[0];
-    Node *newNode = new Node(partType, randomNode->state, randomNode->modifierMode);
+    Node *newNode = new Node(partType, randomNode->modifierMode);
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;
     return true;
@@ -527,7 +536,7 @@ bool fS_Genotype::removeModifier() {
 void fS_Genotype::mutate() {
     bool result = false;
     int method;
-    while(!result) {
+    while (!result) {
         method = GenoOperators::roulette(operations, FS_OPCOUNT);
         switch (method) {
             case 0:

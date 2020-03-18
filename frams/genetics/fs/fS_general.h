@@ -13,6 +13,7 @@
 #include <regex>
 #include <set>
 #include <iterator>
+#include <math.h>
 #include "common/Convert.h"
 #include "frams/genetics/genooperators.h"
 #include "frams/util/3d.h"
@@ -45,22 +46,22 @@ private:
     vector<char> modifiers;
     set<char> joints;
 
-    double getParamWithDefault(string key, double defaultValue);
+    double getParam(string key, double defaultValue);
     SString extractModifiers(SString restOfGenotype);
     SString extractPartType(SString restOfGenotype);
     SString extractParams(SString restOfGenotype);
     vector<SString> getBranches(SString restOfGenotype);
-    void getState(State *_state);
+    void getState(State *_state, double psx, double psy, double psz);
     void getChildren(SString restOfGenotype);
     void createPart();
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
     void getTree(vector<Node*> &allNodes);
     Part* buildModel(Model *model);
 public:
-    State *state;
+    State *state = nullptr;
     bool modifierMode = false;
 
-    Node(const SString &genotype, State *state, bool modifierMode, bool _isStart);
+    Node(const SString &genotype, bool modifierMode, bool _isStart);
     ~Node();
     SString getGeno(SString &result);
 };

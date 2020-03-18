@@ -122,46 +122,49 @@ int main() {
                                                     "j:2, 3, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"},   // Negative rotations
-            {"SE{jd=4.1}EE",                       "p:sh=1\n"
+            {"SE{jd=4.1}EE",                        "p:sh=1\n"
                                                     "p:2.0, sh=1\n"
                                                     "p:4.0, sh=1\n"
                                                     "j:1, 2, sh=1\n"
                                                     "j:0, 1, sh=1\n"
                                                     "j:0, 2, sh=1\n"},
-            {"SE{jd=3.9}EE",                       "p:sh=1\n"
-                                                      "p:2.0, sh=1\n"
-                                                      "p:4.0, sh=1\n"
-                                                      "j:1, 2, sh=1\n"
-                                                      "j:0, 1, sh=1\n"},
-            {"SE{jd=4.1}EEE",                      "p:sh=1\n"
-                                                      "p:2.0, sh=1\n"
-                                                      "p:4.0, sh=1\n"
-                                                      "p:6.0, sh=1\n"
-                                                      "j:2, 3, sh=1\n"
-                                                      "j:1, 2, sh=1\n"
-                                                      "j:0, 1, sh=1\n"
-                                                      "j:0, 2, sh=1\n"},
-            {"SEE{sx=3.0}",                         "p:sh=1\n"
+            {"SE{jd=3.9}EE",                        "p:sh=1\n"
                                                     "p:2.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},
+            {"SE{jd=4.1}EEE",                       "p:sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "p:4.0, sh=1\n"
+                                                    "p:6.0, sh=1\n"
+                                                    "j:2, 3, sh=1\n"
+                                                    "j:1, 2, sh=1\n"
+                                                    "j:0, 1, sh=1\n"
+                                                    "j:0, 2, sh=1\n"},
+            {"SEE{sx=3.0}",                         "p:sh=1\n"
+                                                    "p:2.67, sh=1, sx=3.0\n"
+                                                    "j:0, 1, sh=1\n"},
+            {"SEE{sx=3.0;sy=3.0;sz=3.0}",          "p:sh=1\n"
+                                                    "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
                                                     "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 23;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2};
+    const int size = 24 ;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
         SString *test = test_cases[i];
         SString genotype_str = test[0];
-        if (true)
-        {
+        if (true) {
             MultiMap map;
+            cout << test[0].c_str() << endl;
+            cout << converter.convert(genotype_str, &map, false).c_str() << " " << test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
-            cout<<geno1.getGeno().c_str()<<" "<<test[0].c_str()<<endl;
             assert(geno1.getGeno() == test[0]);
 
             ////Test operations
@@ -233,7 +236,7 @@ int main() {
         }
 
         fS_Operators operators;
-        for(int i=0; i<1; i++) {
+        for (int i = 0; i < 1; i++) {
             int method;
             float f1, f2, gp;
             char *arr1 = strdup(genotype_str.c_str());
@@ -246,7 +249,7 @@ int main() {
 
             fS_Genotype tmp("SEE");
             int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
-            if(crossOverResult == GENOPER_OK) {
+            if (crossOverResult == GENOPER_OK) {
 
 //                assert(SString(arr1) != genotype_str);
 //            assert(arr2 != genotype_str.c_str());
@@ -257,7 +260,7 @@ int main() {
         }
     }
     auto end = chrono::steady_clock::now();
-    cout<<chrono::duration_cast<chrono::milliseconds>(end - start).count()<<" ms"<<endl;
+    cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
 
     cout << "FINISHED" << endl;
     return 0;
