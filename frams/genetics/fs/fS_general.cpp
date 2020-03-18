@@ -354,10 +354,10 @@ void fS_Genotype::buildModel(Model *model) {
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find("jd") != node->params.end()) {
-            Joint *joint = new Joint();
             Node *otherNode = getNearestNode(allNodes, node);
             // If other node is close enough, add a joint
             if (node->state->location.distanceTo(otherNode->state->location) < node->params["jd"]) {
+                Joint *joint = new Joint();
                 joint->attachToParts(node->part, otherNode->part);
 
                 joint->shape = Joint::Shape::SHAPE_FIXED;

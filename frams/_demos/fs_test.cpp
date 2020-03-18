@@ -8,6 +8,37 @@
 using namespace std;
 
 
+int fS_Operators::crossOver(char *&g1, char *&g2, float& chg1, float& chg2){
+    int parentCount = 2;
+    fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
+
+    if(parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
+        delete parents[0];
+        delete parents[1];
+        return GENOPER_OPFAIL;
+    }
+
+    Node *chosen[parentCount];
+    int indexes[2];
+    for(int i=0; i<parentCount; i++) {
+        vector < Node * > allNodes = parents[i]->getTree();
+        do {
+            chosen[i] = allNodes[parents[i]->randomFromRange(allNodes.size(), 0)];
+        } while (chosen[i]->childSize == 0);
+        indexes[i] = parents[i]->randomFromRange(chosen[i]->childSize, 0);
+    }
+    swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+
+    free(g1);
+    free(g2);
+    g1 = strdup(parents[0]->getGeno().c_str());
+    g2 = strdup(parents[1]->getGeno().c_str());
+
+    delete parents[0];
+    delete parents[1];
+    return GENOPER_OK;
+}
+
 int countSigns(SString genotype, char *chars, int count) {
     int result = 0;
     for (int i = 0; i < genotype.len(); i++) {
@@ -157,10 +188,9 @@ int main() {
         // Test translate
         SString *test = test_cases[i];
         SString genotype_str = test[0];
+        cout << test[0].c_str() << endl;
         if (true) {
             MultiMap map;
-            cout << test[0].c_str() << endl;
-            cout << converter.convert(genotype_str, &map, false).c_str() << " " << test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -234,30 +264,33 @@ int main() {
             if (success)
                 assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
         }
+    }
 
-        fS_Operators operators;
-        for (int i = 0; i < 1; i++) {
-            int method;
-            float f1, f2, gp;
-            char *arr1 = strdup(genotype_str.c_str());
-            char *arr2 = strdup(arr1);
-            char *forMutation = strdup(arr1);
+    fS_Operators operators;
+    SString *g1 = new SString("SEE{sx=3.0;sy=3.0;sz=3.0}");
+    SString *g2 = new SString("SC{jd=3.9}CC");
+    for (int i = 0; i < 100; i++) {
+        cout<< g1->c_str()<<endl;
+        cout<< g2->c_str()<<endl;
+        int method;
+        float f1, f2, gp;
 
-            operators.mutate(forMutation, gp, method);
-            assert(genotype_str.c_str() != forMutation);
+        char *arr1 = strdup(g1->c_str());
+        char *arr2 = strdup(g2->c_str());
 
+        operators.mutate(arr1, gp, method);
+        operators.mutate(arr2, gp, method);
 
-            fS_Genotype tmp("SEE");
-            int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
-            if (crossOverResult == GENOPER_OK) {
+        int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-//                assert(SString(arr1) != genotype_str);
-//            assert(arr2 != genotype_str.c_str());
-            }
-            free(arr1);
-            free(arr2);
-            free(forMutation);
+        if (crossOverResult == GENOPER_OK) {
+            assert(SString(arr1) != *g1);
+            assert(SString(arr2) != *g2);
         }
+        g1 = new SString(arr1);
+        g2 = new SString(arr2);
+        free(arr1);
+        free(arr2);
     }
     auto end = chrono::steady_clock::now();
     cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
