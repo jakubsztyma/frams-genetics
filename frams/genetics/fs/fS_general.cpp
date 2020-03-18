@@ -154,6 +154,14 @@ SString Node::extractParams(SString restOfGenotype) {
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
 }
 
+double Node::getParamWithDefault(string key, double defaultValue){
+    auto item = params.find(key);
+    if(item != params.end())
+        return item->second;
+    else
+        return defaultValue;
+}
+
 void Node::getState(State *_state) {
     if (isStart) {
         state = _state;
@@ -161,17 +169,12 @@ void Node::getState(State *_state) {
         state = new State(_state);
 
         // Rotate
-        float rx = 0, ry = 0, rz = 0;
-        auto paramsEnd = params.end();
-        auto rxi = params.find("rx");
-        auto ryi = params.find("ry");
-        auto rzi = params.find("rz");
-        if (rxi != paramsEnd)
-            rx = rxi->second;
-        if (ryi != paramsEnd)
-            ry = ryi->second;
-        if (rzi != paramsEnd)
-            rz = rzi->second;
+        double rx = getParamWithDefault("rx", 0.0);
+        double ry = getParamWithDefault("ry", 0.0);
+        double rz = getParamWithDefault("rz", 0.0);
+        double sx = getParamWithDefault("sx", 1.0);
+        double sy = getParamWithDefault("sy", 1.0);
+        double sz = getParamWithDefault("sz", 1.0);
         state->rotate(rx, ry, rz);
 
         state->addVector(2.0);

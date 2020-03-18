@@ -46,6 +46,7 @@ private:
     vector<char> modifiers;
     set<char> joints;
 
+    double getParamWithDefault(string key, double defaultValue);
     SString extractModifiers(SString restOfGenotype);
     SString extractPartType(SString restOfGenotype);
     SString extractParams(SString restOfGenotype);
