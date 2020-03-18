@@ -12,7 +12,8 @@
 using namespace std;
 
 #define MODIFIER_MODE 'M'
-#define STANDARD_MODE 'S'
+#define PARAM_MODE 'S'
+#define CYCLE_MODE 'J'
 #define BRANCH_START '('
 #define BRANCH_END ')'
 #define BRANCH_SEPARATOR ','
@@ -59,6 +60,12 @@ vector<SString> split(SString str, char delim) {
     return arr;
 }
 
+Mode::Mode(SString modeStr){
+    modifier = -1 != modeStr.indexOf(MODIFIER_MODE);
+    param = -1 != modeStr.indexOf(PARAM_MODE);
+    cycle = -1 != modeStr.indexOf(CYCLE_MODE);
+}
+
 State::State(State *_state) {
     location = Pt3D(_state->location);
     v = Pt3D(_state->v);
@@ -87,9 +94,9 @@ void State::rotate(double rx, double ry, double rz) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, bool _modifierMode, bool _isStart = false) {
+Node::Node(const SString &genotype, Mode *_mode, bool _isStart = false) {
     isStart = _isStart;
-    modifierMode = _modifierMode;
+    mode = _mode;
     SString restOfGenotype = extractModifiers(genotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
@@ -197,7 +204,7 @@ void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
     childSize = branches.size();
     for (unsigned int i = 0; i < childSize; i++)
-        children.push_back(new Node(branches[i], modifierMode));
+        children.push_back(new Node(branches[i], mode));
 }
 
 vector <SString> Node::getBranches(SString restOfGenotype) {
@@ -255,7 +262,7 @@ void Node::createPart() {
                    round2(state->location.z)
     );
 
-    if (modifierMode) {
+    if (mode->modifier) {
         if (state->fr != DEFAULT_FR)
             part->friction = round2(state->fr);
     } else {
@@ -336,11 +343,14 @@ void Node::getTree(vector<Node *> &allNodes) {
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
-    bool modifierMode = genotype[0] == MODIFIER_MODE;\
-    start_node = new Node(genotype.substr(1, INT_MAX), modifierMode, true);
+    int modeSeparatorIndex = genotype.indexOf(':');
+    SString modeStr = genotype.substr(0, modeSeparatorIndex);
+    Mode *mode = new Mode(modeStr);
+    start_node = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), mode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
+    delete start_node->mode;
     delete start_node;
 }
 
@@ -388,7 +398,15 @@ Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node) {
 SString fS_Genotype::getGeno() {
     SString geno;
     geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
-    geno += start_node->modifierMode ? SString("M") : SString("S");
+
+    if(start_node->mode->modifier)
+        geno += MODIFIER_MODE;
+    if(start_node->mode->param)
+        geno += PARAM_MODE;
+    if(start_node->mode->cycle)
+        geno += CYCLE_MODE;
+
+    geno += ':';
     start_node->getGeno(geno);
     return geno;
 }
@@ -503,7 +521,7 @@ bool fS_Genotype::removePart() {
 bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType = PART_TYPES[0];
-    Node *newNode = new Node(partType, randomNode->modifierMode);
+    Node *newNode = new Node(partType, randomNode->mode);
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;
     return true;
@@ -548,10 +566,9 @@ void fS_Genotype::mutate() {
             case 2:
                 result = addPart();
                 break;
-                // TODO uncomment -- change sometimes not visible in tests
-//            case 3:
-//                result = changeParam();
-//                break;
+            case 3:
+                result = changeParam();
+                break;
             case 4:
                 result = removeJoint();
                 break;

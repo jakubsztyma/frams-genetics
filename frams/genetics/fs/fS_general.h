@@ -22,79 +22,125 @@
 
 using namespace std;
 
-class State{
+class Mode {
+public:
+    bool cycle, modifier, param;
+
+    Mode(SString modeStr);
+};
+
+class State {
 public:
     Pt3D location, v;
     double fr;
+
     State(State *_state);
+
     State(Pt3D _location, Pt3D _v);
+
     void addVector(double length);
+
     void rotate(double rx, double ry, double rz);
 };
 
-class Node{
+class Node {
     friend class fS_Genotype;
+
     friend class fS_Operators;
+
 private:
     bool isStart;
     char part_type;
     Part *part;
     unsigned int childSize = 0;
+
     int getPartPosition(SString restOfGenotype);
+
     map<string, double> params;
-    vector<Node*> children;
+    vector<Node *> children;
     vector<char> modifiers;
     set<char> joints;
 
     double getParam(string key, double defaultValue);
+
     SString extractModifiers(SString restOfGenotype);
+
     SString extractPartType(SString restOfGenotype);
+
     SString extractParams(SString restOfGenotype);
-    vector<SString> getBranches(SString restOfGenotype);
+
+    vector <SString> getBranches(SString restOfGenotype);
+
     void getState(State *_state, double psx, double psy, double psz);
+
     void getChildren(SString restOfGenotype);
+
     void createPart();
+
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
-    void getTree(vector<Node*> &allNodes);
-    Part* buildModel(Model *model);
+
+    void getTree(vector<Node *> &allNodes);
+
+    Part *buildModel(Model *model);
+
 public:
     State *state = nullptr;
-    bool modifierMode = false;
+    Mode *mode;
 
-    Node(const SString &genotype, bool modifierMode, bool _isStart);
+    Node(const SString &genotype, Mode *_mode, bool _isStart);
+
     ~Node();
+
     SString getGeno(SString &result);
 };
 
-class fS_Genotype{
+class fS_Genotype {
     friend class Node;
+
     friend class fS_Operators;
+
 private:
     Node *start_node;
 
-    vector<Node*> getTree();
-    Node* chooseNode(int fromIndex);
+    vector<Node *> getTree();
+
+    Node *chooseNode(int fromIndex);
+
     int randomFromRange(int to, int from);
+
     void randomFromDistribution();
-    Node *getNearestNode(vector<Node*>allNodes, Node *node);
+
+    Node *getNearestNode(vector<Node *> allNodes, Node *node);
+
 public:
-    int  getPartCount();
+    int getPartCount();
 
     fS_Genotype(const SString &genotype);
+
     ~fS_Genotype();
 
     void buildModel(Model *model);
+
     SString getGeno();
 
     bool addJoint();
+
     bool removeJoint();
+
     bool addPart();
+
     bool changePartType();
+
     bool removePart();
+
     bool addParam();
+
     bool removeParam();
+
     bool changeParam();
+
     bool addModifier();
+
     bool removeModifier();
 
     void mutate();
