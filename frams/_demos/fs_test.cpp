@@ -191,6 +191,7 @@ int main() {
         cout << test[0].c_str() << endl;
         if (true) {
             MultiMap map;
+            cout<<converter.convert(genotype_str, &map, false).c_str()<<endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno

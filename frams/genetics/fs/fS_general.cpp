@@ -75,7 +75,7 @@ State::State(State *_state) {
 State::State(Pt3D _location, Pt3D _v) {
     location = Pt3D(_location);
     v = Pt3D(_v);
-    fr = DEFAULT_FR;
+    fr = 1.0;
 }
 
 void State::addVector(double length) {
@@ -261,14 +261,7 @@ void Node::createPart() {
                    round2(state->location.y),
                    round2(state->location.z)
     );
-
-    if (mode->modifier) {
-        if (state->fr != DEFAULT_FR)
-            part->friction = round2(state->fr);
-    } else {
-        if (params["fr"])
-            part->friction = params["fr"];
-    }
+    part->friction = round2(getParam("fr", DEFAULT_FR) * state->fr);
     part->scale.x = getParam("sx", DEFAULT_RADIUS);
     part->scale.y = getParam("sy", DEFAULT_RADIUS);
     part->scale.z = getParam("sz", DEFAULT_RADIUS);
