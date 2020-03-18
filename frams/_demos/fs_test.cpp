@@ -141,11 +141,14 @@ int main() {
                                                       "j:1, 2, sh=1\n"
                                                       "j:0, 1, sh=1\n"
                                                       "j:0, 2, sh=1\n"},
+            {"SEE{sx=3.0}",                         "p:sh=1\n"
+                                                    "p:2.0, sh=1\n"
+                                                    "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 22;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4};
+    const int size = 23;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
@@ -158,6 +161,7 @@ int main() {
 
             // Test get geno
             fS_Genotype geno1(test[0]);
+            cout<<geno1.getGeno().c_str()<<" "<<test[0].c_str()<<endl;
             assert(geno1.getGeno() == test[0]);
 
             ////Test operations

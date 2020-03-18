@@ -24,10 +24,9 @@ using namespace std;
 class State{
 public:
     Pt3D location, v;
-    bool modifierMode;
     double fr;
     State(State *_state);
-    State(Pt3D _location, Pt3D _v, bool modifierMode);
+    State(Pt3D _location, Pt3D _v);
     void addVector(double length);
     void rotate(double rx, double ry, double rz);
 };
@@ -59,8 +58,9 @@ private:
     Part* buildModel(Model *model);
 public:
     State *state;
+    bool modifierMode = false;
 
-    Node(const SString &genotype, State *state, bool _isStart);
+    Node(const SString &genotype, State *state, bool modifierMode, bool _isStart);
     ~Node();
     SString getGeno(SString &result);
 };

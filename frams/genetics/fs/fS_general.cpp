@@ -63,14 +63,12 @@ State::State(State *_state) {
     location = Pt3D(_state->location);
     v = Pt3D(_state->v);
     fr = _state->fr;
-    modifierMode = _state->modifierMode;
 }
 
-State::State(Pt3D _location, Pt3D _v, bool _modifierMode) {
+State::State(Pt3D _location, Pt3D _v) {
     location = Pt3D(_location);
     v = Pt3D(_v);
     fr = DEFAULT_FR;
-    modifierMode = _modifierMode;
 }
 
 void State::addVector(double length) {
@@ -89,8 +87,9 @@ void State::rotate(double rx, double ry, double rz) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, State *_state, bool _isStart = false) {
+Node::Node(const SString &genotype, State *_state, bool _modifierMode, bool _isStart = false) {
     isStart = _isStart;
+    modifierMode = _modifierMode;
     SString restOfGenotype = extractModifiers(genotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
@@ -198,7 +197,7 @@ void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
     childSize = branches.size();
     for (unsigned int i = 0; i < childSize; i++)
-        children.push_back(new Node(branches[i], state));
+        children.push_back(new Node(branches[i], state, modifierMode));
 }
 
 vector <SString> Node::getBranches(SString restOfGenotype) {
@@ -252,7 +251,7 @@ void Node::createPart() {
                    round2(state->location.z)
     );
 
-    if (state->modifierMode) {
+    if (modifierMode) {
         if (state->fr != DEFAULT_FR)
             part->friction = round2(state->fr);
     } else {
@@ -331,8 +330,8 @@ void Node::getTree(vector<Node *> &allNodes) {
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     bool modifierMode = genotype[0] == MODIFIER_MODE;
-    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0), modifierMode);
-    start_node = new Node(genotype.substr(1, INT_MAX), initialState, true);
+    State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
+    start_node = new Node(genotype.substr(1, INT_MAX), initialState, modifierMode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
@@ -380,7 +379,7 @@ Node* fS_Genotype::getNearestNode(vector<Node*>allNodes, Node *node){
 SString fS_Genotype::getGeno() {
     SString geno;
     geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
-    geno += start_node->state->modifierMode ? SString("M") : SString("S");
+    geno += start_node->modifierMode ? SString("M") : SString("S");
     start_node->getGeno(geno);
     return geno;
 }
@@ -495,7 +494,7 @@ bool fS_Genotype::removePart() {
 bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType = PART_TYPES[0];
-    Node *newNode = new Node(partType, randomNode->state);
+    Node *newNode = new Node(partType, randomNode->state, randomNode->modifierMode);
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;
     return true;
