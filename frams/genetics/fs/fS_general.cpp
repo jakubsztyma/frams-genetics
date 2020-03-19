@@ -487,6 +487,8 @@ bool fS_Genotype::addParam() {
     if (paramCount == PARAMS.size())
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
+    if(chosenParam == "jd" && !start_node->mode->cycle)
+        return false;
     if (randomNode->params.count(chosenParam) > 0)
         return false;
     // TODO sensible values for params
@@ -545,34 +547,46 @@ bool fS_Genotype::removeModifier() {
 }
 
 void fS_Genotype::mutate() {
+//    int operationCount = 5;
+    double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, };
+    if(!start_node->mode->param){
+        operations[5] = 0.0;
+        operations[6] = 0.0;
+        operations[7] = 0.0;
+    }
+    if(!start_node->mode->modifier) {
+        operations[8] = 0.0;
+        operations[9] = 0.0;
+    }
+
     bool result = false;
     int method;
     while (!result) {
         method = GenoOperators::roulette(operations, FS_OPCOUNT);
         switch (method) {
             case 0:
-                result = addJoint();
-                break;
-            case 1:
-                result = addParam();
-                break;
-            case 2:
                 result = addPart();
                 break;
+            case 1:
+                result = removePart();
+                break;
+            case 2:
+                result = changePartType();
+                break;
             case 3:
-                result = changeParam();
+                result = addJoint();
                 break;
             case 4:
                 result = removeJoint();
                 break;
             case 5:
-                result = removeParam();
+                result = addParam();
                 break;
             case 6:
-                result = removePart();
+                result = removeParam();
                 break;
             case 7:
-                result = changePartType();
+                result = changeParam();
                 break;
             case 8:
                 result = addModifier();
