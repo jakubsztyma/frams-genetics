@@ -61,8 +61,9 @@ int countParams(SString genotype) {
 }
 
 int countModifiers(SString genotype) {
-    char signs[2] = {'F', 'f'};
-    return countSigns(genotype, signs, 2);
+    int count = 8;
+    char signs[count] = {'F', 'f', 'X', 'x', 'Y', 'y', 'Z', 'z'};
+    return countSigns(genotype, signs, count);
 }
 
 int main() {
@@ -178,11 +179,20 @@ int main() {
             {"S:EE{sx=3.0;sy=3.0;sz=3.0}",           "p:sh=1\n"
                                                      "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
                                                      "j:0, 1, sh=1\n"},
+            {"M:XXE",                                "p:sh=1, sx=1.21\n"},  // sx modifier
+            {"M:xxE",                                "p:sh=1, sx=0.83\n"},  // sx modifier
+            {"M:XYYZZZE",                            "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"},  // size modifiers
+            {"M:EXYYZZZE",                           "p:sh=1\n"
+                                                     "p:2.21, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "j:0, 1, sh=1\n"},  // size modifiers
+            {"M:XYYZZZEE",                           "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.43, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "j:0, 1, sh=1\n"},  // size modifiers
     };
     bool success = false;
     int tmp = -1;
-    const int size = 24;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2};
+    const int size = 29;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
@@ -191,11 +201,12 @@ int main() {
         cout << test[0].c_str() << endl;
         if (true) {
             MultiMap map;
+            cout<<converter.convert(genotype_str, &map, false).c_str()<<endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
-            cout<<geno1.getGeno().c_str()<<endl;
+            cout << geno1.getGeno().c_str() << endl;
             assert(geno1.getGeno() == test[0]);
 
             ////Test operations

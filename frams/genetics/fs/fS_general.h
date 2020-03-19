@@ -34,7 +34,8 @@ class State {
 public:
     Pt3D location;  /// Location of the node
     Pt3D v;         /// The normalised vector in which current branch develops
-    double fr;      /// Friction multiplier
+    double fr = 1.0;      /// Friction multiplier
+    double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
 
     State(State *_state); /// Derive the state from parent
 
@@ -71,6 +72,9 @@ private:
     vector<char> modifiers;     /// Vector of all modifiers
     set<char> joints;           /// Set of all joints
 
+    double getSx();
+    double getSy();
+    double getSz();
     /**
      * Get the position of part type in genotype
      *

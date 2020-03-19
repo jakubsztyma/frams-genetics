@@ -29,7 +29,7 @@ using namespace std;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "f";
+const string MODIFIERS = "fx";
 const vector <string> PARAMS{"fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
 const map<string, double> defaultParamValues = {
         {"fr", 0.4},
@@ -78,12 +78,14 @@ State::State(State *_state) {
     location = Pt3D(_state->location);
     v = Pt3D(_state->v);
     fr = _state->fr;
+    sx = _state->sx;
+    sy = _state->sy;
+    sz = _state->sz;
 }
 
 State::State(Pt3D _location, Pt3D _v) {
     location = Pt3D(_location);
     v = Pt3D(_v);
-    fr = 1.0;
 }
 
 void State::addVector(double length) {
@@ -176,23 +178,11 @@ double Node::getParam(string key) {
 }
 
 void Node::getState(State *_state, double psx, double psy, double psz) {
-    if (isStart) {
+    if (isStart)
         state = _state;
-    } else {
+    else
         state = new State(_state);
 
-        // Rotate
-        double rx = getParam("rx");
-        double ry = getParam("ry");
-        double rz = getParam("rz");
-        double sx = getParam("sx");
-        double sy = getParam("sy");
-        double sz = getParam("sz");
-        state->rotate(rx, ry, rz);
-
-        double distance = (psx + psy + psz + sx + sy + sz) / 3;
-        state->addVector(distance);
-    }
 
     // Update state by modifiers
     for (unsigned int i = 0; i < modifiers.size(); i++) {
@@ -202,7 +192,30 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
             case 'f':
                 state->fr *= multiplier;
                 break;
+            case 'x':
+                state->sx *= multiplier;
+                break;
+            case 'y':
+                state->sy *= multiplier;
+                break;
+            case 'z':
+                state->sz *= multiplier;
+                break;
         }
+    }
+
+    if (!isStart){
+        // Rotate
+        double rx = getParam("rx");
+        double ry = getParam("ry");
+        double rz = getParam("rz");
+        double sx = getSx();
+        double sy = getSy();
+        double sz = getSz();
+        state->rotate(rx, ry, rz);
+
+        double distance = (psx + psy + psz + sx + sy + sz) / 3;
+        state->addVector(distance);
     }
 }
 
@@ -237,16 +250,17 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     return children;
 }
 
+double Node::getSx(){return getParam("sx") * state->sx;}
+double Node::getSy(){return getParam("sy") * state->sy;}
+double Node::getSz(){return getParam("sz") * state->sz;}
+
 Part *Node::buildModel(Model *model) {
     createPart();
     model->addPart(part);
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
-        child->getState(state,
-                        getParam("sx"),
-                        getParam("sy"),
-                        getParam("sz"));
+        child->getState(state, getSx(), getSy(), getSz());
         child->buildModel(model);
         addJointsToModel(model, child);
     }
@@ -268,9 +282,9 @@ void Node::createPart() {
                    round2(state->location.z)
     );
     part->friction = round2(getParam("fr") * state->fr);
-    part->scale.x = getParam("sx");
-    part->scale.y = getParam("sy");
-    part->scale.z = getParam("sz");
+    part->scale.x = round2(getSx());
+    part->scale.y = round2(getSy());
+    part->scale.z = round2(getSz());
 }
 
 void Node::addJointsToModel(Model *model, Node *child) {
