@@ -29,7 +29,7 @@ using namespace std;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "fx";
+const string MODIFIERS = "fxyz";
 const vector <string> PARAMS{"fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
 const map<string, double> defaultParamValues = {
         {"fr", 0.4},
@@ -134,6 +134,8 @@ int Node::getPartPosition(SString restOfGenotype) {
 
 SString Node::extractModifiers(SString restOfGenotype) {
     int partTypePosition = getPartPosition(restOfGenotype);
+    if(partTypePosition == -1)
+        throw "Part type missing";
     // Get a string containing all modifiers and joints for this node
     SString modifierString = restOfGenotype.substr(0, partTypePosition);
 
@@ -142,14 +144,18 @@ SString Node::extractModifiers(SString restOfGenotype) {
         char mType = modifierString[i];
         if (OTHER_JOINTS.find(mType) != string::npos)
             joints.insert(mType);
-        else
+        else if(MODIFIERS.find(tolower(mType)) != string::npos)
             modifiers.push_back(mType);
+        else
+            throw "Invalid modifier";
     }
     return restOfGenotype.substr(partTypePosition, INT_MAX);
 }
 
 SString Node::extractPartType(SString restOfGenotype) {
     partType = restOfGenotype[0];
+    if(PART_TYPES.find(partType) == string::npos)
+        throw "Invalid part type";
     return restOfGenotype.substr(1, INT_MAX);
 }
 
@@ -160,10 +166,12 @@ SString Node::extractParams(SString restOfGenotype) {
     for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
         SString keyValue = keyValuePairs[i];
         int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
-        // TODO handle wrong length exception
-        // TODO optimize
+        if(-1 == separatorIndex)
+            throw "Parameter separator expected";
+        string key = keyValue.substr(0, separatorIndex).c_str();
+        // TODO optimize, handle wrong value
         double value = atof(keyValue.substr(separatorIndex + 1, INT_MAX).c_str());
-        params[keyValue.substr(0, separatorIndex).c_str()] = value;
+        params[key] = value;
     }
 
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
@@ -356,6 +364,8 @@ void Node::getAllNodes(vector<Node *> &allNodes) {
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     int modeSeparatorIndex = genotype.indexOf(':');
+    if(modeSeparatorIndex == -1)
+        throw "No mode separator";
     SString modeStr = genotype.substr(0, modeSeparatorIndex);
     Mode *mode = new Mode(modeStr);
     startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), mode, true);
@@ -535,7 +545,8 @@ bool fS_Genotype::removePart() {
 
 bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
-    SString partType = PART_TYPES[0];
+    SString partType;
+    partType += PART_TYPES[randomFromRange(3, 0)];
     Node *newNode = new Node(partType, randomNode->mode);
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;

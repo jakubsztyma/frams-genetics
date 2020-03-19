@@ -248,6 +248,22 @@ int main() {
     }
 
     fS_Operators operators;
+    SString invalidGenotypes[] = {
+            "EEE",      // No mode specifier
+            "S:FFF",    // No part type
+            "S:FFF{sx=5.0}",    // No part type
+            "M:qqE",    // Invalid modifier
+            "S:E{fr}",    // No equal sign
+//            "S:E{qw=1.0}",    // Wrong param key
+//            "S:E{fr=}",    // Wrong param value
+//            "S:E{fr=fr}",    // Wrong param value
+    };
+    const int invalidCount = 5;
+    for(int i=0; i<invalidCount; i++){
+        cout<<invalidGenotypes[i].c_str()<<" "<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
+        assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
+    }
+
     SString *g1 = new SString("SM:EE{sx=3.0;sy=3.0;sz=3.0}");
     SString *g2 = new SString("SM:C{jd=3.9}CC");
     for (int i = 0; i < 100; i++) {
@@ -265,8 +281,10 @@ int main() {
         int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
         if (crossOverResult == GENOPER_OK) {
-            assert(SString(arr1) != *g1);
-            assert(SString(arr2) != *g2);
+            assert(0 == operators.checkValidity(arr1, ""));
+            assert(0 == operators.checkValidity(arr2, ""));
+//            assert(SString(arr1) != *g1);
+//            assert(SString(arr2) != *g2);
         }
 
         delete g1;

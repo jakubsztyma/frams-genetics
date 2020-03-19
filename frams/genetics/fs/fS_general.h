@@ -15,6 +15,7 @@
 #include <iterator>
 #include <math.h>
 #include <cctype>
+#include <algorithm>
 #include "common/Convert.h"
 #include "frams/genetics/genooperators.h"
 #include "frams/util/3d.h"

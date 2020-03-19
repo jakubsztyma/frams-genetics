@@ -7,13 +7,14 @@
 
 #include "../genooperators.h"
 
+using namespace std;
+
 class fS_Operators : public GenoOperators{
 public:
     int crossOver(char *&g1, char *&g2, float& chg1, float& chg2);
 
-    int checkValidity(const char *geno, const char *genoname) { return GENOPER_OK; }
+    int checkValidity(const char *geno, const char *genoname);
 
-    // TODO implement checkValidity
     int mutate(char *&geno, float& chg, int &method);
 };
 
