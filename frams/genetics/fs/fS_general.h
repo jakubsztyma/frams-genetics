@@ -49,17 +49,17 @@ class Node {
     friend class fS_Operators;
 
 private:
-    bool isStart;
-    char part_type;
-    Part *part;
-    unsigned int childSize = 0;
+    bool isStart;   /// Is a starting node of whole genotype
+    char partType; /// The type of the part (E, P, C)
+    Part *part;     /// A part object built from node. Used in building the Model
+    unsigned int childSize = 0; /// The number of direct children
+
+    map<string, double> params; /// The map of all the node params
+    vector<Node *> children;    /// Vector of all direct children
+    vector<char> modifiers;     /// Vector of all modifiers
+    set<char> joints;           /// Set of all joints
 
     int getPartPosition(SString restOfGenotype);
-
-    map<string, double> params;
-    vector<Node *> children;
-    vector<char> modifiers;
-    set<char> joints;
 
     double getParam(string key, double defaultValue);
 
@@ -79,19 +79,23 @@ private:
 
     void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
 
-    void getTree(vector<Node *> &allNodes);
+    void getAllNodes(vector<Node *> &allNodes);
 
     Part *buildModel(Model *model);
 
 public:
-    State *state = nullptr;
-    Mode *mode;
+    State *state = nullptr; /// The phenotypic state, that inherits from ancestors
+    Mode *mode; /// The mode in which the representation works
 
     Node(const SString &genotype, Mode *_mode, bool _isStart);
 
     ~Node();
 
-    SString getGeno(SString &result);
+    /**
+     * Get fS representation of the subtree that starts from this noce
+     * @param result the reference to an object which is used to contain fS genotype
+     */
+    void getGeno(SString &result);
 };
 
 class fS_Genotype {
@@ -100,49 +104,131 @@ class fS_Genotype {
     friend class fS_Operators;
 
 private:
-    Node *start_node;
+    Node *startNode;    /// The start (root) node. All other nodes are it's descendants
 
-    vector<Node *> getTree();
+    /**
+     * Get all existing nodes
+     * @return vector of all nodes
+     */
+    vector<Node *> getAllNodes();
 
+    /**
+     * Draws a node, which has a index greater that specified
+     * @param fromIndex minimal index of the node
+     * @return pointer to drawn node
+     */
     Node *chooseNode(int fromIndex);
 
+    /**
+     * Draws an integer value from given range
+     * @param to maximal value
+     * @param from minimal value
+     * @return Drawn value
+     */
     int randomFromRange(int to, int from);
 
+    /**
+     * Draws a value from defined distribution
+     * @return Drawn value
+     */
     void randomFromDistribution();
 
+    /**
+     * Find a node that is nearest (euclidean distance to specified node) and is not a child of specified node
+     * @return Nearest node
+     */
     Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
-    int getPartCount();
+    /**
+     * Counts all the nodes in genotyp
+     * @return node count
+     */
+    int getNodeCount();
 
+    /**
+     * Build internal representation from fS format
+     * @param genotype in fS format
+     */
     fS_Genotype(const SString &genotype);
 
     ~fS_Genotype();
 
+    /**
+     * Builds Model object from internal representation
+     * @param pointer to model that will contain a built model
+     */
     void buildModel(Model *model);
 
+    /**
+     * @return genotype in fS format
+     */
     SString getGeno();
 
+    /**
+     * Performs add joint mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool addJoint();
 
+    /**
+     * Performs remove mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool removeJoint();
 
+    /**
+     * Performs add part mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool addPart();
 
+    /**
+     * Performs change part type mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool changePartType();
 
+    /**
+     * Performs remove part type mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool removePart();
 
+    /**
+     * Performs add param mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool addParam();
 
+    /**
+     * Performs remove param mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool removeParam();
 
+    /**
+     * Performs change param mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool changeParam();
 
+    /**
+     * Performs add modifier mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool addModifier();
 
+    /**
+     * Performs remove modifier mutation on genotype
+     * @return true if mutation succeeded, false otherwise
+     */
     bool removeModifier();
 
+    /**
+     * Performs mutation on genotype.
+     * @return true if mutation succeeded, false otherwise
+     */
     void mutate();
 };
 

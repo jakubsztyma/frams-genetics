@@ -139,7 +139,7 @@ SString Node::extractModifiers(SString restOfGenotype) {
 }
 
 SString Node::extractPartType(SString restOfGenotype) {
-    part_type = restOfGenotype[0];
+    partType = restOfGenotype[0];
     return restOfGenotype.substr(1, INT_MAX);
 }
 
@@ -248,14 +248,14 @@ Part *Node::buildModel(Model *model) {
 }
 
 void Node::createPart() {
-    Part::Shape model_part_type;
-    if (part_type == 'E')
-        model_part_type = Part::Shape::SHAPE_ELLIPSOID;
-    else if (part_type == 'P')
-        model_part_type = Part::Shape::SHAPE_CUBOID;
-    else if (part_type == 'C')
-        model_part_type = Part::Shape::SHAPE_CYLINDER;
-    part = new Part(model_part_type);
+    Part::Shape model_partType;
+    if (partType == 'E')
+        model_partType = Part::Shape::SHAPE_ELLIPSOID;
+    else if (partType == 'P')
+        model_partType = Part::Shape::SHAPE_CUBOID;
+    else if (partType == 'C')
+        model_partType = Part::Shape::SHAPE_CYLINDER;
+    part = new Part(model_partType);
 
     part->p = Pt3D(round2(state->location.x),
                    round2(state->location.y),
@@ -294,12 +294,12 @@ void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPa
 }
 
 
-SString Node::getGeno(SString &result) {
+void Node::getGeno(SString &result) {
     for (auto it = joints.begin(); it != joints.end(); ++it)
         result += *it;
     for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
         result += *it;
-    result += part_type;
+    result += partType;
 
     if (params.size() > 0) {
         result += PARAM_START;
@@ -325,13 +325,12 @@ SString Node::getGeno(SString &result) {
         children[childSize - 1]->getGeno(result);
         result += BRANCH_END;
     }
-    return result;
 }
 
-void Node::getTree(vector<Node *> &allNodes) {
+void Node::getAllNodes(vector<Node *> &allNodes) {
     allNodes.push_back(this);
     for (unsigned int i = 0; i < childSize; i++)
-        children[i]->getTree(allNodes);
+        children[i]->getAllNodes(allNodes);
 }
 
 fS_Genotype::fS_Genotype(const SString &genotype) {
@@ -339,21 +338,21 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
     int modeSeparatorIndex = genotype.indexOf(':');
     SString modeStr = genotype.substr(0, modeSeparatorIndex);
     Mode *mode = new Mode(modeStr);
-    start_node = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), mode, true);
+    startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), mode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
-    delete start_node->mode;
-    delete start_node;
+    delete startNode->mode;
+    delete startNode;
 }
 
 void fS_Genotype::buildModel(Model *model) {
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-    start_node->getState(initialState, 1.0, 1.0, 1.0);
-    start_node->buildModel(model);
+    startNode->getState(initialState, 1.0, 1.0, 1.0);
+    startNode->buildModel(model);
 
     // Additional joints
-    vector < Node * > allNodes = getTree();
+    vector < Node * > allNodes = getAllNodes();
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find("jd") != node->params.end()) {
@@ -392,20 +391,20 @@ SString fS_Genotype::getGeno() {
     SString geno;
     geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
 
-    if(start_node->mode->modifier)
+    if(startNode->mode->modifier)
         geno += MODIFIER_MODE;
-    if(start_node->mode->param)
+    if(startNode->mode->param)
         geno += PARAM_MODE;
-    if(start_node->mode->cycle)
+    if(startNode->mode->cycle)
         geno += CYCLE_MODE;
 
     geno += ':';
-    start_node->getGeno(geno);
+    startNode->getGeno(geno);
     return geno;
 }
 
-int fS_Genotype::getPartCount() {
-    vector < Node * > allNodes = getTree();
+int fS_Genotype::getNodeCount() {
+    vector < Node * > allNodes = getAllNodes();
     return allNodes.size();
 }
 
@@ -417,20 +416,20 @@ double getRandomFromDistribution() {
     return distribution(generator);
 }
 
-vector<Node *> fS_Genotype::getTree() {
+vector<Node *> fS_Genotype::getAllNodes() {
     vector < Node * > allNodes;
-    start_node->getTree(allNodes);
+    startNode->getAllNodes(allNodes);
     return allNodes;
 }
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector < Node * > allNodes = getTree();
+    vector < Node * > allNodes = getAllNodes();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
 
 bool fS_Genotype::addJoint() {
-    if (start_node->childSize < 1)
+    if (startNode->childSize < 1)
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -444,7 +443,7 @@ bool fS_Genotype::addJoint() {
 
 
 bool fS_Genotype::removeJoint() {
-    if (start_node->childSize < 1) // Only one node; there are no joints
+    if (startNode->childSize < 1) // Only one node; there are no joints
         return false;
 
     Node *randomNode = chooseNode(1);    // First part does not have joints
@@ -487,7 +486,7 @@ bool fS_Genotype::addParam() {
     if (paramCount == PARAMS.size())
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
-    if(chosenParam == "jd" && !start_node->mode->cycle)
+    if(chosenParam == "jd" && !startNode->mode->cycle)
         return false;
     if (randomNode->params.count(chosenParam) > 0)
         return false;
@@ -525,9 +524,9 @@ bool fS_Genotype::addPart() {
 bool fS_Genotype::changePartType() {
     Node *randomNode = chooseNode();
     char newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
-    if (newType == randomNode->part_type)
+    if (newType == randomNode->partType)
         return false;
-    randomNode->part_type = newType;
+    randomNode->partType = newType;
     return true;
 }
 
@@ -549,12 +548,12 @@ bool fS_Genotype::removeModifier() {
 void fS_Genotype::mutate() {
 //    int operationCount = 5;
     double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, };
-    if(!start_node->mode->param){
+    if(!startNode->mode->param){
         operations[5] = 0.0;
         operations[6] = 0.0;
         operations[7] = 0.0;
     }
-    if(!start_node->mode->modifier) {
+    if(!startNode->mode->modifier) {
         operations[8] = 0.0;
         operations[9] = 0.0;
     }

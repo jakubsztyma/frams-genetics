@@ -12,7 +12,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2) {
     int parentCount = 2;
     fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
 
-    if (parents[0]->start_node->childSize == 0 || parents[1]->start_node->childSize == 0) {
+    if (parents[0]->startNode->childSize == 0 || parents[1]->startNode->childSize == 0) {
         delete parents[0];
         delete parents[1];
         return GENOPER_OPFAIL;
@@ -21,7 +21,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2) {
     Node *chosen[parentCount];
     int indexes[2];
     for (int i = 0; i < parentCount; i++) {
-        vector < Node * > allNodes = parents[i]->getTree();
+        vector < Node * > allNodes = parents[i]->getAllNodes();
         do {
             chosen[i] = allNodes[parents[i]->randomFromRange(allNodes.size(), 0)];
         } while (chosen[i]->childSize == 0);
@@ -191,7 +191,6 @@ int main() {
         cout << test[0].c_str() << endl;
         if (true) {
             MultiMap map;
-            cout<<converter.convert(genotype_str, &map, false).c_str()<<endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -202,7 +201,7 @@ int main() {
             ////Test operations
             // Test part count
             fS_Genotype geno2(test_cases[i][0]);
-            assert(geno2.getPartCount() == expectedPartCount[i]);
+            assert(geno2.getNodeCount() == expectedPartCount[i]);
 
             // Test add joint
             fS_Genotype geno3(genotype_str);
@@ -224,16 +223,16 @@ int main() {
 
             // Test add part
             fS_Genotype geno6(genotype_str);
-            tmp = geno6.getPartCount();
+            tmp = geno6.getNodeCount();
             geno6.addPart();
-            assert(tmp + 1 == geno6.getPartCount());
+            assert(tmp + 1 == geno6.getNodeCount());
 
             // Test remove part
             fS_Genotype geno7(genotype_str);
-            tmp = geno7.getPartCount();
+            tmp = geno7.getNodeCount();
             success = geno7.removePart();
             if (success)
-                assert(tmp == 1 + geno7.getPartCount());
+                assert(tmp == 1 + geno7.getNodeCount());
 
             // Test change param
             fS_Genotype geno8(genotype_str);
@@ -249,10 +248,10 @@ int main() {
 
             // Test change part
             fS_Genotype geno11(genotype_str);
-            tmp = geno11.getPartCount();
+            tmp = geno11.getNodeCount();
             success = geno11.changePartType();
             if (success)
-                assert(tmp == geno11.getPartCount());
+                assert(tmp == geno11.getNodeCount());
 
             // Test remove modifier
             fS_Genotype geno12(genotype_str);
