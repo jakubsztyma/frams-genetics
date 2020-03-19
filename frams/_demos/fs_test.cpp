@@ -269,8 +269,8 @@ int main() {
     }
 
     fS_Operators operators;
-    SString *g1 = new SString("S:EE{sx=3.0;sy=3.0;sz=3.0}");
-    SString *g2 = new SString("S:C{jd=3.9}CC");
+    SString *g1 = new SString("SM:EE{sx=3.0;sy=3.0;sz=3.0}");
+    SString *g2 = new SString("SM:C{jd=3.9}CC");
     for (int i = 0; i < 100; i++) {
         cout << g1->c_str() << endl;
         cout << g2->c_str() << endl;

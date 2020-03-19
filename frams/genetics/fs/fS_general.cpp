@@ -32,7 +32,7 @@ const string PART_TYPES = "EPC";
 const vector <string> PARAMS{"fr", "rx", "ry", "rz", "jd"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "Ff";
+const string MODIFIERS = "f";
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
@@ -189,12 +189,10 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
     // Update state by modifiers
     for (unsigned int i = 0; i < modifiers.size(); i++) {
         char mod = modifiers[i];
-        switch (mod) {
-            case 'F':
-                state->fr *= MULTIPLIER;
-                break;
+        double multiplier = isupper(mod) ? MULTIPLIER : 1.0 / MULTIPLIER;
+        switch (tolower(mod)) {
             case 'f':
-                state->fr /= MULTIPLIER;
+                state->fr *= multiplier;
                 break;
         }
     }
@@ -533,6 +531,8 @@ bool fS_Genotype::changePartType() {
 bool fS_Genotype::addModifier() {
     Node *randomNode = chooseNode();
     char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
+    if(1 == random() % 2)
+        randomModifier = toupper(randomModifier);
     randomNode->modifiers.push_back(randomModifier);
     return true;
 }
