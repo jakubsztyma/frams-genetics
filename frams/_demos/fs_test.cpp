@@ -260,8 +260,11 @@ int main() {
     };
     const int invalidCount = 5;
     for(int i=0; i<invalidCount; i++){
-        cout<<invalidGenotypes[i].c_str()<<" "<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
+        MultiMap map;
+        cout<<invalidGenotypes[i].c_str()<<endl;
         assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
+        SString genes = converter.convert(invalidGenotypes[i], &map, false);
+        assert(genes == "");
     }
 
     SString *g1 = new SString("SM:EE{sx=3.0;sy=3.0;sz=3.0}");

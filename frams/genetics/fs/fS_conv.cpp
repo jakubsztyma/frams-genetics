@@ -12,7 +12,6 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints=
         genotype = new fS_Genotype(i);
     }
     catch (const char *msg){
-        delete genotype;
         return SString();
     }
 

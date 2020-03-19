@@ -153,7 +153,7 @@ private:
 
 public:
     State *state = nullptr; /// The phenotypic state, that inherits from ancestors
-    Mode *mode; /// The mode in which the representation works
+    Mode *mode = nullptr; /// The mode in which the representation works
 
     Node(const SString &genotype, Mode *_mode, bool _isStart);
 
@@ -172,7 +172,7 @@ class fS_Genotype {
     friend class fS_Operators;
 
 private:
-    Node *startNode;    /// The start (root) node. All other nodes are it's descendants
+    Node *startNode = nullptr;    /// The start (root) node. All other nodes are it's descendants
 
     /**
      * Get all existing nodes
