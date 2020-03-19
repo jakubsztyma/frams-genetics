@@ -24,22 +24,33 @@ using namespace std;
 
 class Mode {
 public:
-    bool cycle, modifier, param;
+    bool cycle, modifier, param; /// Possible modes
 
     Mode(SString modeStr);
 };
 
 class State {
 public:
-    Pt3D location, v;
-    double fr;
+    Pt3D location;  /// Location of the node
+    Pt3D v;         /// The normalised vector in which current branch develops
+    double fr;      /// Friction multiplier
 
-    State(State *_state);
+    State(State *_state); /// Derive the state from parent
 
-    State(Pt3D _location, Pt3D _v);
+    State(Pt3D _location, Pt3D _v); /// Create the state from parameters
 
+    /**
+     * Add the vector of specified length to location
+     * @param length the length of the vector
+     */
     void addVector(double length);
 
+    /**
+     * Rotate the vector by specified values
+     * @param rx rotation by x axis
+     * @param ry rotation by y axis
+     * @param rz rotation by z axis
+     */
     void rotate(double rx, double ry, double rz);
 };
 
@@ -59,28 +70,79 @@ private:
     vector<char> modifiers;     /// Vector of all modifiers
     set<char> joints;           /// Set of all joints
 
+    /**
+     * Get the position of part type in genotype
+     *
+     * @return the position of part type
+     */
     int getPartPosition(SString restOfGenotype);
 
+    /**
+     * Extract the value of parameter or return default if parameter not exists
+     * @return the param value
+     */
     double getParam(string key, double defaultValue);
 
+    /**
+     * Extract modifiers from the rest of genotype
+     * @return the remainder of the genotype
+     */
     SString extractModifiers(SString restOfGenotype);
 
+    /**
+     * Extract part type from the rest of genotype
+     * @return the remainder of the genotype
+     */
     SString extractPartType(SString restOfGenotype);
 
+    /**
+     * Extract params from the rest of genotype
+     * @return the remainder of the genotype
+     */
     SString extractParams(SString restOfGenotype);
 
+    /**
+     * Extract child branches from the rest of genotype
+     * @return vector of child branches
+     */
     vector <SString> getBranches(SString restOfGenotype);
 
+    /**
+     * Get phenotypic state that derives from ancestors.
+     * Used when building model
+     * @param _state state of the parent
+     */
     void getState(State *_state, double psx, double psy, double psz);
 
+    /**
+     * Build children internal representations from fS genotype
+     * @param restOfGenotype part of genotype that describes the subtree
+     */
     void getChildren(SString restOfGenotype);
 
+    /**
+     * Create part object from internal representation
+     */
     void createPart();
 
-    void addJointsToModel(Model *model, Node *child, Part *part, Part *childPart);
+    /**
+     * Add joints between current node and the specified child
+     * Used in building model
+     * @param mode pointer to build model
+     * @param child pointer to the child
+     */
+    void addJointsToModel(Model *model, Node *child);
 
+    /**
+     * Get all the nodes from the subtree that starts in this node
+     * @param reference to vector which contains nodes
+     */
     void getAllNodes(vector<Node *> &allNodes);
 
+    /**
+     * Build model from the subtree that starts in this node
+     * @param pointer to model
+     */
     Part *buildModel(Model *model);
 
 public:

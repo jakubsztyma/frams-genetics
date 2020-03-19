@@ -242,7 +242,7 @@ Part *Node::buildModel(Model *model) {
                         getParam("sy", DEFAULT_RADIUS),
                         getParam("sz", DEFAULT_RADIUS));
         child->buildModel(model);
-        addJointsToModel(model, child, part, child->part);
+        addJointsToModel(model, child);
     }
     return part;
 }
@@ -267,16 +267,16 @@ void Node::createPart() {
     part->scale.z = getParam("sz", DEFAULT_RADIUS);
 }
 
-void Node::addJointsToModel(Model *model, Node *child, Part *part, Part *childPart) {
+void Node::addJointsToModel(Model *model, Node *child) {
     if (child->joints.empty()) {
         Joint *joint = new Joint();
         joint->shape = Joint::Shape::SHAPE_FIXED;
-        joint->attachToParts(part, childPart);
+        joint->attachToParts(part, child->part);
         model->addJoint(joint);
     } else {
         for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
-            joint->attachToParts(part, childPart);
+            joint->attachToParts(part, child->part);
             switch (*it) {
                 case 'b':
                     joint->shape = Joint::Shape::SHAPE_B;
