@@ -25,14 +25,22 @@ using namespace std;
 #define DEFAULT_JOINT 'a'
 #define MULTIPLIER 1.1
 #define JOINT_COUNT 4
-#define DEFAULT_FR 0.4
-#define DEFAULT_RADIUS 1.0
 
 const string PART_TYPES = "EPC";
-const vector <string> PARAMS{"fr", "rx", "ry", "rz", "jd"};
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "f";
+const vector <string> PARAMS{"fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
+const map<string, double> defaultParamValues = {
+        {"fr", 0.4},
+        {"rx", 0.0},
+        {"ry", 0.0},
+        {"rz", 0.0},
+        {"sx", 1.0},
+        {"sy", 1.0},
+        {"sz", 1.0},
+        {"jd", 1.0}
+};
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
@@ -159,12 +167,12 @@ SString Node::extractParams(SString restOfGenotype) {
     return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
 }
 
-double Node::getParam(string key, double defaultValue) {
+double Node::getParam(string key) {
     auto item = params.find(key);
     if (item != params.end())
         return item->second;
     else
-        return defaultValue;
+        return defaultParamValues.at(key);
 }
 
 void Node::getState(State *_state, double psx, double psy, double psz) {
@@ -174,12 +182,12 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         state = new State(_state);
 
         // Rotate
-        double rx = getParam("rx", 0.0);
-        double ry = getParam("ry", 0.0);
-        double rz = getParam("rz", 0.0);
-        double sx = getParam("sx", DEFAULT_RADIUS);
-        double sy = getParam("sy", DEFAULT_RADIUS);
-        double sz = getParam("sz", DEFAULT_RADIUS);
+        double rx = getParam("rx");
+        double ry = getParam("ry");
+        double rz = getParam("rz");
+        double sx = getParam("sx");
+        double sy = getParam("sy");
+        double sz = getParam("sz");
         state->rotate(rx, ry, rz);
 
         double distance = (psx + psy + psz + sx + sy + sz) / 3;
@@ -236,9 +244,9 @@ Part *Node::buildModel(Model *model) {
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
         child->getState(state,
-                        getParam("sx", DEFAULT_RADIUS),
-                        getParam("sy", DEFAULT_RADIUS),
-                        getParam("sz", DEFAULT_RADIUS));
+                        getParam("sx"),
+                        getParam("sy"),
+                        getParam("sz"));
         child->buildModel(model);
         addJointsToModel(model, child);
     }
@@ -259,10 +267,10 @@ void Node::createPart() {
                    round2(state->location.y),
                    round2(state->location.z)
     );
-    part->friction = round2(getParam("fr", DEFAULT_FR) * state->fr);
-    part->scale.x = getParam("sx", DEFAULT_RADIUS);
-    part->scale.y = getParam("sy", DEFAULT_RADIUS);
-    part->scale.z = getParam("sz", DEFAULT_RADIUS);
+    part->friction = round2(getParam("fr") * state->fr);
+    part->scale.x = getParam("sx");
+    part->scale.y = getParam("sy");
+    part->scale.z = getParam("sz");
 }
 
 void Node::addJointsToModel(Model *model, Node *child) {
@@ -484,12 +492,13 @@ bool fS_Genotype::addParam() {
     if (paramCount == PARAMS.size())
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
+    // Not allow jd when cycle mode is not on
     if(chosenParam == "jd" && !startNode->mode->cycle)
         return false;
     if (randomNode->params.count(chosenParam) > 0)
         return false;
-    // TODO sensible values for params
-    randomNode->params[chosenParam] = 0.5;
+    // Add modified default value for param
+    randomNode->params[chosenParam] = defaultParamValues.at(chosenParam) + getRandomFromDistribution();
     return true;
 }
 

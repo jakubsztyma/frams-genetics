@@ -82,7 +82,7 @@ private:
      * Extract the value of parameter or return default if parameter not exists
      * @return the param value
      */
-    double getParam(string key, double defaultValue);
+    double getParam(string key);
 
     /**
      * Extract modifiers from the rest of genotype
