@@ -36,6 +36,7 @@ public:
     Pt3D location;  /// Location of the node
     Pt3D v;         /// The normalised vector in which current branch develops
     double fr = 1.0;      /// Friction multiplier
+    double ing = 1.0;      /// Ingestion multiplier
     double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
 
     State(State *_state); /// Derive the state from parent

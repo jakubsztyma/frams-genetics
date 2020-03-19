@@ -29,8 +29,8 @@ int countParams(SString genotype) {
 }
 
 int countModifiers(SString genotype) {
-    int count = 8;
-    char signs[count] = {'F', 'f', 'X', 'x', 'Y', 'y', 'Z', 'z'};
+    int count = 10;
+    char signs[count] = {'I', 'i', 'F', 'f', 'X', 'x', 'Y', 'y', 'Z', 'z'};
     return countSigns(genotype, signs, count);
 }
 
@@ -156,11 +156,19 @@ int main() {
             {"M:XYYZZZEE",                           "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "p:2.66, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
+            {"M:IE",                                 "p:sh=1, ing=0.28\n"},  // Ingestion modifier
+            {"M:iE",                                 "p:sh=1, ing=0.23\n"},  // Ingestion modifier
+            {"M:IIIIiiE",                            "p:sh=1, ing=0.3\n"},  // Ingestion modifier
+            {"S:E{ing=0.3}E{ing=0.5}",               "p:sh=1, ing=0.3\n"     // Ingestion param
+                                                     "p:2.0, sh=1, ing=0.5\n"
+                                                     "j:0, 1, sh=1\n"},
+            {"MS:IIIIiiE{ing=0.5}",                  "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
     };
     bool success = false;
     int tmp = -1;
-    const int size = 29;
-    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2, 2};
+    const int size = 34;
+    int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
+                               2, 1, 1, 1, 2, 1};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
@@ -169,7 +177,7 @@ int main() {
         cout << test[0].c_str() << endl;
         if (true) {
             MultiMap map;
-            cout<<converter.convert(genotype_str, &map, false).c_str()<<endl;
+            cout << converter.convert(genotype_str, &map, false).c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -259,9 +267,9 @@ int main() {
 //            "S:E{fr=fr}",    // Wrong param value
     };
     const int invalidCount = 5;
-    for(int i=0; i<invalidCount; i++){
+    for (int i = 0; i < invalidCount; i++) {
         MultiMap map;
-        cout<<invalidGenotypes[i].c_str()<<endl;
+        cout << invalidGenotypes[i].c_str() << endl;
         assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
         SString genes = converter.convert(invalidGenotypes[i], &map, false);
         assert(genes == "");

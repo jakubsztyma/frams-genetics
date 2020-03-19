@@ -29,9 +29,10 @@ using namespace std;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
-const string MODIFIERS = "fxyz";
-const vector <string> PARAMS{"fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
+const string MODIFIERS = "ifxyz";
+const vector <string> PARAMS{"ing", "fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
 const map<string, double> defaultParamValues = {
+        {"ing", 0.25},
         {"fr", 0.4},
         {"rx", 0.0},
         {"ry", 0.0},
@@ -206,6 +207,9 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         char mod = modifiers[i];
         double multiplier = isupper(mod) ? MULTIPLIER : 1.0 / MULTIPLIER;
         switch (tolower(mod)) {
+            case 'i':
+                state->ing *= multiplier;
+                break;
             case 'f':
                 state->fr *= multiplier;
                 break;
@@ -299,6 +303,7 @@ void Node::createPart() {
                    round2(state->location.z)
     );
     part->friction = round2(getParam("fr") * state->fr);
+    part->ingest = round2(getParam("ing") * state->ing);
     part->scale.x = round2(getSx());
     part->scale.y = round2(getSy());
     part->scale.z = round2(getSz());
