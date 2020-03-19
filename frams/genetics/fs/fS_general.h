@@ -24,12 +24,6 @@
 
 using namespace std;
 
-class Mode {
-public:
-    bool cycle, modifier, param; /// Possible modes
-
-    Mode(SString modeStr);
-};
 
 class State {
 public:
@@ -64,6 +58,7 @@ class Node {
     friend class fS_Operators;
 
 private:
+    bool cycleMode, modifierMode, paramMode; /// Possible modes
     bool isStart;   /// Is a starting node of whole genotype
     char partType; /// The type of the part (E, P, C)
     Part *part;     /// A part object built from node. Used in building the Model
@@ -154,9 +149,8 @@ private:
 
 public:
     State *state = nullptr; /// The phenotypic state, that inherits from ancestors
-    Mode *mode = nullptr; /// The mode in which the representation works
 
-    Node(const SString &genotype, Mode *_mode, bool _isStart);
+    Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
     ~Node();
 

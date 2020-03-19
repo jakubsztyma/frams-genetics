@@ -30,17 +30,17 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{"ing", "fr", "rx", "ry", "rz", "sx", "sy", "sz",  "jd"};
+const vector <string> PARAMS{"ing", "fr", "rx", "ry", "rz", "sx", "sy", "sz", "jd"};
 const map<string, double> defaultParamValues = {
         {"ing", 0.25},
-        {"fr", 0.4},
-        {"rx", 0.0},
-        {"ry", 0.0},
-        {"rz", 0.0},
-        {"sx", 1.0},
-        {"sy", 1.0},
-        {"sz", 1.0},
-        {"jd", 1.0}
+        {"fr",  0.4},
+        {"rx",  0.0},
+        {"ry",  0.0},
+        {"rz",  0.0},
+        {"sx",  1.0},
+        {"sy",  1.0},
+        {"sz",  1.0},
+        {"jd",  1.0}
 };
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
@@ -50,20 +50,20 @@ double round2(double var) {
     return (double) value / 100;
 }
 
-double max3(double x1, double x2, double x3){
+double max3(double x1, double x2, double x3) {
     double tmp = x1;
-    if(x2 > tmp)
+    if (x2 > tmp)
         tmp = x2;
-    if(x3 > tmp)
+    if (x3 > tmp)
         tmp = x3;
     return tmp;
 }
 
 const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
-vector<SString> split(SString str, char delim) {
+vector <SString> split(SString str, char delim) {
     // TODO optimize
-    vector<SString> arr;
+    vector <SString> arr;
     int index = 0, new_index = 0, arrayIndex = 0;
     while (true) {
         new_index = str.indexOf(delim, index);
@@ -76,12 +76,6 @@ vector<SString> split(SString str, char delim) {
         index = new_index + 1;
     }
     return arr;
-}
-
-Mode::Mode(SString modeStr){
-    modifier = -1 != modeStr.indexOf(MODIFIER_MODE);
-    param = -1 != modeStr.indexOf(PARAM_MODE);
-    cycle = -1 != modeStr.indexOf(CYCLE_MODE);
 }
 
 State::State(State *_state) {
@@ -114,9 +108,11 @@ void State::rotate(double rx, double ry, double rz) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, Mode *_mode, bool _isStart = false) {
+Node::Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false) {
     isStart = _isStart;
-    mode = _mode;
+    modifierMode = _modifierMode;
+    paramMode = _paramMode;
+    cycleMode = _cycleMode;
     SString restOfGenotype = extractModifiers(genotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
@@ -144,7 +140,7 @@ int Node::getPartPosition(SString restOfGenotype) {
 
 SString Node::extractModifiers(SString restOfGenotype) {
     int partTypePosition = getPartPosition(restOfGenotype);
-    if(partTypePosition == -1)
+    if (partTypePosition == -1)
         throw "Part type missing";
     // Get a string containing all modifiers and joints for this node
     SString modifierString = restOfGenotype.substr(0, partTypePosition);
@@ -154,7 +150,7 @@ SString Node::extractModifiers(SString restOfGenotype) {
         char mType = modifierString[i];
         if (OTHER_JOINTS.find(mType) != string::npos)
             joints.insert(mType);
-        else if(MODIFIERS.find(tolower(mType)) != string::npos)
+        else if (MODIFIERS.find(tolower(mType)) != string::npos)
             modifiers.push_back(mType);
         else
             throw "Invalid modifier";
@@ -164,7 +160,7 @@ SString Node::extractModifiers(SString restOfGenotype) {
 
 SString Node::extractPartType(SString restOfGenotype) {
     partType = restOfGenotype[0];
-    if(PART_TYPES.find(partType) == string::npos)
+    if (PART_TYPES.find(partType) == string::npos)
         throw "Invalid part type";
     return restOfGenotype.substr(1, INT_MAX);
 }
@@ -172,11 +168,11 @@ SString Node::extractPartType(SString restOfGenotype) {
 SString Node::extractParams(SString restOfGenotype) {
     int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-    vector<SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+    vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
     for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
         SString keyValue = keyValuePairs[i];
         int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
-        if(-1 == separatorIndex)
+        if (-1 == separatorIndex)
             throw "Parameter separator expected";
         string key = keyValue.substr(0, separatorIndex).c_str();
         // TODO optimize, handle wrong value
@@ -225,7 +221,7 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         }
     }
 
-    if (!isStart){
+    if (!isStart) {
         // Rotate
         double rx = getParam("rx");
         double ry = getParam("ry");
@@ -244,7 +240,7 @@ void Node::getChildren(SString restOfGenotype) {
     vector <SString> branches = getBranches(restOfGenotype);
     childSize = branches.size();
     for (unsigned int i = 0; i < childSize; i++)
-        children.push_back(new Node(branches[i], mode));
+        children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
 }
 
 vector <SString> Node::getBranches(SString restOfGenotype) {
@@ -271,9 +267,11 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     return children;
 }
 
-double Node::getSx(){return getParam("sx") * state->sx;}
-double Node::getSy(){return getParam("sy") * state->sy;}
-double Node::getSz(){return getParam("sz") * state->sz;}
+double Node::getSx() { return getParam("sx") * state->sx; }
+
+double Node::getSy() { return getParam("sy") * state->sy; }
+
+double Node::getSz() { return getParam("sz") * state->sz; }
 
 Part *Node::buildModel(Model *model) {
     createPart();
@@ -378,15 +376,17 @@ void Node::getAllNodes(vector<Node *> &allNodes) {
 fS_Genotype::fS_Genotype(const SString &genotype) {
     // M - modifier mode, S - standard mode
     int modeSeparatorIndex = genotype.indexOf(':');
-    if(modeSeparatorIndex == -1)
+    if (modeSeparatorIndex == -1)
         throw "No mode separator";
+
     SString modeStr = genotype.substr(0, modeSeparatorIndex);
-    Mode *mode = new Mode(modeStr);
-    startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), mode, true);
+    bool modifierMode = -1 != modeStr.indexOf(MODIFIER_MODE);
+    bool paramMode = -1 != modeStr.indexOf(PARAM_MODE);
+    bool cycleMode = -1 != modeStr.indexOf(CYCLE_MODE);
+    startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), modifierMode, paramMode, cycleMode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
-    delete startNode->mode;
     delete startNode;
 }
 
@@ -435,11 +435,11 @@ SString fS_Genotype::getGeno() {
     SString geno;
     geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
 
-    if(startNode->mode->modifier)
+    if (startNode->modifierMode)
         geno += MODIFIER_MODE;
-    if(startNode->mode->param)
+    if (startNode->paramMode)
         geno += PARAM_MODE;
-    if(startNode->mode->cycle)
+    if (startNode->cycleMode)
         geno += CYCLE_MODE;
 
     geno += ':';
@@ -531,7 +531,7 @@ bool fS_Genotype::addParam() {
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
     // Not allow jd when cycle mode is not on
-    if(chosenParam == "jd" && !startNode->mode->cycle)
+    if (chosenParam == "jd" && !startNode->cycleMode)
         return false;
     if (randomNode->params.count(chosenParam) > 0)
         return false;
@@ -561,7 +561,7 @@ bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType;
     partType += PART_TYPES[randomFromRange(3, 0)];
-    Node *newNode = new Node(partType, randomNode->mode);
+    Node *newNode = new Node(partType, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;
     return true;
@@ -579,7 +579,7 @@ bool fS_Genotype::changePartType() {
 bool fS_Genotype::addModifier() {
     Node *randomNode = chooseNode();
     char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
-    if(1 == random() % 2)
+    if (1 == random() % 2)
         randomModifier = toupper(randomModifier);
     randomNode->modifiers.push_back(randomModifier);
     return true;
@@ -595,13 +595,13 @@ bool fS_Genotype::removeModifier() {
 
 void fS_Genotype::mutate() {
 //    int operationCount = 5;
-    double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, };
-    if(!startNode->mode->param){
+    double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,};
+    if (!startNode->paramMode) {
         operations[5] = 0.0;
         operations[6] = 0.0;
         operations[7] = 0.0;
     }
-    if(!startNode->mode->modifier) {
+    if (!startNode->modifierMode) {
         operations[8] = 0.0;
         operations[9] = 0.0;
     }
