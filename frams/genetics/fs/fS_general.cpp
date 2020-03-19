@@ -49,6 +49,15 @@ double round2(double var) {
     return (double) value / 100;
 }
 
+double max3(double x1, double x2, double x3){
+    double tmp = x1;
+    if(x2 > tmp)
+        tmp = x2;
+    if(x3 > tmp)
+        tmp = x3;
+    return tmp;
+}
+
 const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
 vector<SString> split(SString str, char delim) {
@@ -222,7 +231,7 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         double sz = getSz();
         state->rotate(rx, ry, rz);
 
-        double distance = (psx + psy + psz + sx + sy + sz) / 3;
+        double distance = max3(psx, psy, psz) + max3(sx, sy, sz);
         state->addVector(distance);
     }
 }

@@ -142,7 +142,7 @@ int main() {
                                                      "j:0, 1, sh=1\n"
                                                      "j:0, 2, sh=1\n"},
             {"S:EE{sx=3.0}",                         "p:sh=1\n"
-                                                     "p:2.67, sh=1, sx=3.0\n"
+                                                     "p:4.0, sh=1, sx=3.0\n"
                                                      "j:0, 1, sh=1\n"},
             {"S:EE{sx=3.0;sy=3.0;sz=3.0}",           "p:sh=1\n"
                                                      "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
@@ -151,10 +151,10 @@ int main() {
             {"M:xxE",                                "p:sh=1, sx=0.83\n"},  // sx modifier
             {"M:XYYZZZE",                            "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"},  // size modifiers
             {"M:EXYYZZZE",                           "p:sh=1\n"
-                                                     "p:2.21, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.33, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
             {"M:XYYZZZEE",                           "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
-                                                     "p:2.43, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.66, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
     };
     bool success = false;
