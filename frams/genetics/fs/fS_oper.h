@@ -5,18 +5,16 @@
 #ifndef CPP_FS_OPER_H
 #define CPP_FS_OPER_H
 
-class fS_Operators{
+#include "../genooperators.h"
+
+class fS_Operators : public GenoOperators{
 public:
-    int mutate(char *&geno, float& chg, int &method){
-        fS_Genotype genotype(geno);
-        genotype.mutate();
-
-        free(geno);
-        geno = strdup(genotype.getGeno().c_str());
-        return GENOPER_OK;
-    }
-
     int crossOver(char *&g1, char *&g2, float& chg1, float& chg2);
+
+    int checkValidity(const char *geno, const char *genoname) { return GENOPER_OK; }
+
+    // TODO implement checkValidity
+    int mutate(char *&geno, float& chg, int &method);
 };
 
 #endif //CPP_FS_OPER_H

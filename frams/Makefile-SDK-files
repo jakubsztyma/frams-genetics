@@ -4,7 +4,7 @@
 ALL_DIRS={common,PrintFloat,frams,frams/canvas,frams/config,common/loggers,frams/genetics,frams/genetics/f0,frams/genetics/f1,frams/genetics/f2,frams/genetics/f3,frams/genetics/f4,frams/genetics/fs,frams/genetics/f5,frams/genetics/f6,frams/genetics/f7,frams/genetics/f8,frams/genetics/f9,frams/genetics/fn,frams/genetics/fF,frams/genetics/fT,frams/genetics/fB,frams/genetics/fH,frams/genetics/fL,frams/model,frams/neuro,frams/neuro/impl,frams/param,frams/test,frams/util,frams/vm/classes,common/virtfile,frams/_demos,frams/model/geometry,frams/_demos/geometry,frams/model/similarity,frams/model/similarity/hungarian,frams/model/similarity/SVD}
 
 GENMANF4=frams/genetics/f4/f4_oper.o
-GENMANFS=frams/genetics/fs/fs_oper.o
+GENMANFS=frams/genetics/fs/fS_oper.o
 GENMANF9=frams/genetics/f9/f9_oper.o
 GENMANFF=frams/genetics/fF/fF_oper.o
 GENMANFT=frams/genetics/fT/fTest_oper.o
@@ -25,7 +25,7 @@ CONVFL=frams/genetics/fL/fL_conv.o frams/genetics/fL/fL_general.o frams/genetics
 
 # $(sort - remove duplicates
 GENOCONV_SDK_OBJS=$(sort frams/genetics/defgenoconv.o frams/vm/classes/genoobj.o frams/model/autoname.o $(CONVF1) $(CONVF4) $(CONVFS) $(CONVF9) $(CONVFF) $(CONVFN) $(CONVFB) $(CONVFH) $(CONVFL))
-GENMAN_SDK_OBJS=$(GENMAN_COMMON_OBJS) $(GENMANF4) $(GENMANF) $(GENMANF9) $(GENMANFF) $(GENMANFT) $(GENMANFN) $(GENMANFB) $(GENMANFH) $(GENMANFL)
+GENMAN_SDK_OBJS=$(GENMAN_COMMON_OBJS) $(GENMANF4) $(GENMANFS) $(GENMANF) $(GENMANF9) $(GENMANFF) $(GENMANFT) $(GENMANFN) $(GENMANFB) $(GENMANFH) $(GENMANFL)
 GENOCONV_AND_GENMAN_SDK_OBJS=$(sort $(GENOCONV_SDK_OBJS) $(GENMAN_SDK_OBJS))
 
 GENMAN_COMMON_OBJS=frams/genetics/genman.o frams/param/mutableparam.o frams/param/mutparamlist.o frams/neuro/geneticneuroparam.o frams/neuro/neurolibparam.o
