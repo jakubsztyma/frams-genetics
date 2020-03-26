@@ -92,7 +92,7 @@ int main() {
             {"M:FE",                                 "p:sh=1, fr=0.44\n"},  // Friction modifier
             {"M:fE",                                 "p:sh=1, fr=0.36\n"},  // Friction modifier
             {"M:FFFFffE",                            "p:sh=1, fr=0.48\n"},  // Friction modifier
-            {"S:E{fr=0.3}E{fr=0.5}",                 "p:sh=1, fr=0.3\n"
+            {"S:E{f=0.3}E{f=0.5}",                 "p:sh=1, fr=0.3\n"
                                                      "p:2.0, sh=1, fr=0.5\n"
                                                      "j:0, 1, sh=1\n"},
             {"S:EE{ry=90.0}",                        "p:sh=1\n"
@@ -141,10 +141,10 @@ int main() {
                                                      "j:1, 2, sh=1\n"
                                                      "j:0, 1, sh=1\n"
                                                      "j:0, 2, sh=1\n"},
-            {"S:EE{sx=3.0}",                         "p:sh=1\n"
+            {"S:EE{x=3.0}",                         "p:sh=1\n"
                                                      "p:4.0, sh=1, sx=3.0\n"
                                                      "j:0, 1, sh=1\n"},
-            {"S:EE{sx=3.0;sy=3.0;sz=3.0}",           "p:sh=1\n"
+            {"S:EE{x=3.0;y=3.0;z=3.0}",           "p:sh=1\n"
                                                      "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
                                                      "j:0, 1, sh=1\n"},
             {"M:XXE",                                "p:sh=1, sx=1.21\n"},  // sx modifier
@@ -159,10 +159,10 @@ int main() {
             {"M:IE",                                 "p:sh=1, ing=0.28\n"},  // Ingestion modifier
             {"M:iE",                                 "p:sh=1, ing=0.23\n"},  // Ingestion modifier
             {"M:IIIIiiE",                            "p:sh=1, ing=0.3\n"},  // Ingestion modifier
-            {"S:E{ing=0.3}E{ing=0.5}",               "p:sh=1, ing=0.3\n"     // Ingestion param
+            {"S:E{i=0.3}E{i=0.5}",               "p:sh=1, ing=0.3\n"     // Ingestion param
                                                      "p:2.0, sh=1, ing=0.5\n"
                                                      "j:0, 1, sh=1\n"},
-            {"MS:IIIIiiE{ing=0.5}",                  "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+            {"MS:IIIIiiE{i=0.5}",                  "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
     };
     bool success = false;
     int tmp = -1;
@@ -178,6 +178,7 @@ int main() {
         if (true) {
             MultiMap map;
             cout << converter.convert(genotype_str, &map, false).c_str() << endl;
+            cout << test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -259,12 +260,12 @@ int main() {
     SString invalidGenotypes[] = {
             "EEE",      // No mode specifier
             "S:FFF",    // No part type
-            "S:FFF{sx=5.0}",    // No part type
+            "S:FFF{x=5.0}",    // No part type
             "M:qqE",    // Invalid modifier
-            "S:E{fr}",    // No equal sign
+            "S:E{f}",    // No equal sign
 //            "S:E{qw=1.0}",    // Wrong param key
-//            "S:E{fr=}",    // Wrong param value
-//            "S:E{fr=fr}",    // Wrong param value
+//            "S:E{f=}",    // Wrong param value
+//            "S:E{f=fr}",    // Wrong param value
     };
     const int invalidCount = 5;
     for (int i = 0; i < invalidCount; i++) {
@@ -275,7 +276,7 @@ int main() {
         assert(genes == "");
     }
 
-    SString *g1 = new SString("SM:EE{sx=3.0;sy=3.0;sz=3.0}");
+    SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
     SString *g2 = new SString("SM:C{jd=3.9}CC");
     for (int i = 0; i < 100; i++) {
         cout << g1->c_str() << endl;

@@ -26,21 +26,28 @@ using namespace std;
 #define MULTIPLIER 1.1
 #define JOINT_COUNT 4
 
+#define INGESTION "i"
+#define FRICTION "f"
+#define SIZE_X "x"
+#define SIZE_Y "y"
+#define SIZE_Z "z"
+#define JOINT_DISTANCE "j"
+
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{"ing", "fr", "rx", "ry", "rz", "sx", "sy", "sz", "jd"};
+const vector <string> PARAMS{INGESTION, FRICTION, "rx", "ry", "rz", SIZE_X, SIZE_Y, SIZE_Z, JOINT_DISTANCE};
 const map<string, double> defaultParamValues = {
-        {"ing", 0.25},
-        {"fr",  0.4},
+        {INGESTION, 0.25},
+        {FRICTION,  0.4},
         {"rx",  0.0},
         {"ry",  0.0},
         {"rz",  0.0},
-        {"sx",  1.0},
-        {"sy",  1.0},
-        {"sz",  1.0},
-        {"jd",  1.0}
+        {SIZE_X,  1.0},
+        {SIZE_Y,  1.0},
+        {SIZE_Z,  1.0},
+        {JOINT_DISTANCE,  1.0}
 };
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
@@ -267,11 +274,11 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     return children;
 }
 
-double Node::getSx() { return getParam("sx") * state->sx; }
+double Node::getSx() { return getParam(SIZE_X) * state->sx; }
 
-double Node::getSy() { return getParam("sy") * state->sy; }
+double Node::getSy() { return getParam(SIZE_Y) * state->sy; }
 
-double Node::getSz() { return getParam("sz") * state->sz; }
+double Node::getSz() { return getParam(SIZE_Z) * state->sz; }
 
 Part *Node::buildModel(Model *model) {
     createPart();
@@ -300,8 +307,8 @@ void Node::createPart() {
                    round2(state->location.y),
                    round2(state->location.z)
     );
-    part->friction = round2(getParam("fr") * state->fr);
-    part->ingest = round2(getParam("ing") * state->ing);
+    part->friction = round2(getParam(FRICTION) * state->fr);
+    part->ingest = round2(getParam(INGESTION) * state->ing);
     part->scale.x = round2(getSx());
     part->scale.y = round2(getSy());
     part->scale.z = round2(getSz());
@@ -399,10 +406,10 @@ void fS_Genotype::buildModel(Model *model) {
     vector < Node * > allNodes = getAllNodes();
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
-        if (node->params.find("jd") != node->params.end()) {
+        if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
             Node *otherNode = getNearestNode(allNodes, node);
             // If other node is close enough, add a joint
-            if (node->state->location.distanceTo(otherNode->state->location) < node->params["jd"]) {
+            if (node->state->location.distanceTo(otherNode->state->location) < node->params[JOINT_DISTANCE]) {
                 Joint *joint = new Joint();
                 joint->attachToParts(node->part, otherNode->part);
 
@@ -531,7 +538,7 @@ bool fS_Genotype::addParam() {
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
     // Not allow jd when cycle mode is not on
-    if (chosenParam == "jd" && !startNode->cycleMode)
+    if (chosenParam == JOINT_DISTANCE && !startNode->cycleMode)
         return false;
     if (randomNode->params.count(chosenParam) > 0)
         return false;
