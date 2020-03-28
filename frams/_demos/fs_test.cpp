@@ -151,10 +151,10 @@ int main() {
             {"M:xxE",                                "p:sh=1, sx=0.83\n"},  // sx modifier
             {"M:XYYZZZE",                            "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"},  // size modifiers
             {"M:EXYYZZZE",                           "p:sh=1\n"
-                                                     "p:2.33, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.1, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
             {"M:XYYZZZEE",                           "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
-                                                     "p:2.66, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.2, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
             {"M:IE",                                 "p:sh=1, ing=0.28\n"},  // Ingestion modifier
             {"M:iE",                                 "p:sh=1, ing=0.23\n"},  // Ingestion modifier

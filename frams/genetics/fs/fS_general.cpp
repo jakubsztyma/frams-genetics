@@ -192,6 +192,16 @@ double Node::getParam(string key) {
 }
 
 /// Get distance
+
+int min3Index(double *dimensions) {
+    int index = 0;
+    if (dimensions[1] < dimensions[index])
+        index = 1;
+    if (dimensions[2] < dimensions[index])
+        index = 2;
+    return index;
+}
+
 double min3(Pt3D p) {
     double tmp = p.x;
     if (p.y < tmp)
@@ -211,10 +221,33 @@ double max3(Pt3D p) {
 }
 
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
-    sphereCount = 1;
+    double sphereDistanceThreshold = 0.5;
     sphereRadius = min3(radii);
+
+    double *dimensions = new double[3]{radii.x, radii.y, radii.z};
+    int counts[3];
+    for(int i=0; i<3; i++)
+        counts[i] = 1 + ceil(2 * (dimensions[i] - sphereRadius) / sphereDistanceThreshold);
+
+    sphereCount = counts[0] * counts[1] * counts[2];
+    double x, y, z;
+    int totalCount = 0;
     Pt3D *centers = new Pt3D[sphereCount];
-    centers[0] = Pt3D(0);
+    for(double xi=0; xi<counts[0]; xi++){
+        x = 2 * (dimensions[0] - sphereRadius) * (xi / counts[0] - 0.5);
+        for(double yi=0; yi<counts[1]; yi++){
+            y = (dimensions[1] - sphereRadius) * (-0.5 + sphereDistanceThreshold * yi);
+            for(double zi=0; zi<counts[2]; zi++){
+                z = (dimensions[2] - sphereRadius) * (-0.5 + sphereDistanceThreshold * zi);
+                centers[totalCount] = Pt3D(x, y, z);
+                totalCount++;
+            }
+        }
+    }
+
+    cout<<counts[0]<<" "<<counts[1]<<" "<<counts[2]<<endl;
+
+    delete[] dimensions;
     return centers;
 }
 
@@ -222,15 +255,15 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
 #define COLLISION 1
 #define ADJACENT 2
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
-    double toleration = 0.9;
+    double toleration = 0.999;
     double distance;
     for(int sc=0; sc<sphereCount; sc++){
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
         for(int psc=0; psc<parentSphereCount; psc++){
             distance = shiftedSphere.distanceTo(centersParent[psc]);
-            if(distance <= 1.01 * distanceThreshold){
-                if(distance >= 0.99 * toleration * distanceThreshold)
+            if(distance <= 1.001 * distanceThreshold){
+                if(distance >= 0.999 * toleration * distanceThreshold)
                     return ADJACENT;
                 else
                     return COLLISION;
@@ -267,8 +300,8 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
 
     delete[] centersParent;
     delete[] centers;
-    cout<<currentDistance<<" "<< max3(radiiParent) + max3(radii)<<endl;
-    return max3(radiiParent) + max3(radii);
+    cout<<round2(currentDistance)<<" "<< max3(radiiParent) + max3(radii)<<endl;
+    return round2(currentDistance);
 }
 /// Get distance
 
@@ -481,7 +514,6 @@ void fS_Genotype::buildModel(Model *model) {
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
-            cout<<"OK"<<endl;
             Node *otherNode = getNearestNode(allNodes, node);
             // If other node is close enough, add a joint
             if (node->state->location.distanceTo(otherNode->state->location) < node->params[JOINT_DISTANCE]) {
