@@ -122,18 +122,18 @@ int main() {
                                                      "j:2, 3, sh=1\n"
                                                      "j:1, 2, sh=1\n"
                                                      "j:0, 1, sh=1\n"},   // Negative rotations
-            {"S:E{jd=4.1}EE",                        "p:sh=1\n"
+            {"S:E{j=4.1}EE",                        "p:sh=1\n"
                                                      "p:2.0, sh=1\n"
                                                      "p:4.0, sh=1\n"
                                                      "j:1, 2, sh=1\n"
                                                      "j:0, 1, sh=1\n"
                                                      "j:0, 2, sh=1\n"},
-            {"S:E{jd=3.9}EE",                        "p:sh=1\n"
+            {"S:E{j=3.9}EE",                        "p:sh=1\n"
                                                      "p:2.0, sh=1\n"
                                                      "p:4.0, sh=1\n"
                                                      "j:1, 2, sh=1\n"
                                                      "j:0, 1, sh=1\n"},
-            {"S:E{jd=4.1}EEE",                       "p:sh=1\n"
+            {"S:E{j=4.1}EEE",                       "p:sh=1\n"
                                                      "p:2.0, sh=1\n"
                                                      "p:4.0, sh=1\n"
                                                      "p:6.0, sh=1\n"
@@ -277,7 +277,7 @@ int main() {
     }
 
     SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
-    SString *g2 = new SString("SM:C{jd=3.9}CC");
+    SString *g2 = new SString("SM:C{j=3.9}CC");
     for (int i = 0; i < 100; i++) {
         cout << g1->c_str() << endl;
         cout << g2->c_str() << endl;

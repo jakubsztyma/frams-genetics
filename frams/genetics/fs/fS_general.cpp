@@ -8,6 +8,7 @@
 #include <regex>
 #include <time.h>
 #include "fS_general.h"
+#include <frams/model/geometry/geometryutils.h>
 
 using namespace std;
 
@@ -52,18 +53,10 @@ const map<string, double> defaultParamValues = {
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.1);
 
+
 double round2(double var) {
     double value = (int) (var * 100 + .5);
     return (double) value / 100;
-}
-
-double max3(double x1, double x2, double x3) {
-    double tmp = x1;
-    if (x2 > tmp)
-        tmp = x2;
-    if (x3 > tmp)
-        tmp = x3;
-    return tmp;
 }
 
 const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
@@ -198,6 +191,28 @@ double Node::getParam(string key) {
         return defaultParamValues.at(key);
 }
 
+double min3(double x1, double x2, double x3) {
+    double tmp = x1;
+    if (x2 < tmp)
+        tmp = x2;
+    if (x3 < tmp)
+        tmp = x3;
+    return tmp;
+}
+
+double max3(double x1, double x2, double x3) {
+    double tmp = x1;
+    if (x2 > tmp)
+        tmp = x2;
+    if (x3 > tmp)
+        tmp = x3;
+    return tmp;
+}
+
+double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
+    return max3(radiiParent.x, radiiParent.y, radiiParent.z) + max3(radii.x, radii.y,radii.z);
+}
+
 void Node::getState(State *_state, double psx, double psy, double psz) {
     if (isStart)
         state = _state;
@@ -238,7 +253,7 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         double sz = getSz();
         state->rotate(rx, ry, rz);
 
-        double distance = max3(psx, psy, psz) + max3(sx, sy, sz);
+        double distance = getDistance(Pt3D(psx, psy, psz), Pt3D(sx, sy, sz), state->v);
         state->addVector(distance);
     }
 }
@@ -407,6 +422,7 @@ void fS_Genotype::buildModel(Model *model) {
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
+            cout<<"OK"<<endl;
             Node *otherNode = getNearestNode(allNodes, node);
             // If other node is close enough, add a joint
             if (node->state->location.distanceTo(otherNode->state->location) < node->params[JOINT_DISTANCE]) {
