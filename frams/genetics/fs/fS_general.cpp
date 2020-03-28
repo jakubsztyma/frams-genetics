@@ -191,12 +191,13 @@ double Node::getParam(string key) {
         return defaultParamValues.at(key);
 }
 
-double min3(double x1, double x2, double x3) {
-    double tmp = x1;
-    if (x2 < tmp)
-        tmp = x2;
-    if (x3 < tmp)
-        tmp = x3;
+/// Get distance
+double min3(Pt3D p) {
+    double tmp = p.x;
+    if (p.y < tmp)
+        tmp = p.y;
+    if (p.z < tmp)
+        tmp = p.z;
     return tmp;
 }
 
@@ -209,9 +210,38 @@ double max3(double x1, double x2, double x3) {
     return tmp;
 }
 
+Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
+    sphereCount = 1;
+    sphereRadius = min3(radii);
+    Pt3D *centers = new Pt3D[sphereCount];
+    centers[0] = Pt3D(0);
+    return centers;
+}
+
 double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
+    int parentSphereCount, sphereCount;
+    double parentSphereRadius, sphereRadius;
+    Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent);
+    Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii);
+
+    double minDistance = 99999.0;
+    double distance;
+    for(int sc=0; sc<sphereCount; sc++){
+        Pt3D shiftedSphere = Pt3D(centers[sc]);
+        shiftedSphere += vector;
+        for(int psc=0; psc<parentSphereCount; psc++){
+            distance = shiftedSphere.distanceTo(centersParent[psc]);
+            if(distance < minDistance)
+                minDistance = distance;
+        }
+    }
+    cout<<minDistance<<endl;
+
+    delete[] centersParent;
+    delete[] centers;
     return max3(radiiParent.x, radiiParent.y, radiiParent.z) + max3(radii.x, radii.y,radii.z);
 }
+/// Get distance
 
 void Node::getState(State *_state, double psx, double psy, double psz) {
     if (isStart)

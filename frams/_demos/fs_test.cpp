@@ -278,7 +278,7 @@ int main() {
 
     SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
     SString *g2 = new SString("SM:C{j=3.9}CC");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 0; i++) {
         cout << g1->c_str() << endl;
         cout << g2->c_str() << endl;
         int method;
