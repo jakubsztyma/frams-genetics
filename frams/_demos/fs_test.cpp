@@ -256,58 +256,60 @@ int main() {
         }
     }
 
-    fS_Operators operators;
-    SString invalidGenotypes[] = {
-            "EEE",      // No mode specifier
-            "S:FFF",    // No part type
-            "S:FFF{x=5.0}",    // No part type
-            "M:qqE",    // Invalid modifier
-            "S:E{f}",    // No equal sign
+    if(true) {
+        fS_Operators operators;
+        SString invalidGenotypes[] = {
+                "EEE",      // No mode specifier
+                "S:FFF",    // No part type
+                "S:FFF{x=5.0}",    // No part type
+                "M:qqE",    // Invalid modifier
+                "S:E{f}",    // No equal sign
 //            "S:E{qw=1.0}",    // Wrong param key
 //            "S:E{f=}",    // Wrong param value
 //            "S:E{f=fr}",    // Wrong param value
-    };
-    const int invalidCount = 5;
-    for (int i = 0; i < invalidCount; i++) {
-        MultiMap map;
-        cout << invalidGenotypes[i].c_str() << endl;
-        assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
-        SString genes = converter.convert(invalidGenotypes[i], &map, false);
-        assert(genes == "");
-    }
-
-    SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
-    SString *g2 = new SString("SM:C{j=3.9}CC");
-    for (int i = 0; i < 0; i++) {
-        cout << g1->c_str() << endl;
-        cout << g2->c_str() << endl;
-        int method;
-        float f1, f2, gp;
-
-        char *arr1 = strdup(g1->c_str());
-        char *arr2 = strdup(g2->c_str());
-
-        operators.mutate(arr1, gp, method);
-        operators.mutate(arr2, gp, method);
-
-        int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
-
-        if (crossOverResult == GENOPER_OK) {
-            assert(0 == operators.checkValidity(arr1, ""));
-            assert(0 == operators.checkValidity(arr2, ""));
-//            assert(SString(arr1) != *g1);
-//            assert(SString(arr2) != *g2);
+        };
+        const int invalidCount = 5;
+        for (int i = 0; i < invalidCount; i++) {
+            MultiMap map;
+            cout << invalidGenotypes[i].c_str() << endl;
+            assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
+            SString genes = converter.convert(invalidGenotypes[i], &map, false);
+            assert(genes == "");
         }
 
+        SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
+        SString *g2 = new SString("SM:C{j=3.9}CC");
+        for (int i = 0; i < 100; i++) {
+            cout << g1->c_str() << endl;
+            cout << g2->c_str() << endl;
+            int method;
+            float f1, f2, gp;
+
+            char *arr1 = strdup(g1->c_str());
+            char *arr2 = strdup(g2->c_str());
+
+            operators.mutate(arr1, gp, method);
+            operators.mutate(arr2, gp, method);
+
+            int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
+
+            if (crossOverResult == GENOPER_OK) {
+                assert(0 == operators.checkValidity(arr1, ""));
+                assert(0 == operators.checkValidity(arr2, ""));
+//            assert(SString(arr1) != *g1);
+//            assert(SString(arr2) != *g2);
+            }
+
+            delete g1;
+            delete g2;
+            g1 = new SString(arr1);
+            g2 = new SString(arr2);
+            free(arr1);
+            free(arr2);
+        }
         delete g1;
         delete g2;
-        g1 = new SString(arr1);
-        g2 = new SString(arr2);
-        free(arr1);
-        free(arr2);
     }
-    delete g1;
-    delete g2;
 
     auto end = chrono::steady_clock::now();
     cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;

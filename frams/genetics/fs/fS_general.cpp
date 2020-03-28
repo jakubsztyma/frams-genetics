@@ -201,12 +201,12 @@ double min3(Pt3D p) {
     return tmp;
 }
 
-double max3(double x1, double x2, double x3) {
-    double tmp = x1;
-    if (x2 > tmp)
-        tmp = x2;
-    if (x3 > tmp)
-        tmp = x3;
+double max3(Pt3D p) {
+    double tmp = p.x;
+    if (p.y > tmp)
+        tmp = p.y;
+    if (p.z > tmp)
+        tmp = p.z;
     return tmp;
 }
 
@@ -218,28 +218,57 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     return centers;
 }
 
-double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
-    int parentSphereCount, sphereCount;
-    double parentSphereRadius, sphereRadius;
-    Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent);
-    Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii);
-
-    double minDistance = 99999.0;
+#define DISJOINT 0
+#define COLLISION 1
+#define ADJACENT 2
+int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
+    double toleration = 0.9;
     double distance;
     for(int sc=0; sc<sphereCount; sc++){
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
         for(int psc=0; psc<parentSphereCount; psc++){
             distance = shiftedSphere.distanceTo(centersParent[psc]);
-            if(distance < minDistance)
-                minDistance = distance;
+            if(distance <= 1.01 * distanceThreshold){
+                if(distance >= 0.99 * toleration * distanceThreshold)
+                    return ADJACENT;
+                else
+                    return COLLISION;
+            }
         }
     }
-    cout<<minDistance<<endl;
+    return DISJOINT;
+}
+
+double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
+    int parentSphereCount, sphereCount;
+    double parentSphereRadius, sphereRadius;
+    Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent);
+    Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii);
+
+    double distanceThreshold = sphereRadius + parentSphereRadius;
+    double minDistance = distanceThreshold;
+    double maxDistance = max3(radiiParent) + max3(radii);
+    double currentDistance = 0.5 * (maxDistance + minDistance);
+    int result = -1;
+    while(result != ADJACENT) {
+        Pt3D currentVector = vector * currentDistance;
+        result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
+        if(result == DISJOINT) {
+            maxDistance = currentDistance;
+            currentDistance = 0.5 * (currentDistance + minDistance);
+        }
+        else if(result == COLLISION) {
+            minDistance = currentDistance;
+            currentDistance = 0.5 * (maxDistance + currentDistance);
+        }
+
+    }
 
     delete[] centersParent;
     delete[] centers;
-    return max3(radiiParent.x, radiiParent.y, radiiParent.z) + max3(radii.x, radii.y,radii.z);
+    cout<<currentDistance<<" "<< max3(radiiParent) + max3(radii)<<endl;
+    return max3(radiiParent) + max3(radii);
 }
 /// Get distance
 
