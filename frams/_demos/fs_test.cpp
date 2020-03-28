@@ -151,7 +151,7 @@ int main() {
             {"M:xxE",                                "p:sh=1, sx=0.83\n"},  // sx modifier
             {"M:XYYZZZE",                            "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"},  // size modifiers
             {"M:EXYYZZZE",                           "p:sh=1\n"
-                                                     "p:2.1, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+                                                     "p:2.08, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "j:0, 1, sh=1\n"},  // size modifiers
             {"M:XYYZZZEE",                           "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
                                                      "p:2.2, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
@@ -163,12 +163,15 @@ int main() {
                                                      "p:2.0, sh=1, ing=0.5\n"
                                                      "j:0, 1, sh=1\n"},
             {"MS:IIIIiiE{i=0.5}",                  "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+            {"S:EE{ry=180.0;x=3.0}",                 "p:sh=1\n"
+                                                    "p:-3.99, sh=1, sx=3.0\n"
+                                                    "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 34;
+    const int size = 35;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-                               2, 1, 1, 1, 2, 1};
+                               2, 1, 1, 1, 2, 1, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate

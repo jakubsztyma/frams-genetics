@@ -219,6 +219,12 @@ double max3(Pt3D p) {
     return tmp;
 }
 
+double getSphereCoordinate(double dimension, double sphereRadius, double index, int count){
+    if(count == 1)
+        return 0;
+    return 2 * (dimension - sphereRadius) * (index / (count - 1) - 0.5);
+}
+
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     double sphereDistanceThreshold = 0.5;
     sphereRadius = min3(radii);
@@ -233,11 +239,11 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     int totalCount = 0;
     Pt3D *centers = new Pt3D[sphereCount];
     for(double xi=0; xi<counts[0]; xi++){
-        x = 2 * (dimensions[0] - sphereRadius) * (xi / counts[0] - 0.5);
+        x =  getSphereCoordinate(dimensions[0], sphereRadius, xi, counts[0]);
         for(double yi=0; yi<counts[1]; yi++){
-            y = 2 * (dimensions[1] - sphereRadius) * (yi / counts[1] - 0.5);
+            y = getSphereCoordinate(dimensions[1], sphereRadius, yi, counts[1]);
             for(double zi=0; zi<counts[2]; zi++){
-                z = 2 * (dimensions[2] - sphereRadius) * (zi / counts[2] - 0.5);
+                z = getSphereCoordinate(dimensions[2], sphereRadius, zi, counts[2]);
                 centers[totalCount] = Pt3D(x, y, z);
                 totalCount++;
             }
@@ -250,10 +256,11 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
 
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
     double toleration = 0.999;
-    double upperThreshold = 1.001 * distanceThreshold;
-    double lowerThreshold = 0.999 * toleration * distanceThreshold;
+    double upperThreshold = 1.0001 * distanceThreshold;
+    double lowerThreshold = 0.9999 * toleration * distanceThreshold;
     double distance;
     double dx, dy, dz;
+    bool existsAdjacent = false;
     for(int sc=0; sc<sphereCount; sc++){
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
@@ -265,13 +272,16 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
             distance = sqrt(dx*dx + dy*dy + dz*dz);
             if(distance <= upperThreshold){
                 if(distance >= lowerThreshold)
-                    return ADJACENT;
+                    existsAdjacent = true;
                 else
                     return COLLISION;
             }
         }
     }
-    return DISJOINT;
+    if(existsAdjacent)
+        return ADJACENT;
+    else
+        return DISJOINT;
 }
 
 double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
@@ -281,7 +291,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
     Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii);
 
     double distanceThreshold = sphereRadius + parentSphereRadius;
-    double minDistance = distanceThreshold;
+    double minDistance = 0.0;   // TO make sure that program will not process forever
     double maxDistance = max3(radiiParent) + max3(radii);
     double currentDistance = avg(maxDistance, minDistance);
     int result = -1;
