@@ -69,9 +69,7 @@ private:
     vector<char> modifiers;     /// Vector of all modifiers
     set<char> joints;           /// Set of all joints
 
-    double getSx();
-    double getSy();
-    double getSz();
+    Pt3D getSize();
     /**
      * Get the position of part type in genotype
      *
@@ -114,7 +112,7 @@ private:
      * Used when building model
      * @param _state state of the parent
      */
-    void getState(State *_state, double psx, double psy, double psz);
+    void getState(State *_state, Pt3D parentSize);
 
     /**
      * Build children internal representations from fS genotype

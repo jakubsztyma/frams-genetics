@@ -34,6 +34,10 @@ using namespace std;
 #define SIZE_Z "z"
 #define JOINT_DISTANCE "j"
 
+#define DISJOINT 0
+#define COLLISION 1
+#define ADJACENT 2
+
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -193,13 +197,8 @@ double Node::getParam(string key) {
 
 /// Get distance
 
-int min3Index(double *dimensions) {
-    int index = 0;
-    if (dimensions[1] < dimensions[index])
-        index = 1;
-    if (dimensions[2] < dimensions[index])
-        index = 2;
-    return index;
+double avg(double a, double b){
+    return 0.5 * (a + b);
 }
 
 double min3(Pt3D p) {
@@ -236,34 +235,36 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     for(double xi=0; xi<counts[0]; xi++){
         x = 2 * (dimensions[0] - sphereRadius) * (xi / counts[0] - 0.5);
         for(double yi=0; yi<counts[1]; yi++){
-            y = (dimensions[1] - sphereRadius) * (-0.5 + sphereDistanceThreshold * yi);
+            y = 2 * (dimensions[1] - sphereRadius) * (yi / counts[1] - 0.5);
             for(double zi=0; zi<counts[2]; zi++){
-                z = (dimensions[2] - sphereRadius) * (-0.5 + sphereDistanceThreshold * zi);
+                z = 2 * (dimensions[2] - sphereRadius) * (zi / counts[2] - 0.5);
                 centers[totalCount] = Pt3D(x, y, z);
                 totalCount++;
             }
         }
     }
 
-    cout<<counts[0]<<" "<<counts[1]<<" "<<counts[2]<<endl;
-
     delete[] dimensions;
     return centers;
 }
 
-#define DISJOINT 0
-#define COLLISION 1
-#define ADJACENT 2
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
     double toleration = 0.999;
+    double upperThreshold = 1.001 * distanceThreshold;
+    double lowerThreshold = 0.999 * toleration * distanceThreshold;
     double distance;
+    double dx, dy, dz;
     for(int sc=0; sc<sphereCount; sc++){
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
         for(int psc=0; psc<parentSphereCount; psc++){
-            distance = shiftedSphere.distanceTo(centersParent[psc]);
-            if(distance <= 1.001 * distanceThreshold){
-                if(distance >= 0.999 * toleration * distanceThreshold)
+            Pt3D parentSphere = centersParent[psc];
+            dx = shiftedSphere.x - parentSphere.x;
+            dy = shiftedSphere.y - parentSphere.y;
+            dz = shiftedSphere.z - parentSphere.z;
+            distance = sqrt(dx*dx + dy*dy + dz*dz);
+            if(distance <= upperThreshold){
+                if(distance >= lowerThreshold)
                     return ADJACENT;
                 else
                     return COLLISION;
@@ -282,30 +283,29 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
     double distanceThreshold = sphereRadius + parentSphereRadius;
     double minDistance = distanceThreshold;
     double maxDistance = max3(radiiParent) + max3(radii);
-    double currentDistance = 0.5 * (maxDistance + minDistance);
+    double currentDistance = avg(maxDistance, minDistance);
     int result = -1;
     while(result != ADJACENT) {
         Pt3D currentVector = vector * currentDistance;
         result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
         if(result == DISJOINT) {
             maxDistance = currentDistance;
-            currentDistance = 0.5 * (currentDistance + minDistance);
+            currentDistance = avg(currentDistance, minDistance);
         }
         else if(result == COLLISION) {
             minDistance = currentDistance;
-            currentDistance = 0.5 * (maxDistance + currentDistance);
+            currentDistance = avg(maxDistance, currentDistance);
         }
 
     }
 
     delete[] centersParent;
     delete[] centers;
-    cout<<round2(currentDistance)<<" "<< max3(radiiParent) + max3(radii)<<endl;
     return round2(currentDistance);
 }
 /// Get distance
 
-void Node::getState(State *_state, double psx, double psy, double psz) {
+void Node::getState(State *_state, Pt3D parentSize) {
     if (isStart)
         state = _state;
     else
@@ -340,12 +340,10 @@ void Node::getState(State *_state, double psx, double psy, double psz) {
         double rx = getParam("rx");
         double ry = getParam("ry");
         double rz = getParam("rz");
-        double sx = getSx();
-        double sy = getSy();
-        double sz = getSz();
+        Pt3D size = getSize();
         state->rotate(rx, ry, rz);
 
-        double distance = getDistance(Pt3D(psx, psy, psz), Pt3D(sx, sy, sz), state->v);
+        double distance = getDistance(parentSize, size, state->v);
         state->addVector(distance);
     }
 }
@@ -381,11 +379,12 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     return children;
 }
 
-double Node::getSx() { return getParam(SIZE_X) * state->sx; }
-
-double Node::getSy() { return getParam(SIZE_Y) * state->sy; }
-
-double Node::getSz() { return getParam(SIZE_Z) * state->sz; }
+Pt3D Node::getSize(){
+    double sx = getParam(SIZE_X) * state->sx;
+    double sy = getParam(SIZE_Y) * state->sy;
+    double sz = getParam(SIZE_Z) * state->sz;
+    return Pt3D(sx, sy, sz);
+}
 
 Part *Node::buildModel(Model *model) {
     createPart();
@@ -393,7 +392,7 @@ Part *Node::buildModel(Model *model) {
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
-        child->getState(state, getSx(), getSy(), getSz());
+        child->getState(state, getSize());
         child->buildModel(model);
         addJointsToModel(model, child);
     }
@@ -416,9 +415,10 @@ void Node::createPart() {
     );
     part->friction = round2(getParam(FRICTION) * state->fr);
     part->ingest = round2(getParam(INGESTION) * state->ing);
-    part->scale.x = round2(getSx());
-    part->scale.y = round2(getSy());
-    part->scale.z = round2(getSz());
+    Pt3D size = getSize();
+    part->scale.x = round2(size.x);
+    part->scale.y = round2(size.y);
+    part->scale.z = round2(size.z);
 }
 
 void Node::addJointsToModel(Model *model, Node *child) {
@@ -506,7 +506,7 @@ fS_Genotype::~fS_Genotype() {
 
 void fS_Genotype::buildModel(Model *model) {
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-    startNode->getState(initialState, 1.0, 1.0, 1.0);
+    startNode->getState(initialState, Pt3D(1.0));
     startNode->buildModel(model);
 
     // Additional joints
