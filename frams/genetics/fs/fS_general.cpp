@@ -219,31 +219,43 @@ double max3(Pt3D p) {
     return tmp;
 }
 
-double getSphereCoordinate(double dimension, double sphereRadius, double index, int count){
+double getSphereCoordinate(double dimension, double sphereDiameter, double index, int count){
     if(count == 1)
         return 0;
-    return 2 * (dimension - sphereRadius) * (index / (count - 1) - 0.5);
+    return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
 }
 
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
-    double sphereDistanceThreshold = 0.5;
-    sphereRadius = min3(radii);
+    double sphereRelativeDistance = 0.5;
+    double maxDiameterQuotient = 50;
+    double minRadius = min3(radii);
+    double maxRadius = max3(radii);
+    if(maxRadius / minRadius < maxDiameterQuotient)
+        sphereRadius = minRadius;
+    else
+        sphereRadius = (maxRadius / maxDiameterQuotient) / sphereRelativeDistance;
+    double sphereDiameter = 2 * sphereRadius;
+    cout<<sphereRadius<<endl;
 
-    double *dimensions = new double[3]{radii.x, radii.y, radii.z};
+    double *dimensions = new double[3]{2 * radii.x, 2 * radii.y, 2 * radii.z};
     int counts[3];
-    for(int i=0; i<3; i++)
-        counts[i] = 1 + ceil(2 * (dimensions[i] - sphereRadius) / sphereDistanceThreshold);
+    for(int i=0; i<3; i++) {
+        if(dimensions[i] > sphereDiameter)
+            counts[i] = 1 + ceil((dimensions[i] - sphereDiameter) / sphereDiameter / sphereRelativeDistance);
+        else
+            counts[i] = 1;
+    }
 
     sphereCount = counts[0] * counts[1] * counts[2];
     double x, y, z;
     int totalCount = 0;
     Pt3D *centers = new Pt3D[sphereCount];
     for(double xi=0; xi<counts[0]; xi++){
-        x =  getSphereCoordinate(dimensions[0], sphereRadius, xi, counts[0]);
+        x =  getSphereCoordinate(dimensions[0], sphereDiameter, xi, counts[0]);
         for(double yi=0; yi<counts[1]; yi++){
-            y = getSphereCoordinate(dimensions[1], sphereRadius, yi, counts[1]);
+            y = getSphereCoordinate(dimensions[1], sphereDiameter, yi, counts[1]);
             for(double zi=0; zi<counts[2]; zi++){
-                z = getSphereCoordinate(dimensions[2], sphereRadius, zi, counts[2]);
+                z = getSphereCoordinate(dimensions[2], sphereDiameter, zi, counts[2]);
                 centers[totalCount] = Pt3D(x, y, z);
                 totalCount++;
             }

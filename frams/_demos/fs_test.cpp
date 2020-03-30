@@ -163,15 +163,28 @@ int main() {
                                                      "p:2.0, sh=1, ing=0.5\n"
                                                      "j:0, 1, sh=1\n"},
             {"MS:IIIIiiE{i=0.5}",                  "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+            // Test collisions
             {"S:EE{ry=180.0;x=3.0}",                 "p:sh=1\n"
-                                                    "p:-3.99, sh=1, sx=3.0\n"
-                                                    "j:0, 1, sh=1\n"},
+                                                     "p:-3.99, sh=1, sx=3.0\n"
+                                                     "j:0, 1, sh=1\n"},
+            {"S:EE{ry=90.0;z=5.0}",                  "p:sh=1\n"
+                                                     "p:z=6.0, sh=1, sz=5.0\n"
+                                                     "j:0, 1, sh=1\n"},
+            {"S:EE{rz=90.0;y=5.0}",                  "p:sh=1\n"
+                                                     "p:y=6.0, sh=1, sy=5.0\n"
+                                                     "j:0, 1, sh=1\n"},
+            {"S:E{y=3.0;z=4.0}E{y=4.0;z=5.0}",          "p:sh=1, sy=3.0, sz=4.0\n"
+                                                        "p:2.0, sh=1, sy=4.0, sz=5.0\n"
+                                                        "j:0, 1, sh=1\n"},
+            {"S:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",          "p:sh=1, sy=399.0, sz=599.0\n"
+                                                          "p:63.88, sh=1, sy=799.0, sz=999.0\n"
+                                                          "j:0, 1, sh=1\n"},  // Test a lot of spheres
     };
     bool success = false;
     int tmp = -1;
-    const int size = 35;
+    const int size = 39;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-                               2, 1, 1, 1, 2, 1, 2};
+                               2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate
