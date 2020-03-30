@@ -227,23 +227,23 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     double sphereRelativeDistance = 0.5;
-    double maxDiameterQuotient = 50;
+    double maxDiameterQuotient = 40;
     double minRadius = min3(radii);
     double maxRadius = max3(radii);
-    if(maxRadius / minRadius < maxDiameterQuotient)
+    if(maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
         sphereRadius = minRadius;
-    else
-        sphereRadius = (maxRadius / maxDiameterQuotient) / sphereRelativeDistance;
+    else {
+        sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
+        sphereRadius = maxRadius / maxDiameterQuotient;
+    }
     double sphereDiameter = 2 * sphereRadius;
-    cout<<sphereRadius<<endl;
 
-    double *dimensions = new double[3]{2 * radii.x, 2 * radii.y, 2 * radii.z};
+    double *diameters = new double[3]{2 * radii.x, 2 * radii.y, 2 * radii.z};
     int counts[3];
     for(int i=0; i<3; i++) {
-        if(dimensions[i] > sphereDiameter)
-            counts[i] = 1 + ceil((dimensions[i] - sphereDiameter) / sphereDiameter / sphereRelativeDistance);
-        else
-            counts[i] = 1;
+        counts[i] = 1;
+        if(diameters[i] > sphereDiameter)
+            counts[i] += ceil((diameters[i] - sphereDiameter) / sphereDiameter / sphereRelativeDistance);
     }
 
     sphereCount = counts[0] * counts[1] * counts[2];
@@ -251,18 +251,18 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     int totalCount = 0;
     Pt3D *centers = new Pt3D[sphereCount];
     for(double xi=0; xi<counts[0]; xi++){
-        x =  getSphereCoordinate(dimensions[0], sphereDiameter, xi, counts[0]);
+        x =  getSphereCoordinate(diameters[0], sphereDiameter, xi, counts[0]);
         for(double yi=0; yi<counts[1]; yi++){
-            y = getSphereCoordinate(dimensions[1], sphereDiameter, yi, counts[1]);
+            y = getSphereCoordinate(diameters[1], sphereDiameter, yi, counts[1]);
             for(double zi=0; zi<counts[2]; zi++){
-                z = getSphereCoordinate(dimensions[2], sphereDiameter, zi, counts[2]);
+                z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
                 centers[totalCount] = Pt3D(x, y, z);
                 totalCount++;
             }
         }
     }
 
-    delete[] dimensions;
+    delete[] diameters;
     return centers;
 }
 
@@ -273,14 +273,15 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
     double distance;
     double dx, dy, dz;
     bool existsAdjacent = false;
+    Pt3D *tmpPoint;
     for(int sc=0; sc<sphereCount; sc++){
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
         for(int psc=0; psc<parentSphereCount; psc++){
-            Pt3D parentSphere = centersParent[psc];
-            dx = shiftedSphere.x - parentSphere.x;
-            dy = shiftedSphere.y - parentSphere.y;
-            dz = shiftedSphere.z - parentSphere.z;
+            tmpPoint = &centersParent[psc];
+            dx = shiftedSphere.x - tmpPoint->x;
+            dy = shiftedSphere.y - tmpPoint->y;
+            dz = shiftedSphere.z - tmpPoint->z;
             distance = sqrt(dx*dx + dy*dy + dz*dz);
             if(distance <= upperThreshold){
                 if(distance >= lowerThreshold)
