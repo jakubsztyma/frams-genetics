@@ -44,6 +44,7 @@ using namespace std;
 #define COLLISION 1
 #define ADJACENT 2
 
+const int mutationTries = 100;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -269,9 +270,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
             y = getSphereCoordinate(diameters[1], sphereDiameter, yi, counts[1]);
             for(double zi=0; zi<counts[2]; zi++){
                 z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
-                Pt3D p = Pt3D(x, y, z);
-                rotateVector(p, rotations);
-                centers[totalCount] = p;
+                centers[totalCount] = Pt3D(x, y, z);
+                rotateVector(centers[totalCount], rotations);
                 totalCount++;
             }
         }
@@ -653,10 +653,18 @@ bool fS_Genotype::removeJoint() {
     if (startNode->childSize < 1) // Only one node; there are no joints
         return false;
 
-    Node *randomNode = chooseNode(1);    // First part does not have joints
-    int jointsCount = randomNode->joints.size();
+    // Choose a node with joints
+    Node *randomNode;
+    int jointsCount;
+    for(int i=0; i<mutationTries; i++){
+        randomNode = chooseNode(1);    // First part does not have joints
+        jointsCount = randomNode->joints.size();
+        if(jointsCount >= 1)
+            break;
+    }
     if (jointsCount < 1)
         return false;
+
     int index = *(randomNode->joints.begin()) + randomFromRange(jointsCount);
     randomNode->joints.erase(index);
 
@@ -665,10 +673,18 @@ bool fS_Genotype::removeJoint() {
 
 
 bool fS_Genotype::removeParam() {
-    Node *randomNode = chooseNode();
-    int paramCount = randomNode->params.size();
+    // Choose a node with params
+    Node *randomNode;
+    int paramCount;
+    for(int i=0; i<mutationTries; i++) {
+        randomNode = chooseNode();
+        paramCount = randomNode->params.size();
+        if(paramCount >= 1)
+            break;
+    }
     if (paramCount < 1)
         return false;
+
     auto it = randomNode->params.begin();
     advance(it, randomFromRange(paramCount));
     randomNode->params.erase(it->first);
@@ -704,18 +720,33 @@ bool fS_Genotype::addParam() {
 }
 
 bool fS_Genotype::removePart() {
-    Node *randomNode = chooseNode();
-    int childCount = randomNode->childSize;
+    Node *randomNode;
+    int childCount;
+    // Choose a parent with children
+    for(int i=0; i<mutationTries; i++) {
+        randomNode = chooseNode();
+        childCount = randomNode->childSize;
+        if(childCount >= 1)
+            break;
+    }
     if (childCount < 1)
         return false;
-    Node *chosenNode = randomNode->children[randomFromRange(childCount)];
-    if (chosenNode->childSize > 0)
+
+    // Choose a child without own children
+    Node *chosenChild;
+    for(int i=0; i<mutationTries; i++) {
+        chosenChild = randomNode->children[randomFromRange(childCount)];
+        if(chosenChild->childSize == 0)
+            break;
+    }
+    if (chosenChild->childSize > 0)
         return false;
 
-    swap(chosenNode, randomNode->children.back());
+    // Remove the chosen child
+    swap(chosenChild, randomNode->children.back());
     randomNode->children.pop_back();
     randomNode->children.shrink_to_fit();
-    delete chosenNode;
+    delete chosenChild;
     randomNode->childSize -= 1;
     return true;
 }

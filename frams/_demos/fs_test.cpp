@@ -311,11 +311,13 @@ int main() {
             assert(genes == "");
         }
 
-        SString *g1 = new SString("SM:EE{x=3.0;y=3.0;z=3.0}");
-        SString *g2 = new SString("SM:C{j=3.9}CC");
-        for (int i = 0; i < 100; i++) {
-            cout << g1->c_str() << endl;
-            cout << g2->c_str() << endl;
+        SString *g1 = new SString("SMJ:EE{x=3.0;y=3.0;z=3.0}");
+        SString *g2 = new SString("SMJ:C{j=3.9}CC");
+        int operationCount = 100_000;
+        for (int i = 0; i < operationCount; i++) {
+            cout<<i <<" out of "<< operationCount<<" Length: "<<g1->len() + g2->len()<<endl;
+//            cout << g1->c_str() << endl;
+//            cout << g2->c_str() << endl;
             int method;
             float f1, f2, gp;
 
