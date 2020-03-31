@@ -179,21 +179,30 @@ int main() {
             {"S:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",       "p:sh=1, sy=399.0, sz=599.0\n"
                                                              "p:53.25, sh=1, sy=799.0, sz=999.0\n"
                                                              "j:0, 1, sh=1\n"},  // Test a lot of spheres
-            {"S:EE{ty=45.0}",                          "p:sh=1\n"
-                                                       "p:1.41, z=1.41, sh=1\n"
-                                                       "j:0, 1, sh=1\n"},
-            {"S:EE{ty=120.0}",                          "p:sh=1\n"
-                                                       "p:-0.99, z=1.73, sh=1\n"
-                                                       "j:0, 1, sh=1\n"},
+            {"S:EE{ty=45.0}",                                "p:sh=1\n"
+                                                             "p:1.41, z=1.41, sh=1\n"
+                                                             "j:0, 1, sh=1\n"},
+            {"S:EE{ty=120.0}",                               "p:sh=1\n"
+                                                             "p:-0.99, z=1.73, sh=1\n"
+                                                             "j:0, 1, sh=1\n"},
             {"S:EE{ry=90.0;z=2.0}",                          "p:sh=1\n"
-                                                        "p:3.0, sh=1, sz=2.0, ry=90.0\n"
-                                                        "j:0, 1, sh=1\n"},
+                                                             "p:3.0, sh=1, sz=2.0, ry=90.0\n"
+                                                             "j:0, 1, sh=1\n"},
+            {"S:E{ry=90.0;z=2.0}E{ry=90.0;z=2.0}",           "p:sh=1, sz=2.0, ry=90.0\n"
+                                                             "p:4.0, sh=1, sz=2.0, ry=90.0\n"
+                                                             "j:0, 1, sh=1\n"},
+            {"S:EE{ry=45.0;z=2.0}",                          "p:sh=1\n"
+                                                             "p:2.58, sh=1, sz=2.0, ry=45.0\n"
+                                                             "j:0, 1, sh=1\n"},
+            {"S:EE{ry=30.0;z=2.0}",                          "p:sh=1\n"
+                                                             "p:2.3, sh=1, sz=2.0, ry=30.0\n"
+                                                             "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 42;
+    const int size = 45;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-                               2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2};
+                               2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < size; i++) {
         // Test translate

@@ -270,8 +270,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
             for(double zi=0; zi<counts[2]; zi++){
                 z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
                 Pt3D p = Pt3D(x, y, z);
+                rotateVector(p, rotations);
                 centers[totalCount] = p;
-                rotateVector(centers[totalCount], rotations);
                 totalCount++;
             }
         }
