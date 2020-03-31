@@ -109,7 +109,7 @@ void State::addVector(double length) {
     location += v * length;
 }
 
-void State::rotate(Pt3D rotation) {
+void rotateVector(Pt3D &vector, Pt3D rotation){
     // TOTO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
@@ -117,7 +117,11 @@ void State::rotate(Pt3D rotation) {
             Convert::toRadians(rotation.y),
             Convert::toRadians(rotation.z)
     ));
-    v = rotmatrix.transform(v);
+    vector = rotmatrix.transform(vector);
+}
+
+void State::rotate(Pt3D rotation) {
+    rotateVector(v, rotation);
     v.normalize();
 }
 
@@ -234,7 +238,7 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
     return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
 }
 
-Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
+Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations){
     double sphereRelativeDistance = 0.5;
     double maxDiameterQuotient = 30;
     double minRadius = min3(radii);
@@ -265,7 +269,9 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
             y = getSphereCoordinate(diameters[1], sphereDiameter, yi, counts[1]);
             for(double zi=0; zi<counts[2]; zi++){
                 z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
-                centers[totalCount] = Pt3D(x, y, z);
+                Pt3D p = Pt3D(x, y, z);
+                centers[totalCount] = p;
+                rotateVector(centers[totalCount], rotations);
                 totalCount++;
             }
         }
@@ -306,11 +312,11 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
         return DISJOINT;
 }
 
-double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector){
+double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParent, Pt3D rotation){
     int parentSphereCount, sphereCount;
     double parentSphereRadius, sphereRadius;
-    Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent);
-    Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii);
+    Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent, rotationParent);
+    Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii, rotation);
 
     double distanceThreshold = sphereRadius + parentSphereRadius;
     double minDistance = 0.0;   // TO make sure that program will not process forever
@@ -370,10 +376,9 @@ void Node::getState(State *_state, Pt3D parentSize) {
     if (!isStart) {
         // Rotate
         Pt3D size = getSize();
-        Pt3D rotation = getRotation();
-        state->rotate(rotation);
+        state->rotate(getVectorRotation());
 
-        double distance = getDistance(parentSize, size, state->v);
+        double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
         state->addVector(distance);
     }
 }
@@ -416,10 +421,16 @@ Pt3D Node::getSize(){
     return Pt3D(sx, sy, sz);
 }
 
-Pt3D Node::getRotation(){
+Pt3D Node::getVectorRotation(){
     double rx = getParam(ROT_X);
     double ry = getParam(ROT_Y);
     double rz = getParam(ROT_Z);
+    return Pt3D(rx, ry, rz);
+}
+Pt3D Node::getRotation(){
+    double rx = getParam(RX);
+    double ry = getParam(RY);
+    double rz = getParam(RZ);
     return Pt3D(rx, ry, rz);
 }
 
@@ -456,7 +467,7 @@ void Node::createPart() {
     part->scale.x = round2(size.x);
     part->scale.y = round2(size.y);
     part->scale.z = round2(size.z);
-    part->setRot(Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z)));
+    part->setRot(getRotation());
 }
 
 void Node::addJointsToModel(Model *model, Node *child) {

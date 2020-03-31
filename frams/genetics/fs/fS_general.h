@@ -71,6 +71,7 @@ private:
 
     Pt3D getSize();
     Pt3D getRotation();
+    Pt3D getVectorRotation();
     /**
      * Get the position of part type in genotype
      *

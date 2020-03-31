@@ -95,20 +95,20 @@ int main() {
             {"S:E{f=0.3}E{f=0.5}",                           "p:sh=1, fr=0.3\n"
                                                              "p:2.0, sh=1, fr=0.5\n"
                                                              "j:0, 1, sh=1\n"},
-            {"S:EE{ry=90.0}",                                "p:sh=1\n"
+            {"S:EE{ty=90.0}",                                "p:sh=1\n"
                                                              "p:z=2.0, sh=1\n"
                                                              "j:0, 1, sh=1\n"},
             {"S:EE{tz=90.0}",                                "p:sh=1\n"
                                                              "p:y=2.0, sh=1\n"
                                                              "j:0, 1, sh=1\n"},  // Z rotation
-            {"S:EE{tz=90.0}E{tx=90.0}E{ry=90.0}",            "p:sh=1\n"
+            {"S:EE{tz=90.0}E{tx=90.0}E{ty=90.0}",            "p:sh=1\n"
                                                              "p:y=2.0, sh=1\n"
                                                              "p:y=2.0, 2.0, sh=1\n"
                                                              "p:-1.99, 2.0, 2.0, sh=1\n"
                                                              "j:2, 3, sh=1\n"
                                                              "j:1, 2, sh=1\n"
                                                              "j:0, 1, sh=1\n"},  // All rotations
-            {"S:EE{tz=45.0}E{tx=45.0}E{ry=45.0}",            "p:sh=1\n"
+            {"S:EE{tz=45.0}E{tx=45.0}E{ty=45.0}",            "p:sh=1\n"
                                                              "p:1.41, 1.41, sh=1\n"
                                                              "p:2.83, 2.41, 1.0, sh=1\n"
                                                              "p:3.12, 3.41, 2.71, sh=1\n"
@@ -186,12 +186,12 @@ int main() {
                                                        "p:-0.99, z=1.73, sh=1\n"
                                                        "j:0, 1, sh=1\n"},
             {"S:EE{ry=90.0;z=2.0}",                          "p:sh=1\n"
-                                                        "p:-0.99, z=1.73, sh=1\n"
+                                                        "p:3.0, sh=1, sz=2.0, ry=90.0\n"
                                                         "j:0, 1, sh=1\n"},
     };
     bool success = false;
     int tmp = -1;
-    const int size = 41;
+    const int size = 42;
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
                                2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2};
     auto start = chrono::steady_clock::now();
