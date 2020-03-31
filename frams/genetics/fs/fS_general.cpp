@@ -32,6 +32,12 @@ using namespace std;
 #define SIZE_X "x"
 #define SIZE_Y "y"
 #define SIZE_Z "z"
+#define ROT_X "tx"
+#define ROT_Y "ty"
+#define ROT_Z "tz"
+#define RX "rx"
+#define RY "ry"
+#define RZ "rz"
 #define JOINT_DISTANCE "j"
 
 #define DISJOINT 0
@@ -42,13 +48,16 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{INGESTION, FRICTION, "rx", "ry", "rz", SIZE_X, SIZE_Y, SIZE_Z, JOINT_DISTANCE};
+const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z, JOINT_DISTANCE};
 const map<string, double> defaultParamValues = {
         {INGESTION, 0.25},
         {FRICTION,  0.4},
-        {"rx",  0.0},
-        {"ry",  0.0},
-        {"rz",  0.0},
+        {ROT_X,  0.0},
+        {ROT_Y,  0.0},
+        {ROT_Z,  0.0},
+        {RX,  0.0},
+        {RY,  0.0},
+        {RZ,  0.0},
         {SIZE_X,  1.0},
         {SIZE_Y,  1.0},
         {SIZE_Z,  1.0},
@@ -100,13 +109,13 @@ void State::addVector(double length) {
     location += v * length;
 }
 
-void State::rotate(double rx, double ry, double rz) {
+void State::rotate(Pt3D rotation) {
     // TOTO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
-            Convert::toRadians(rx),
-            Convert::toRadians(ry),
-            Convert::toRadians(rz)
+            Convert::toRadians(rotation.x),
+            Convert::toRadians(rotation.y),
+            Convert::toRadians(rotation.z)
     ));
     v = rotmatrix.transform(v);
     v.normalize();
@@ -227,7 +236,7 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii){
     double sphereRelativeDistance = 0.5;
-    double maxDiameterQuotient = 40;
+    double maxDiameterQuotient = 30;
     double minRadius = min3(radii);
     double maxRadius = max3(radii);
     if(maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
@@ -360,11 +369,9 @@ void Node::getState(State *_state, Pt3D parentSize) {
 
     if (!isStart) {
         // Rotate
-        double rx = getParam("rx");
-        double ry = getParam("ry");
-        double rz = getParam("rz");
         Pt3D size = getSize();
-        state->rotate(rx, ry, rz);
+        Pt3D rotation = getRotation();
+        state->rotate(rotation);
 
         double distance = getDistance(parentSize, size, state->v);
         state->addVector(distance);
@@ -409,6 +416,13 @@ Pt3D Node::getSize(){
     return Pt3D(sx, sy, sz);
 }
 
+Pt3D Node::getRotation(){
+    double rx = getParam(ROT_X);
+    double ry = getParam(ROT_Y);
+    double rz = getParam(ROT_Z);
+    return Pt3D(rx, ry, rz);
+}
+
 Part *Node::buildModel(Model *model) {
     createPart();
     model->addPart(part);
@@ -442,6 +456,7 @@ void Node::createPart() {
     part->scale.x = round2(size.x);
     part->scale.y = round2(size.y);
     part->scale.z = round2(size.z);
+    part->setRot(Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z)));
 }
 
 void Node::addJointsToModel(Model *model, Node *child) {

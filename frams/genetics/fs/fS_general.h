@@ -49,7 +49,7 @@ public:
      * @param ry rotation by y axis
      * @param rz rotation by z axis
      */
-    void rotate(double rx, double ry, double rz);
+    void rotate(Pt3D rotation);
 };
 
 class Node {
@@ -70,6 +70,7 @@ private:
     set<char> joints;           /// Set of all joints
 
     Pt3D getSize();
+    Pt3D getRotation();
     /**
      * Get the position of part type in genotype
      *
