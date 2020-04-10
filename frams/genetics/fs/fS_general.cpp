@@ -65,7 +65,7 @@ const map<string, double> defaultParamValues = {
         {JOINT_DISTANCE,  1.0}
 };
 default_random_engine generator;
-normal_distribution<double> distribution(0.0, 0.1);
+normal_distribution<double> distribution(0.0, 0.5);
 
 
 double round2(double var) {
@@ -564,20 +564,23 @@ void fS_Genotype::buildModel(Model *model) {
         Node *node = allNodes[i];
         if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
             Node *otherNode = getNearestNode(allNodes, node);
-            // If other node is close enough, add a joint
-            if (node->state->location.distanceTo(otherNode->state->location) < node->params[JOINT_DISTANCE]) {
-                Joint *joint = new Joint();
-                joint->attachToParts(node->part, otherNode->part);
+            if(otherNode != nullptr) {
+                // If other node is close enough, add a joint
+                double distance = node->state->location.distanceTo(otherNode->state->location);
+                if (distance < node->params[JOINT_DISTANCE]) {
+                    Joint *joint = new Joint();
+                    joint->attachToParts(node->part, otherNode->part);
 
-                joint->shape = Joint::Shape::SHAPE_FIXED;
-                model->addJoint(joint);
+                    joint->shape = Joint::Shape::SHAPE_FIXED;
+                    model->addJoint(joint);
+                }
             }
         }
     }
 }
 
 Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node) {
-    Node *result;
+    Node *result = nullptr;
     double minDistance = 9999999.0, distance = 999999.0;
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *otherNode = allNodes[i];

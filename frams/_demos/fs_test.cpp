@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <assert.h>
 #include <chrono>
 #include "frams/genetics/fs/fS_conv.h"
@@ -204,13 +205,13 @@ int main() {
     int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
                                2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
     auto start = chrono::steady_clock::now();
+    MultiMap map;
     for (int i = 0; i < size; i++) {
         // Test translate
         SString *test = test_cases[i];
         SString genotype_str = test[0];
         cout << test[0].c_str() << endl;
         if (true) {
-            MultiMap map;
             cout << converter.convert(genotype_str, &map, false).c_str() << endl;
             cout << test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
@@ -313,9 +314,10 @@ int main() {
 
         SString *g1 = new SString("SMJ:EE{x=3.0;y=3.0;z=3.0}");
         SString *g2 = new SString("SMJ:C{j=3.9}CC");
-        int operationCount = 100_000;
+        FILE *pFile = fopen("output.txt", "w");
+        int operationCount = 100;
         for (int i = 0; i < operationCount; i++) {
-            cout<<i <<" out of "<< operationCount<<" Length: "<<g1->len() + g2->len()<<endl;
+            cout << i << " out of " << operationCount << " Length: " << g1->len() + g2->len() << endl;
 //            cout << g1->c_str() << endl;
 //            cout << g2->c_str() << endl;
             int method;
@@ -340,11 +342,16 @@ int main() {
             delete g2;
             g1 = new SString(arr1);
             g2 = new SString(arr2);
+            fprintf(pFile, g1->c_str());
+            fprintf(pFile, "\n");
+            fprintf(pFile, converter.convert(*g1, &map, false).c_str());
+            fprintf(pFile, "\n");
             free(arr1);
             free(arr2);
         }
         delete g1;
         delete g2;
+        fclose(pFile);
     }
 
     auto end = chrono::steady_clock::now();
