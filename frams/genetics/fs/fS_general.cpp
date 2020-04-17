@@ -44,7 +44,7 @@ using namespace std;
 #define COLLISION 1
 #define ADJACENT 2
 
-const int mutationTries = 200;
+const int mutationTries = 100;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -676,6 +676,7 @@ bool fS_Genotype::addJoint() {
 
 
 bool fS_Genotype::removeJoint() {
+    // This operator may can lower success rate that others, as it does not work when there is only one node
     if (startNode->childSize < 1) // Only one node; there are no joints
         return false;
 
@@ -791,9 +792,10 @@ bool fS_Genotype::addPart() {
 
 bool fS_Genotype::changePartType() {
     Node *randomNode = chooseNode();
-    char newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
-    if (newType == randomNode->partType)
-        return false;
+    char newType = randomNode->partType;
+    while (newType == randomNode->partType)
+        newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
+
     randomNode->partType = newType;
     return true;
 }
