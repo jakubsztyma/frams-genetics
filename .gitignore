@@ -1,6 +1,7 @@
 .idea/*
 *.o
 *.d
+output.txt
 
 _old/*
 common/*

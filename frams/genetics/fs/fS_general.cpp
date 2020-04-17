@@ -282,6 +282,7 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 }
 
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
+//    return ADJACENT;
     double toleration = 0.999;
     double upperThreshold = 1.0001 * distanceThreshold;
     double lowerThreshold = 0.9999 * toleration * distanceThreshold;
@@ -298,6 +299,7 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
             dy = shiftedSphere.y - tmpPoint->y;
             dz = shiftedSphere.z - tmpPoint->z;
             distance = sqrt(dx*dx + dy*dy + dz*dz);
+
             if(distance <= upperThreshold){
                 if(distance >= lowerThreshold)
                     existsAdjacent = true;
@@ -702,7 +704,10 @@ bool fS_Genotype::changeParam() {
     auto it = randomNode->params.begin();
     advance(it, randomFromRange(paramCount));
     // TODO sensible parameter changes
+
     it->second += getRandomFromDistribution();
+    if(it->second < 0)
+        it->second *= -1;
     return true;
 }
 
@@ -718,7 +723,7 @@ bool fS_Genotype::addParam() {
     if (randomNode->params.count(chosenParam) > 0)
         return false;
     // Add modified default value for param
-    randomNode->params[chosenParam] = defaultParamValues.at(chosenParam) + getRandomFromDistribution();
+    randomNode->params[chosenParam] = defaultParamValues.at(chosenParam);
     return true;
 }
 

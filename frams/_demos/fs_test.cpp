@@ -312,19 +312,31 @@ int main() {
             assert(genes == "");
         }
 
-        SString *g1 = new SString("SMJ:EE{x=3.0;y=3.0;z=3.0}");
-        SString *g2 = new SString("SMJ:C{j=3.9}CC");
+        int gen_size = 5;
+        SString **gens = new SString*[gen_size];
+        gens[0] = new SString("SMJ:EE{x=3.0;y=3.0;z=3.0}");
+        gens[1] = new SString("SMJ:C{j=3.9}CC");
+        gens[2] = new SString("SMJ:C{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}CC");
+        gens[3] = new SString("SMJ:C{j=3.9;x=2.0;y=3.4;z=5.1}CCP{x=4.3}");
+        gens[4] = new SString("SMJ:E(E(E,E),E,E(E,E),E)");
+
+
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 100;
+        int operationCount = 10000;
         for (int i = 0; i < operationCount; i++) {
-            cout << i << " out of " << operationCount << " Length: " << g1->len() + g2->len() << endl;
-//            cout << g1->c_str() << endl;
-//            cout << g2->c_str() << endl;
+            int i1 = rand() % gen_size;
+            int i2 = rand() % gen_size;
+            if(i2 == i1)
+                i2 = (i1 + 1) % gen_size;
+
+            cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
+//            cout << gens[i1]->c_str() << endl;
+//            cout << gens[i2]->c_str() << endl;
             int method;
             float f1, f2, gp;
 
-            char *arr1 = strdup(g1->c_str());
-            char *arr2 = strdup(g2->c_str());
+            char *arr1 = strdup(gens[i1]->c_str());
+            char *arr2 = strdup(gens[i2]->c_str());
 
             operators.mutate(arr1, gp, method);
             operators.mutate(arr2, gp, method);
@@ -338,19 +350,21 @@ int main() {
 //            assert(SString(arr2) != *g2);
             }
 
-            delete g1;
-            delete g2;
-            g1 = new SString(arr1);
-            g2 = new SString(arr2);
-            fprintf(pFile, g1->c_str());
+            delete gens[i1];
+            delete gens[i2];
+            gens[i1] = new SString(arr1);
+            gens[i2] = new SString(arr2);
+
+            fprintf(pFile, gens[i1]->c_str());
             fprintf(pFile, "\n");
-            fprintf(pFile, converter.convert(*g1, &map, false).c_str());
+            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
             fprintf(pFile, "\n");
             free(arr1);
             free(arr2);
         }
-        delete g1;
-        delete g2;
+        for(int i=0; i<gen_size; i++)
+            delete gens[i];
+        delete[] gens;
         fclose(pFile);
     }
 
