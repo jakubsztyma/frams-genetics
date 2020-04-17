@@ -795,7 +795,7 @@ bool fS_Genotype::removeModifier() {
     return true;
 }
 
-void fS_Genotype::mutate() {
+void fS_Genotype::mutate(int &method) {
 //    int operationCount = 5;
     double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,};
     if (!startNode->paramMode) {
@@ -809,7 +809,6 @@ void fS_Genotype::mutate() {
     }
 
     bool result = false;
-    int method;
     while (!result) {
         method = GenoOperators::roulette(operations, FS_OPCOUNT);
         switch (method) {

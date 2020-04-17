@@ -323,6 +323,7 @@ int main() {
 
         FILE *pFile = fopen("output.txt", "w");
         int operationCount = 10000;
+        int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;
             int i2 = rand() % gen_size;
@@ -339,7 +340,9 @@ int main() {
             char *arr2 = strdup(gens[i2]->c_str());
 
             operators.mutate(arr1, gp, method);
+            methodUsages[method] += 1;
             operators.mutate(arr2, gp, method);
+            methodUsages[method] += 1;
 
             int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
@@ -362,6 +365,9 @@ int main() {
             free(arr1);
             free(arr2);
         }
+        cout<<"Method usages:"<<endl;
+        for(int i=0; i<10; i++)
+            cout<<i<<": "<<methodUsages[i]<<endl;
         for(int i=0; i<gen_size; i++)
             delete gens[i];
         delete[] gens;

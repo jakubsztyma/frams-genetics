@@ -292,7 +292,7 @@ public:
      * Performs mutation on genotype.
      * @return true if mutation succeeded, false otherwise
      */
-    void mutate();
+    void mutate(int &method);
 };
 
 
