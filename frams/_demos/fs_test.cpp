@@ -322,7 +322,7 @@ int main() {
 
 
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 10000;
+        int operationCount = 20000;
         int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;
@@ -331,8 +331,8 @@ int main() {
                 i2 = (i1 + 1) % gen_size;
 
             cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-//            cout << gens[i1]->c_str() << endl;
-//            cout << gens[i2]->c_str() << endl;
+            cout << gens[i1]->c_str() << endl;
+            cout << gens[i2]->c_str() << endl;
             int method;
             float f1, f2, gp;
 
@@ -358,10 +358,10 @@ int main() {
             gens[i1] = new SString(arr1);
             gens[i2] = new SString(arr2);
 
-            fprintf(pFile, gens[i1]->c_str());
-            fprintf(pFile, "\n");
-            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
-            fprintf(pFile, "\n");
+//            fprintf(pFile, gens[i1]->c_str());
+//            fprintf(pFile, "\n");
+//            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
+//            fprintf(pFile, "\n");
             free(arr1);
             free(arr2);
         }

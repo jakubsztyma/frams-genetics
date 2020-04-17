@@ -212,6 +212,7 @@ double Node::getParam(string key) {
 /// Get distance
 
 double avg(double a, double b){
+//    cout<<"Avg: "<<a<<" "<<b<<" "<<0.5 * (a + b)<<endl;
     return 0.5 * (a + b);
 }
 
@@ -276,7 +277,6 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
             }
         }
     }
-
     delete[] diameters;
     return centers;
 }
@@ -284,8 +284,10 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
 //    return ADJACENT;
     double toleration = 0.999;
-    double upperThreshold = 1.0001 * distanceThreshold;
-    double lowerThreshold = 0.9999 * toleration * distanceThreshold;
+//    double upperThreshold = 1.0001 * distanceThreshold;
+//    double lowerThreshold = 0.9999 * toleration * distanceThreshold;
+    double upperThreshold = distanceThreshold;
+    double lowerThreshold = toleration * distanceThreshold;
     double distance;
     double dx, dy, dz;
     bool existsAdjacent = false;
@@ -308,6 +310,7 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
             }
         }
     }
+    cout<<"Return"<<endl;
     if(existsAdjacent)
         return ADJACENT;
     else
@@ -335,6 +338,17 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
         else if(result == COLLISION) {
             minDistance = currentDistance;
             currentDistance = avg(maxDistance, currentDistance);
+        }
+        // TODO decide what to do
+        if(currentDistance > maxDistance){
+            cout<<"Warning"<<endl;
+            currentDistance = maxDistance;
+            break;
+        }
+        if(currentDistance < minDistance){
+            cout<<"Warning"<<endl;
+            currentDistance = minDistance;
+            break;
         }
 
     }
@@ -697,10 +711,17 @@ bool fS_Genotype::removeParam() {
 }
 
 bool fS_Genotype::changeParam() {
-    Node *randomNode = chooseNode();
-    int paramCount = randomNode->params.size();
+    Node *randomNode;
+    int paramCount = 0;
+    for(int i=0; i<mutationTries; i++) {
+        randomNode = chooseNode();
+        paramCount = randomNode->params.size();
+        if(paramCount >= 1)
+            break;
+    }
     if (paramCount < 1)
         return false;
+
     auto it = randomNode->params.begin();
     advance(it, randomFromRange(paramCount));
     // TODO sensible parameter changes
