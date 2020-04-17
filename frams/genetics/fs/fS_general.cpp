@@ -44,7 +44,7 @@ using namespace std;
 #define COLLISION 1
 #define ADJACENT 2
 
-const int mutationTries = 100;
+const int mutationTries = 200;
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -659,13 +659,19 @@ bool fS_Genotype::addJoint() {
     if (startNode->childSize < 1)
         return false;
 
-    Node *randomNode = chooseNode(1);    // First part does not have joints
-    char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
-    if (randomNode->joints.count(randomJoint) > 0)
-        return false;
+    Node *randomNode;    // First part does not have joints
+    bool success = false;
+    for(int i=0; i<mutationTries; i++) {
+        char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
+        randomNode = chooseNode(1);
+        if (randomNode->joints.count(randomJoint) == 0) {
+            randomNode->joints.insert(randomJoint);
+            success = true;
+            break;
+        }
+    }
 
-    randomNode->joints.insert(randomJoint);
-    return true;
+    return success;
 }
 
 
