@@ -785,6 +785,11 @@ bool fS_Genotype::addPart() {
     SString partType;
     partType += PART_TYPES[randomFromRange(3, 0)];
     Node *newNode = new Node(partType, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
+    // Add random rotation
+    newNode->params["tx"] = randomFromRange(90, -90);
+    newNode->params["ty"] = randomFromRange(90, -90);
+    newNode->params["tz"] = randomFromRange(90, -90);
+
     randomNode->children.push_back(newNode);
     randomNode->childSize += 1;
     return true;
