@@ -314,11 +314,11 @@ int main() {
 
         int gen_size = 5;
         SString **gens = new SString*[gen_size];
-        gens[0] = new SString("SMJ:EE{x=3.0;y=3.0;z=3.0}");
-        gens[1] = new SString("SMJ:C{j=3.9}CC");
-        gens[2] = new SString("SMJ:C{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}CC");
-        gens[3] = new SString("SMJ:C{j=3.9;x=2.0;y=3.4;z=5.1}CCP{x=4.3}");
-        gens[4] = new SString("SMJ:E(E(E,E),E,E(E,E),E)");
+        gens[0] = new SString("SMJ:EbE{x=3.0;y=3.0;z=3.0}");
+        gens[1] = new SString("SMJ:C{j=3.9}cdCbC");
+        gens[2] = new SString("SMJ:C{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bdCcdC");
+        gens[3] = new SString("SMJ:C{j=3.9;x=2.0;y=3.4;z=5.1}CcCP{x=4.3}");
+        gens[4] = new SString("SMJ:E(cE(bdE,cE),bE,cE(bcE,bcdE),E)");
 
 
         FILE *pFile = fopen("output.txt", "w");
@@ -358,10 +358,11 @@ int main() {
             gens[i1] = new SString(arr1);
             gens[i2] = new SString(arr2);
 
-//            fprintf(pFile, gens[i1]->c_str());
-//            fprintf(pFile, "\n");
-//            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
-//            fprintf(pFile, "\n");
+            fprintf(pFile, gens[i1]->c_str());
+            fprintf(pFile, gens[i2]->c_str());
+            fprintf(pFile, "\n");
+            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
+            fprintf(pFile, "\n");
             free(arr1);
             free(arr2);
         }

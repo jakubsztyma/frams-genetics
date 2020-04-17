@@ -49,20 +49,21 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z, JOINT_DISTANCE};
+const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+                             JOINT_DISTANCE};
 const map<string, double> defaultParamValues = {
-        {INGESTION, 0.25},
-        {FRICTION,  0.4},
-        {ROT_X,  0.0},
-        {ROT_Y,  0.0},
-        {ROT_Z,  0.0},
-        {RX,  0.0},
-        {RY,  0.0},
-        {RZ,  0.0},
-        {SIZE_X,  1.0},
-        {SIZE_Y,  1.0},
-        {SIZE_Z,  1.0},
-        {JOINT_DISTANCE,  1.0}
+        {INGESTION,      0.25},
+        {FRICTION,       0.4},
+        {ROT_X,          0.0},
+        {ROT_Y,          0.0},
+        {ROT_Z,          0.0},
+        {RX,             0.0},
+        {RY,             0.0},
+        {RZ,             0.0},
+        {SIZE_X,         1.0},
+        {SIZE_Y,         1.0},
+        {SIZE_Z,         1.0},
+        {JOINT_DISTANCE, 1.0}
 };
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.5);
@@ -110,7 +111,7 @@ void State::addVector(double length) {
     location += v * length;
 }
 
-void rotateVector(Pt3D &vector, Pt3D rotation){
+void rotateVector(Pt3D &vector, Pt3D rotation) {
     // TOTO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
@@ -211,8 +212,7 @@ double Node::getParam(string key) {
 
 /// Get distance
 
-double avg(double a, double b){
-//    cout<<"Avg: "<<a<<" "<<b<<" "<<0.5 * (a + b)<<endl;
+double avg(double a, double b) {
     return 0.5 * (a + b);
 }
 
@@ -234,18 +234,18 @@ double max3(Pt3D p) {
     return tmp;
 }
 
-double getSphereCoordinate(double dimension, double sphereDiameter, double index, int count){
-    if(count == 1)
+double getSphereCoordinate(double dimension, double sphereDiameter, double index, int count) {
+    if (count == 1)
         return 0;
     return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
 }
 
-Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations){
+Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations) {
     double sphereRelativeDistance = 0.5;
     double maxDiameterQuotient = 30;
     double minRadius = min3(radii);
     double maxRadius = max3(radii);
-    if(maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
+    if (maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
         sphereRadius = minRadius;
     else {
         sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
@@ -255,9 +255,9 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 
     double *diameters = new double[3]{2 * radii.x, 2 * radii.y, 2 * radii.z};
     int counts[3];
-    for(int i=0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
         counts[i] = 1;
-        if(diameters[i] > sphereDiameter)
+        if (diameters[i] > sphereDiameter)
             counts[i] += ceil((diameters[i] - sphereDiameter) / sphereDiameter / sphereRelativeDistance);
     }
 
@@ -265,11 +265,11 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
     double x, y, z;
     int totalCount = 0;
     Pt3D *centers = new Pt3D[sphereCount];
-    for(double xi=0; xi<counts[0]; xi++){
-        x =  getSphereCoordinate(diameters[0], sphereDiameter, xi, counts[0]);
-        for(double yi=0; yi<counts[1]; yi++){
+    for (double xi = 0; xi < counts[0]; xi++) {
+        x = getSphereCoordinate(diameters[0], sphereDiameter, xi, counts[0]);
+        for (double yi = 0; yi < counts[1]; yi++) {
             y = getSphereCoordinate(diameters[1], sphereDiameter, yi, counts[1]);
-            for(double zi=0; zi<counts[2]; zi++){
+            for (double zi = 0; zi < counts[2]; zi++) {
                 z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
                 centers[totalCount] = Pt3D(x, y, z);
                 rotateVector(centers[totalCount], rotations);
@@ -281,7 +281,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
     return centers;
 }
 
-int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector, double distanceThreshold){
+int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector,
+                double distanceThreshold) {
 //    return ADJACENT;
     double toleration = 0.999;
 //    double upperThreshold = 1.0001 * distanceThreshold;
@@ -292,32 +293,32 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
     double dx, dy, dz;
     bool existsAdjacent = false;
     Pt3D *tmpPoint;
-    for(int sc=0; sc<sphereCount; sc++){
+    for (int sc = 0; sc < sphereCount; sc++) {
         Pt3D shiftedSphere = Pt3D(centers[sc]);
         shiftedSphere += vector;
-        for(int psc=0; psc<parentSphereCount; psc++){
+        for (int psc = 0; psc < parentSphereCount; psc++) {
             tmpPoint = &centersParent[psc];
             dx = shiftedSphere.x - tmpPoint->x;
             dy = shiftedSphere.y - tmpPoint->y;
             dz = shiftedSphere.z - tmpPoint->z;
-            distance = sqrt(dx*dx + dy*dy + dz*dz);
+            distance = sqrt(dx * dx + dy * dy + dz * dz);
 
-            if(distance <= upperThreshold){
-                if(distance >= lowerThreshold)
+            if (distance <= upperThreshold) {
+                if (distance >= lowerThreshold)
                     existsAdjacent = true;
-                else
+                else {
                     return COLLISION;
+                }
             }
         }
     }
-    cout<<"Return"<<endl;
-    if(existsAdjacent)
+    if (existsAdjacent)
         return ADJACENT;
     else
         return DISJOINT;
 }
 
-double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParent, Pt3D rotation){
+double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParent, Pt3D rotation) {
     int parentSphereCount, sphereCount;
     double parentSphereRadius, sphereRadius;
     Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent, rotationParent);
@@ -325,28 +326,27 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 
     double distanceThreshold = sphereRadius + parentSphereRadius;
     double minDistance = 0.0;   // TO make sure that program will not process forever
-    double maxDistance = max3(radiiParent) + max3(radii);
+    double maxDistance = 2 * (max3(radiiParent) + max3(radii));
     double currentDistance = avg(maxDistance, minDistance);
     int result = -1;
-    while(result != ADJACENT) {
+    while (result != ADJACENT) {
         Pt3D currentVector = vector * currentDistance;
         result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
-        if(result == DISJOINT) {
+        if (result == DISJOINT) {
             maxDistance = currentDistance;
             currentDistance = avg(currentDistance, minDistance);
-        }
-        else if(result == COLLISION) {
+        } else if (result == COLLISION) {
             minDistance = currentDistance;
             currentDistance = avg(maxDistance, currentDistance);
         }
         // TODO decide what to do
-        if(currentDistance > maxDistance){
-            cout<<"Warning"<<endl;
+        if (currentDistance > maxDistance) {
+            cout << "Warning" << endl;
             currentDistance = maxDistance;
             break;
         }
-        if(currentDistance < minDistance){
-            cout<<"Warning"<<endl;
+        if (currentDistance < minDistance) {
+            cout << "Warning" << endl;
             currentDistance = minDistance;
             break;
         }
@@ -430,20 +430,21 @@ vector <SString> Node::getBranches(SString restOfGenotype) {
     return children;
 }
 
-Pt3D Node::getSize(){
+Pt3D Node::getSize() {
     double sx = getParam(SIZE_X) * state->sx;
     double sy = getParam(SIZE_Y) * state->sy;
     double sz = getParam(SIZE_Z) * state->sz;
     return Pt3D(sx, sy, sz);
 }
 
-Pt3D Node::getVectorRotation(){
+Pt3D Node::getVectorRotation() {
     double rx = getParam(ROT_X);
     double ry = getParam(ROT_Y);
     double rz = getParam(ROT_Z);
     return Pt3D(rx, ry, rz);
 }
-Pt3D Node::getRotation(){
+
+Pt3D Node::getRotation() {
     double rx = getParam(RX);
     double ry = getParam(RY);
     double rz = getParam(RZ);
@@ -580,7 +581,7 @@ void fS_Genotype::buildModel(Model *model) {
         Node *node = allNodes[i];
         if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
             Node *otherNode = getNearestNode(allNodes, node);
-            if(otherNode != nullptr) {
+            if (otherNode != nullptr) {
                 // If other node is close enough, add a joint
                 double distance = node->state->location.distanceTo(otherNode->state->location);
                 if (distance < node->params[JOINT_DISTANCE]) {
@@ -674,12 +675,11 @@ bool fS_Genotype::removeJoint() {
 
     // Choose a node with joints
     Node *randomNode;
-    int jointsCount;
-    for(int i=0; i<mutationTries; i++){
+    int jointsCount = 0, tries = 0;
+    while(tries < mutationTries && jointsCount < 1) {
         randomNode = chooseNode(1);    // First part does not have joints
         jointsCount = randomNode->joints.size();
-        if(jointsCount >= 1)
-            break;
+        tries += 1;
     }
     if (jointsCount < 1)
         return false;
@@ -694,12 +694,11 @@ bool fS_Genotype::removeJoint() {
 bool fS_Genotype::removeParam() {
     // Choose a node with params
     Node *randomNode;
-    int paramCount;
-    for(int i=0; i<mutationTries; i++) {
+    int paramCount = 0, tries = 0;
+    while (tries < mutationTries && paramCount < 1) {
         randomNode = chooseNode();
         paramCount = randomNode->params.size();
-        if(paramCount >= 1)
-            break;
+        tries += 1;
     }
     if (paramCount < 1)
         return false;
@@ -712,12 +711,11 @@ bool fS_Genotype::removeParam() {
 
 bool fS_Genotype::changeParam() {
     Node *randomNode;
-    int paramCount = 0;
-    for(int i=0; i<mutationTries; i++) {
+    int paramCount = 0, tries = 0;
+    while (tries < mutationTries && paramCount < 1) {
         randomNode = chooseNode();
         paramCount = randomNode->params.size();
-        if(paramCount >= 1)
-            break;
+        tries += 1;
     }
     if (paramCount < 1)
         return false;
@@ -727,7 +725,7 @@ bool fS_Genotype::changeParam() {
     // TODO sensible parameter changes
 
     it->second += getRandomFromDistribution();
-    if(it->second < 0)
+    if (it->second < 0)
         it->second *= -1;
     return true;
 }
@@ -749,26 +747,21 @@ bool fS_Genotype::addParam() {
 }
 
 bool fS_Genotype::removePart() {
-    Node *randomNode;
-    int childCount;
+    Node *randomNode, *chosenChild;
+    bool success = false;
     // Choose a parent with children
     for(int i=0; i<mutationTries; i++) {
         randomNode = chooseNode();
-        childCount = randomNode->childSize;
-        if(childCount >= 1)
-            break;
+        int childCount = randomNode->childSize;
+        if(childCount > 0){
+            chosenChild = randomNode->children[randomFromRange(childCount)];
+            if(chosenChild->childSize == 0) {
+                success = true;
+                break;
+            }
+        }
     }
-    if (childCount < 1)
-        return false;
-
-    // Choose a child without own children
-    Node *chosenChild;
-    for(int i=0; i<mutationTries; i++) {
-        chosenChild = randomNode->children[randomFromRange(childCount)];
-        if(chosenChild->childSize == 0)
-            break;
-    }
-    if (chosenChild->childSize > 0)
+    if (!success)
         return false;
 
     // Remove the chosen child
@@ -810,8 +803,14 @@ bool fS_Genotype::addModifier() {
 
 bool fS_Genotype::removeModifier() {
     Node *randomNode = chooseNode();
+    int tries = 0;
+    while (tries < mutationTries && randomNode->modifiers.empty()) {
+        randomNode = chooseNode();
+        tries += 1;
+    }
     if (randomNode->modifiers.empty())
         return false;
+
     randomNode->modifiers.pop_back();
     return true;
 }
