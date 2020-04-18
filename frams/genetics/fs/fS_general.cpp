@@ -26,6 +26,8 @@ using namespace std;
 #define DEFAULT_JOINT 'a'
 #define MULTIPLIER 1.1
 #define JOINT_COUNT 4
+#define SPHERE_RELATIVE_DISTANCE 0.25
+#define MAX_DIAMETER_QUOTIENT 30
 
 #define INGESTION "i"
 #define FRICTION "f"
@@ -67,7 +69,6 @@ const map<string, double> defaultParamValues = {
 };
 default_random_engine generator;
 normal_distribution<double> distribution(0.0, 0.5);
-
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -241,8 +242,8 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 }
 
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations) {
-    double sphereRelativeDistance = 0.5;
-    double maxDiameterQuotient = 30;
+    double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
+    double maxDiameterQuotient = MAX_DIAMETER_QUOTIENT;
     double minRadius = min3(radii);
     double maxRadius = max3(radii);
     if (maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
