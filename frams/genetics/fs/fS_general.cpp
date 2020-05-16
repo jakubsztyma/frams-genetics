@@ -452,10 +452,10 @@ Pt3D Node::getRotation() {
     return Pt3D(rx, ry, rz);
 }
 
-Part *Node::buildModel(Model *model) {
+Part *Node::buildModel(Model &model) {
     createPart();
-    model->addPart(part);
-    model->checkpoint();
+    model.addPart(part);
+//    model->checkpoint();
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
@@ -489,12 +489,12 @@ void Node::createPart() {
     part->setRot(getRotation());
 }
 
-void Node::addJointsToModel(Model *model, Node *child) {
+void Node::addJointsToModel(Model &model, Node *child) {
     if (child->joints.empty()) {
         Joint *joint = new Joint();
         joint->shape = Joint::Shape::SHAPE_FIXED;
         joint->attachToParts(part, child->part);
-        model->addJoint(joint);
+        model.addJoint(joint);
     } else {
         for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
@@ -507,7 +507,7 @@ void Node::addJointsToModel(Model *model, Node *child) {
                     joint->shape = Joint::Shape::SHAPE_HINGE_XY;
                     break;
             }
-            model->addJoint(joint);
+            model.addJoint(joint);
         }
     }
 }
@@ -569,7 +569,7 @@ fS_Genotype::~fS_Genotype() {
     delete startNode;
 }
 
-void fS_Genotype::buildModel(Model *model) {
+void fS_Genotype::buildModel(Model &model) {
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
     startNode->getState(initialState, Pt3D(1.0));
     startNode->buildModel(model);
@@ -588,7 +588,7 @@ void fS_Genotype::buildModel(Model *model) {
                     joint->attachToParts(node->part, otherNode->part);
 
                     joint->shape = Joint::Shape::SHAPE_FIXED;
-                    model->addJoint(joint);
+                    model.addJoint(joint);
                 }
             }
         }

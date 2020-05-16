@@ -210,9 +210,9 @@ int main() {
         SString genotype_str = test[0];
         cout << test[0].c_str() << endl;
         if (true) {
-            cout <<"Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+            cout <<"Result:\n" << converter.convert(genotype_str, &map, true).c_str() << endl;
             cout <<"Expected: \n"<< test[1].c_str() << endl;
-            assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
+            assert(test[1] == converter.convert(genotype_str, &map, true).c_str());
 
             // Test get geno
             fS_Genotype geno1(test[0]);
@@ -306,7 +306,7 @@ int main() {
             MultiMap map;
             cout << invalidGenotypes[i].c_str() << endl;
             assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
-            SString genes = converter.convert(invalidGenotypes[i], &map, false);
+            SString genes = converter.convert(invalidGenotypes[i], &map, true);
             assert(genes == "");
         }
 
@@ -358,11 +358,11 @@ int main() {
 
             fprintf(pFile, gens[i1]->c_str());
             fprintf(pFile, "\n");
-            fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
+            fprintf(pFile, converter.convert(*gens[i1], &map, true).c_str());
             fprintf(pFile, "\n");
             fprintf(pFile, gens[i2]->c_str());
             fprintf(pFile, "\n");
-            fprintf(pFile, converter.convert(*gens[i2], &map, false).c_str());
+            fprintf(pFile, converter.convert(*gens[i2], &map, true).c_str());
             fprintf(pFile, "\n");
 
             free(arr1);

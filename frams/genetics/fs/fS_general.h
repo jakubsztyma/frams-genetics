@@ -133,7 +133,7 @@ private:
      * @param mode pointer to build model
      * @param child pointer to the child
      */
-    void addJointsToModel(Model *model, Node *child);
+    void addJointsToModel(Model &model, Node *child);
 
     /**
      * Get all the nodes from the subtree that starts in this node
@@ -145,7 +145,7 @@ private:
      * Build model from the subtree that starts in this node
      * @param pointer to model
      */
-    Part *buildModel(Model *model);
+    Part *buildModel(Model &model);
 
 public:
     State *state = nullptr; /// The phenotypic state, that inherits from ancestors
@@ -221,7 +221,7 @@ public:
      * Builds Model object from internal representation
      * @param pointer to model that will contain a built model
      */
-    void buildModel(Model *model);
+    void buildModel(Model &model);
 
     /**
      * @return genotype in fS format

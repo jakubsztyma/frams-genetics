@@ -15,13 +15,13 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints)
         return SString();
     }
 
-    Model *model = new Model();
-    model->open(using_checkpoints);
+    Model model;
+    model.open(using_checkpoints);
     genotype->buildModel(model);
-    model->getCurrentToF0Map(*map);
-    model->close();
-    SString genes = model->getF0Geno().getGenes();
+    model.getCurrentToF0Map(*map);
+    model.close();
+    SString genes = model.getF0Geno().getGenes();
+//    model.clear();
     delete genotype;
-    delete model;
     return genes;
 }
