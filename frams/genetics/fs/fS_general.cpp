@@ -455,6 +455,7 @@ Pt3D Node::getRotation() {
 Part *Node::buildModel(Model *model) {
     createPart();
     model->addPart(part);
+    model->checkpoint();
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
@@ -500,13 +501,10 @@ void Node::addJointsToModel(Model *model, Node *child) {
             joint->attachToParts(part, child->part);
             switch (*it) {
                 case 'b':
-                    joint->shape = Joint::Shape::SHAPE_B;
+                    joint->shape = Joint::Shape::SHAPE_HINGE_X;
                     break;
                 case 'c':
-                    joint->shape = Joint::Shape::SHAPE_C;
-                    break;
-                case 'd':
-                    joint->shape = Joint::Shape::SHAPE_D;
+                    joint->shape = Joint::Shape::SHAPE_HINGE_XY;
                     break;
             }
             model->addJoint(joint);

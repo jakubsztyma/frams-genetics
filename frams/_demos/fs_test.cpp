@@ -67,12 +67,11 @@ int main() {
             {"S:EbE",                                        "p:sh=1\n"
                                                              "p:2.0, sh=1\n"
                                                              "j:0, 1, sh=2\n"}, // Parametrized joints
-            {"S:PbcdP",                                      "p:sh=2\n"
+            {"S:PbcP",                                      "p:sh=2\n"
                                                              "p:2.0, sh=2\n"
                                                              "j:0, 1, sh=2\n"
-                                                             "j:0, 1, sh=3\n"
-                                                             "j:0, 1, sh=4\n"}, // Many parametrized joints
-            {"S:ECbCcPdCbcPbcdE",                            "p:sh=1\n"
+                                                             "j:0, 1, sh=3\n"}, // Many parametrized joints
+            {"S:ECbCcPCbcPbcE",                            "p:sh=1\n"
                                                              "p:2.0, sh=3\n"
                                                              "p:4.0, sh=3\n"
                                                              "p:6.0, sh=2\n"
@@ -81,10 +80,9 @@ int main() {
                                                              "p:12.0, sh=1\n"
                                                              "j:5, 6, sh=2\n"
                                                              "j:5, 6, sh=3\n"
-                                                             "j:5, 6, sh=4\n"
                                                              "j:4, 5, sh=2\n"
                                                              "j:4, 5, sh=3\n"
-                                                             "j:3, 4, sh=4\n"
+                                                             "j:3, 4, sh=1\n"
                                                              "j:2, 3, sh=3\n"
                                                              "j:1, 2, sh=2\n"
                                                              "j:0, 1, sh=1\n"},
@@ -212,8 +210,8 @@ int main() {
         SString genotype_str = test[0];
         cout << test[0].c_str() << endl;
         if (true) {
-            cout << converter.convert(genotype_str, &map, false).c_str() << endl;
-            cout << test[1].c_str() << endl;
+            cout <<"Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+            cout <<"Expected: \n"<< test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -322,7 +320,7 @@ int main() {
 
 
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 20000;
+        int operationCount = 20;
         int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;
