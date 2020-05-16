@@ -7,15 +7,21 @@
 using namespace std;
 
 SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints=false) {
+    fS_Genotype *genotype;
+    try {
+        genotype = new fS_Genotype(i);
+    }
+    catch (const char *msg){
+        return SString();
+    }
+
     Model *model = new Model();
     model->open(false);
-
-    fS_Genotype genotype = fS_Genotype(i);
-    genotype.buildModel(model);
-
+    genotype->buildModel(model);
     model->getCurrentToF0Map(*map);
     model->close();
     SString genes = model->getF0Geno().getGenes();
+    delete genotype;
     delete model;
     return genes;
 }

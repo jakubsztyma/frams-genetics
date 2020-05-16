@@ -24,6 +24,7 @@ public:
         out_format = '0';
         mapsupport = 0;
     }
+    /// Return empty string if can not convert
     SString convert(SString &i, MultiMap *map, bool using_checkpoints);
     ~GenoConv_fS0() {};
 };
