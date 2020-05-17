@@ -7,6 +7,33 @@
 
 using namespace std;
 
+#define mutationTries  100
+
+
+#define FIELDSTRUCT fS_Operators
+static ParamEntry GENOfSparam_tab[] =
+        {
+                { "Genetics: fS", 1, FS_OPCOUNT, },
+                { "fS_mut_add", 0, 0, "Add part", "f 0 100 10", FIELD(prob[FS_ADD]), "mutation: probability of adding a part", },
+                { "fS_mut_rm", 0, 0, "Remove part", "f 0 100 10", FIELD(prob[FS_RM]), "mutation: probability of deleting a part", },
+                { "fS_mut_mod", 0, 0, "Modify part type", "f 0 100 10", FIELD(prob[FS_MOD]), "mutation: probability of deleting a part", },
+                { "fS_mut_add_joint", 0, 0, "Add joint", "f 0 100 10", FIELD(prob[FS_ADD_JOINT]), "mutation: probability of adding a neural connection", },
+                { "fS_mut_rm_joint", 0, 0, "Remove joint", "f 0 100 10", FIELD(prob[FS_RM_JOINT]), "mutation: probability of changing a node", },
+                { "fS_mut_add_param", 0, 0, "Add param", "f 0 100 10", FIELD(prob[FS_ADD_PARAM]), "mutation: probability of adding a division", },
+                { "fS_mut_rm_param", 0, 0, "Remove param", "f 0 100 10", FIELD(prob[FS_RM_PARAM]), "Modifiers that will not be added nor deleted during mutation\n(all: ", },
+                { "fS_mut_mod_param", 0, 0, "Modify param", "f 0 100 10", FIELD(prob[FS_MOD_PARAM]), "Modifiers that will not be added nor deleted during mutation\n(all: ", },
+                { "fS_mut_add_mod", 0, 0, "Add modifier", "f 0 100 10", FIELD(prob[FS_ADD_MOD]), "mutation: probability of adding a repetition", },
+                { "fS_mut_rm_mod", 0, 0, "Remove modifier", "f 0 100 10", FIELD(prob[FS_RM_MOD]), "Modifiers that will not be added nor deleted during mutation\n(all: ", },
+        };
+
+#undef FIELDSTRUCT
+
+fS_Operators::fS_Operators() {
+    par.setParamTab(GENOfSparam_tab);
+    par.select(this);
+    par.setDefault();
+}
+
 int fS_Operators::checkValidity(const char *geno, const char *genoname) {
     try {
         fS_Genotype genotype = fS_Genotype(geno);
@@ -20,7 +47,45 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname) {
 
 int fS_Operators::mutate(char *&geno, float& chg, int &method){
     fS_Genotype genotype(geno);
-    genotype.mutate(method);
+
+    bool result = false;
+    for(int i=0; i<mutationTries; i++) {
+        method = GenoOperators::roulette(prob, FS_OPCOUNT);
+        switch (method) {
+            case 0:
+                result = genotype.addPart();
+                break;
+            case 1:
+                result = genotype.removePart();
+                break;
+            case 2:
+                result = genotype.changePartType();
+                break;
+            case 3:
+                result = genotype.addJoint();
+                break;
+            case 4:
+                result = genotype.removeJoint();
+                break;
+            case 5:
+                result = genotype.addParam();
+                break;
+            case 6:
+                result = genotype.removeParam();
+                break;
+            case 7:
+                result = genotype.changeParam();
+                break;
+            case 8:
+                result = genotype.addModifier();
+                break;
+            case 9:
+                result = genotype.removeModifier();
+                break;
+        }
+        if(result)
+            break;
+    }
 
     free(geno);
     geno = strdup(genotype.getGeno().c_str());

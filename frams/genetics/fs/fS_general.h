@@ -5,7 +5,6 @@
 #ifndef CPP_FS_CONV_H
 #define CPP_FS_CONV_H
 
-#define FS_OPCOUNT 10
 
 #include <iostream>
 #include <vector>
@@ -21,6 +20,7 @@
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
+
 
 using namespace std;
 
@@ -70,8 +70,11 @@ private:
     set<char> joints;           /// Set of all joints
 
     Pt3D getSize();
+
     Pt3D getRotation();
+
     Pt3D getVectorRotation();
+
     /**
      * Get the position of part type in genotype
      *
@@ -287,12 +290,6 @@ public:
      * @return true if mutation succeeded, false otherwise
      */
     bool removeModifier();
-
-    /**
-     * Performs mutation on genotype.
-     * @return true if mutation succeeded, false otherwise
-     */
-    void mutate(int &method);
 };
 
 

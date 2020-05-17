@@ -46,7 +46,9 @@ using namespace std;
 #define COLLISION 1
 #define ADJACENT 2
 
-const int mutationTries = 100;
+#define FS_OPCOUNT 10
+#define mutationTries  100
+
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -455,7 +457,7 @@ Pt3D Node::getRotation() {
 Part *Node::buildModel(Model &model) {
     createPart();
     model.addPart(part);
-//    model->checkpoint();
+    model.checkpoint();
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
@@ -827,54 +829,4 @@ bool fS_Genotype::removeModifier() {
     return true;
 }
 
-void fS_Genotype::mutate(int &method) {
-//    int operationCount = 5;
-    double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,};
-    if (!startNode->paramMode) {
-        operations[5] = 0.0;
-        operations[6] = 0.0;
-        operations[7] = 0.0;
-    }
-    if (!startNode->modifierMode) {
-        operations[8] = 0.0;
-        operations[9] = 0.0;
-    }
-
-    bool result = false;
-    while (!result) {
-        method = GenoOperators::roulette(operations, FS_OPCOUNT);
-        switch (method) {
-            case 0:
-                result = addPart();
-                break;
-            case 1:
-                result = removePart();
-                break;
-            case 2:
-                result = changePartType();
-                break;
-            case 3:
-                result = addJoint();
-                break;
-            case 4:
-                result = removeJoint();
-                break;
-            case 5:
-                result = addParam();
-                break;
-            case 6:
-                result = removeParam();
-                break;
-            case 7:
-                result = changeParam();
-                break;
-            case 8:
-                result = addModifier();
-                break;
-            case 9:
-                result = removeModifier();
-                break;
-        }
-    }
-}
 
