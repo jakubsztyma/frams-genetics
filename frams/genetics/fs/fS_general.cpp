@@ -130,24 +130,27 @@ void State::rotate(Pt3D rotation) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false) {
+Node::Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false) {
     isStart = _isStart;
     modifierMode = _modifierMode;
     paramMode = _paramMode;
     cycleMode = _cycleMode;
-    SString restOfGenotype = genotype.substr(0, INT_MAX);
+    SString restOfGenotype = genotype.str.substr(genotype.start, genotype.len);
     restOfGenotype = extractModifiers(restOfGenotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
 
-    partCodeLen = genotype.len() - restOfGenotype.len();
+    partCodeLen = genotype.len - restOfGenotype.len();
+    partDescription = new Substring(genotype.str, genotype.start, partCodeLen);
 
+    Substring rest(genotype.str, genotype.start + partCodeLen, genotype.len - partCodeLen);
     if (restOfGenotype.len() > 0)
-        getChildren(restOfGenotype);
+        getChildren(rest);
 }
 
 Node::~Node() {
+    delete partDescription;
     if (state != nullptr)
         delete state;
     for (unsigned int i = 0; i < childSize; i++)
@@ -405,39 +408,33 @@ void Node::getState(State *_state, Pt3D parentSize) {
     }
 }
 
-void Node::getChildren(SString restOfGenotype) {
-    vector <Bracket> branches = getBranches(restOfGenotype);
+void Node::getChildren(Substring restOfGenotype) {
+    vector <Substring> branches = getBranches(restOfGenotype);
     childSize = branches.size();
-    cout<<"Size"<<childSize<<endl;
     for (unsigned int i = 0; i < childSize; i++) {
-        SString rest = restOfGenotype.substr(branches[i].start, branches[i].len);
-        children.push_back(new Node(rest, modifierMode, paramMode, cycleMode));
+        children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
     }
 }
 
-vector <Bracket> Node::getBranches(SString restOfGenotype) {
-    vector <Bracket> children;
-    if (restOfGenotype[0] != BRANCH_START) {
-        Bracket bracket;
-        bracket.start = 0;
-        bracket.len = restOfGenotype.len();
-        children.push_back(bracket);  // Only one child
+vector <Substring> Node::getBranches(Substring restOfGenotype) {
+    vector <Substring> children;
+    if (restOfGenotype.str[restOfGenotype.start] != BRANCH_START) {
+        children.push_back(restOfGenotype);  // Only one child
         return children;
     }
     // TODO handle wrong syntax
 
     int depth = 0;
+    SString rest = restOfGenotype.str.substr(restOfGenotype.start, restOfGenotype.len);
     int start = 1;
-    int length = restOfGenotype.len();
-    for (int i = 0; i < restOfGenotype.len(); i++) {
-        char c = restOfGenotype[i];
+    int length = rest.len();
+    for (int i = 0; i < length; i++) {
+        char c = rest[i];
         if (c == BRANCH_START)
             depth += 1;
         else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length) {
-            Bracket bracket;
-            bracket.start = start;
-            bracket.len = i - start;
-            children.push_back(bracket);
+            Substring substring(restOfGenotype.str, restOfGenotype.start + start, i - start);
+            children.push_back(substring);
             start = i + 1;
         } else if (c == BRANCH_END)
             depth -= 1;
@@ -472,8 +469,9 @@ Part *Node::buildModel(Model &model) {
     model.checkpoint();
 
     MultiRange range;
-    range.add(0, partCodeLen);
+    range.add(partDescription->start, partDescription->start + partDescription->len);
     part->addMapping(range);
+    cout<<"Mapping: "<<partDescription->start<<" "<<partDescription->len<<endl;
 
 
     for (unsigned int i = 0; i < childSize; i++) {
@@ -581,7 +579,10 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
     bool modifierMode = -1 != modeStr.indexOf(MODIFIER_MODE);
     bool paramMode = -1 != modeStr.indexOf(PARAM_MODE);
     bool cycleMode = -1 != modeStr.indexOf(CYCLE_MODE);
-    startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), modifierMode, paramMode, cycleMode, true);
+
+    int actualGenoStart = modeSeparatorIndex + 1;
+    Substring substring(genotype, actualGenoStart, genotype.len() - actualGenoStart);
+    startNode = new Node(substring, modifierMode, paramMode, cycleMode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
@@ -802,7 +803,8 @@ bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType;
     partType += PART_TYPES[randomFromRange(3, 0)];
-    Node *newNode = new Node(partType, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
+    Substring substring(partType, 0, INT_MAX);
+    Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
     // Add random rotation
     newNode->params["tx"] = randomFromRange(90, -90);
     newNode->params["ty"] = randomFromRange(90, -90);

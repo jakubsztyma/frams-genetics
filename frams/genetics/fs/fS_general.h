@@ -27,9 +27,17 @@ using namespace std;
 
 
 
-struct Bracket {
+class Substring {
+public:
+    SString str;
     int start;
     int len;
+
+    Substring(SString str_, int start_, int len_){
+        str = str_;
+        start = start_;
+        len = len_;
+    }
 };
 
 class State {
@@ -65,6 +73,7 @@ class Node {
     friend class fS_Operators;
 
 private:
+    Substring *partDescription;
     bool cycleMode, modifierMode, paramMode; /// Possible modes
     bool isStart;   /// Is a starting node of whole genotype
     char partType; /// The type of the part (E, P, C)
@@ -118,7 +127,7 @@ private:
      * Extract child branches from the rest of genotype
      * @return vector of child branches
      */
-    vector <Bracket> getBranches(SString restOfGenotype);
+    vector <Substring> getBranches(Substring restOfGenotype);
 
     /**
      * Get phenotypic state that derives from ancestors.
@@ -131,7 +140,7 @@ private:
      * Build children internal representations from fS genotype
      * @param restOfGenotype part of genotype that describes the subtree
      */
-    void getChildren(SString restOfGenotype);
+    void getChildren(Substring restOfGenotype);
 
     /**
      * Create part object from internal representation
@@ -161,7 +170,7 @@ private:
 public:
     State *state = nullptr; /// The phenotypic state, that inherits from ancestors
 
-    Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+    Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
     ~Node();
 
