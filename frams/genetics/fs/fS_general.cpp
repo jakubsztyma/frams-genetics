@@ -459,6 +459,11 @@ Part *Node::buildModel(Model &model) {
     model.addPart(part);
     model.checkpoint();
 
+    MultiRange range;
+    range.add(5, 10);
+    part->addMapping(range);
+
+
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
         child->getState(state, getSize());

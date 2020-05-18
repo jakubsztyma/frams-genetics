@@ -210,8 +210,8 @@ int main() {
         SString genotype_str = test[0];
         cout << test[0].c_str() << endl;
         if (true) {
-//            cout <<"Result:\n" << converter.convert(genotype_str, &map, true).c_str() << endl;
-//            cout <<"Expected: \n"<< test[1].c_str() << endl;
+            cout <<"Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+            cout <<"Expected: \n"<< test[1].c_str() << endl;
             assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
             // Test get geno
@@ -320,7 +320,7 @@ int main() {
 
 
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 100;
+        int operationCount = 1;
         int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;

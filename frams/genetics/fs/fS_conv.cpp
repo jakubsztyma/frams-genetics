@@ -7,6 +7,7 @@
 using namespace std;
 
 SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints) {
+    cout<<"Map 2: "<<map<<endl;
     fS_Genotype *genotype;
     try {
         genotype = new fS_Genotype(i);
@@ -18,10 +19,12 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints)
     Model model;
     model.open(using_checkpoints);
     genotype->buildModel(model);
-    model.getCurrentToF0Map(*map);
     model.close();
-    SString genes = model.getF0Geno().getGenes();
-//    model.clear();
     delete genotype;
-    return genes;
+
+    if(map) {
+        model.getCurrentToF0Map(*map);
+    }
+
+    return model.getF0Geno().getGenes();
 }

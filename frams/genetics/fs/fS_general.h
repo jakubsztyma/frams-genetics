@@ -20,6 +20,7 @@
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
+#include <frams/util/multirange.h>
 
 
 using namespace std;

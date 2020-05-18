@@ -22,7 +22,7 @@ public:
 
         in_format = 'S';
         out_format = '0';
-        mapsupport = 0;
+        mapsupport = 1;
     }
     /// Return empty string if can not convert
     SString convert(SString &i, MultiMap *map, bool using_checkpoints);
