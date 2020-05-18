@@ -467,10 +467,7 @@ Part *Node::buildModel(Model &model) {
     createPart();
     model.addPart(part);
     model.checkpoint();
-
-    MultiRange range;
-    range.add(partDescription->start, partDescription->start + partDescription->len - 1);
-    part->addMapping(range);
+    part->addMapping(partDescription->toMultiRange());
 
 
     for (unsigned int i = 0; i < childSize; i++) {
@@ -512,9 +509,7 @@ void Node::addJointsToModel(Model &model, Node *child) {
         joint->attachToParts(part, child->part);
         model.addJoint(joint);
 
-        MultiRange range;
-        range.add(partDescription->start, partDescription->start + partDescription->len - 1);
-        joint->addMapping(range);
+        joint->addMapping(partDescription->toMultiRange());
     } else {
         for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
@@ -683,7 +678,7 @@ bool fS_Genotype::addJoint() {
 
     Node *randomNode;    // First part does not have joints
     bool success = false;
-    for(int i=0; i<mutationTries; i++) {
+    for (int i = 0; i < mutationTries; i++) {
         char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
         randomNode = chooseNode(1);
         if (randomNode->joints.count(randomJoint) == 0) {
@@ -705,7 +700,7 @@ bool fS_Genotype::removeJoint() {
     // Choose a node with joints
     Node *randomNode;
     int jointsCount = 0, tries = 0;
-    while(tries < mutationTries && jointsCount < 1) {
+    while (tries < mutationTries && jointsCount < 1) {
         randomNode = chooseNode(1);    // First part does not have joints
         jointsCount = randomNode->joints.size();
         tries += 1;
@@ -779,12 +774,12 @@ bool fS_Genotype::removePart() {
     Node *randomNode, *chosenChild;
     bool success = false;
     // Choose a parent with children
-    for(int i=0; i<mutationTries; i++) {
+    for (int i = 0; i < mutationTries; i++) {
         randomNode = chooseNode();
         int childCount = randomNode->childSize;
-        if(childCount > 0){
+        if (childCount > 0) {
             chosenChild = randomNode->children[randomFromRange(childCount)];
-            if(chosenChild->childSize == 0) {
+            if (chosenChild->childSize == 0) {
                 success = true;
                 break;
             }

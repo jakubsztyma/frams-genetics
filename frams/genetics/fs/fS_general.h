@@ -38,6 +38,11 @@ public:
         start = start_;
         len = len_;
     }
+    MultiRange toMultiRange(){
+        MultiRange range;
+        range.add(start, start + len - 1);
+        return range;
+    }
 };
 
 class State {
