@@ -135,10 +135,13 @@ Node::Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _c
     modifierMode = _modifierMode;
     paramMode = _paramMode;
     cycleMode = _cycleMode;
-    SString restOfGenotype = extractModifiers(genotype);
+    SString restOfGenotype = genotype.substr(0, INT_MAX);
+    restOfGenotype = extractModifiers(restOfGenotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
+
+    partCodeLen = genotype.len() - restOfGenotype.len();
 
     if (restOfGenotype.len() > 0)
         getChildren(restOfGenotype);
@@ -403,29 +406,38 @@ void Node::getState(State *_state, Pt3D parentSize) {
 }
 
 void Node::getChildren(SString restOfGenotype) {
-    vector <SString> branches = getBranches(restOfGenotype);
+    vector <Bracket> branches = getBranches(restOfGenotype);
     childSize = branches.size();
-    for (unsigned int i = 0; i < childSize; i++)
-        children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
+    cout<<"Size"<<childSize<<endl;
+    for (unsigned int i = 0; i < childSize; i++) {
+        SString rest = restOfGenotype.substr(branches[i].start, branches[i].len);
+        children.push_back(new Node(rest, modifierMode, paramMode, cycleMode));
+    }
 }
 
-vector <SString> Node::getBranches(SString restOfGenotype) {
+vector <Bracket> Node::getBranches(SString restOfGenotype) {
+    vector <Bracket> children;
     if (restOfGenotype[0] != BRANCH_START) {
-        vector <SString> result{restOfGenotype};  // Only one child
-        return result;
+        Bracket bracket;
+        bracket.start = 0;
+        bracket.len = restOfGenotype.len();
+        children.push_back(bracket);  // Only one child
+        return children;
     }
     // TODO handle wrong syntax
 
     int depth = 0;
     int start = 1;
-    vector <SString> children;
     int length = restOfGenotype.len();
     for (int i = 0; i < restOfGenotype.len(); i++) {
         char c = restOfGenotype[i];
         if (c == BRANCH_START)
             depth += 1;
         else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length) {
-            children.push_back(restOfGenotype.substr(start, i - start));
+            Bracket bracket;
+            bracket.start = start;
+            bracket.len = i - start;
+            children.push_back(bracket);
             start = i + 1;
         } else if (c == BRANCH_END)
             depth -= 1;
@@ -460,7 +472,7 @@ Part *Node::buildModel(Model &model) {
     model.checkpoint();
 
     MultiRange range;
-    range.add(5, 10);
+    range.add(0, partCodeLen);
     part->addMapping(range);
 
 

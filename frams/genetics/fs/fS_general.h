@@ -26,6 +26,12 @@
 using namespace std;
 
 
+
+struct Bracket {
+    int start;
+    int len;
+};
+
 class State {
 public:
     Pt3D location;  /// Location of the node
@@ -64,6 +70,7 @@ private:
     char partType; /// The type of the part (E, P, C)
     Part *part;     /// A part object built from node. Used in building the Model
     unsigned int childSize = 0; /// The number of direct children
+    unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
 
     map<string, double> params; /// The map of all the node params
     vector<Node *> children;    /// Vector of all direct children
@@ -111,7 +118,7 @@ private:
      * Extract child branches from the rest of genotype
      * @return vector of child branches
      */
-    vector <SString> getBranches(SString restOfGenotype);
+    vector <Bracket> getBranches(SString restOfGenotype);
 
     /**
      * Get phenotypic state that derives from ancestors.
