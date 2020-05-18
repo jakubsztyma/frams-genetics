@@ -469,9 +469,8 @@ Part *Node::buildModel(Model &model) {
     model.checkpoint();
 
     MultiRange range;
-    range.add(partDescription->start, partDescription->start + partDescription->len);
+    range.add(partDescription->start, partDescription->start + partDescription->len - 1);
     part->addMapping(range);
-    cout<<"Mapping: "<<partDescription->start<<" "<<partDescription->len<<endl;
 
 
     for (unsigned int i = 0; i < childSize; i++) {
@@ -512,6 +511,10 @@ void Node::addJointsToModel(Model &model, Node *child) {
         joint->shape = Joint::Shape::SHAPE_FIXED;
         joint->attachToParts(part, child->part);
         model.addJoint(joint);
+
+        MultiRange range;
+        range.add(partDescription->start, partDescription->start + partDescription->len - 1);
+        joint->addMapping(range);
     } else {
         for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
