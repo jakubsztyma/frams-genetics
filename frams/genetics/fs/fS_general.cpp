@@ -46,7 +46,9 @@ using namespace std;
 #define COLLISION 1
 #define ADJACENT 2
 
-const int mutationTries = 100;
+#define FS_OPCOUNT 10
+#define mutationTries  100
+
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
@@ -128,21 +130,27 @@ void State::rotate(Pt3D rotation) {
     v.normalize();
 }
 
-Node::Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false) {
+Node::Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false) {
     isStart = _isStart;
     modifierMode = _modifierMode;
     paramMode = _paramMode;
     cycleMode = _cycleMode;
-    SString restOfGenotype = extractModifiers(genotype);
+    SString restOfGenotype = genotype.str.substr(genotype.start, genotype.len);
+    restOfGenotype = extractModifiers(restOfGenotype);
     restOfGenotype = extractPartType(restOfGenotype);
     if (restOfGenotype.len() > 0 && restOfGenotype[0] == PARAM_START)
         restOfGenotype = extractParams(restOfGenotype);
 
+    partCodeLen = genotype.len - restOfGenotype.len();
+    partDescription = new Substring(genotype.str, genotype.start, partCodeLen);
+
+    Substring rest(genotype.str, genotype.start + partCodeLen, genotype.len - partCodeLen);
     if (restOfGenotype.len() > 0)
-        getChildren(restOfGenotype);
+        getChildren(rest);
 }
 
 Node::~Node() {
+    delete partDescription;
     if (state != nullptr)
         delete state;
     for (unsigned int i = 0; i < childSize; i++)
@@ -400,30 +408,33 @@ void Node::getState(State *_state, Pt3D parentSize) {
     }
 }
 
-void Node::getChildren(SString restOfGenotype) {
-    vector <SString> branches = getBranches(restOfGenotype);
+void Node::getChildren(Substring restOfGenotype) {
+    vector <Substring> branches = getBranches(restOfGenotype);
     childSize = branches.size();
-    for (unsigned int i = 0; i < childSize; i++)
+    for (unsigned int i = 0; i < childSize; i++) {
         children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
+    }
 }
 
-vector <SString> Node::getBranches(SString restOfGenotype) {
-    if (restOfGenotype[0] != BRANCH_START) {
-        vector <SString> result{restOfGenotype};  // Only one child
-        return result;
+vector <Substring> Node::getBranches(Substring restOfGenotype) {
+    vector <Substring> children;
+    if (restOfGenotype.str[restOfGenotype.start] != BRANCH_START) {
+        children.push_back(restOfGenotype);  // Only one child
+        return children;
     }
     // TODO handle wrong syntax
 
     int depth = 0;
+    SString rest = restOfGenotype.str.substr(restOfGenotype.start, restOfGenotype.len);
     int start = 1;
-    vector <SString> children;
-    int length = restOfGenotype.len();
-    for (int i = 0; i < restOfGenotype.len(); i++) {
-        char c = restOfGenotype[i];
+    int length = rest.len();
+    for (int i = 0; i < length; i++) {
+        char c = rest[i];
         if (c == BRANCH_START)
             depth += 1;
         else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length) {
-            children.push_back(restOfGenotype.substr(start, i - start));
+            Substring substring(restOfGenotype.str, restOfGenotype.start + start, i - start);
+            children.push_back(substring);
             start = i + 1;
         } else if (c == BRANCH_END)
             depth -= 1;
@@ -452,9 +463,12 @@ Pt3D Node::getRotation() {
     return Pt3D(rx, ry, rz);
 }
 
-Part *Node::buildModel(Model *model) {
+Part *Node::buildModel(Model &model) {
     createPart();
-    model->addPart(part);
+    model.addPart(part);
+    model.checkpoint();
+    part->addMapping(partDescription->toMultiRange());
+
 
     for (unsigned int i = 0; i < childSize; i++) {
         Node *child = children[i];
@@ -488,28 +502,27 @@ void Node::createPart() {
     part->setRot(getRotation());
 }
 
-void Node::addJointsToModel(Model *model, Node *child) {
+void Node::addJointsToModel(Model &model, Node *child) {
     if (child->joints.empty()) {
         Joint *joint = new Joint();
         joint->shape = Joint::Shape::SHAPE_FIXED;
         joint->attachToParts(part, child->part);
-        model->addJoint(joint);
+        model.addJoint(joint);
+
+        joint->addMapping(partDescription->toMultiRange());
     } else {
         for (auto it = child->joints.begin(); it != child->joints.end(); ++it) {
             Joint *joint = new Joint();
             joint->attachToParts(part, child->part);
             switch (*it) {
                 case 'b':
-                    joint->shape = Joint::Shape::SHAPE_B;
+                    joint->shape = Joint::Shape::SHAPE_HINGE_X;
                     break;
                 case 'c':
-                    joint->shape = Joint::Shape::SHAPE_C;
-                    break;
-                case 'd':
-                    joint->shape = Joint::Shape::SHAPE_D;
+                    joint->shape = Joint::Shape::SHAPE_HINGE_XY;
                     break;
             }
-            model->addJoint(joint);
+            model.addJoint(joint);
         }
     }
 }
@@ -564,14 +577,17 @@ fS_Genotype::fS_Genotype(const SString &genotype) {
     bool modifierMode = -1 != modeStr.indexOf(MODIFIER_MODE);
     bool paramMode = -1 != modeStr.indexOf(PARAM_MODE);
     bool cycleMode = -1 != modeStr.indexOf(CYCLE_MODE);
-    startNode = new Node(genotype.substr(modeSeparatorIndex + 1, INT_MAX), modifierMode, paramMode, cycleMode, true);
+
+    int actualGenoStart = modeSeparatorIndex + 1;
+    Substring substring(genotype, actualGenoStart, genotype.len() - actualGenoStart);
+    startNode = new Node(substring, modifierMode, paramMode, cycleMode, true);
 }
 
 fS_Genotype::~fS_Genotype() {
     delete startNode;
 }
 
-void fS_Genotype::buildModel(Model *model) {
+void fS_Genotype::buildModel(Model &model) {
     State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
     startNode->getState(initialState, Pt3D(1.0));
     startNode->buildModel(model);
@@ -590,7 +606,7 @@ void fS_Genotype::buildModel(Model *model) {
                     joint->attachToParts(node->part, otherNode->part);
 
                     joint->shape = Joint::Shape::SHAPE_FIXED;
-                    model->addJoint(joint);
+                    model.addJoint(joint);
                 }
             }
         }
@@ -662,7 +678,7 @@ bool fS_Genotype::addJoint() {
 
     Node *randomNode;    // First part does not have joints
     bool success = false;
-    for(int i=0; i<mutationTries; i++) {
+    for (int i = 0; i < mutationTries; i++) {
         char randomJoint = JOINTS[randomFromRange(JOINT_COUNT, 1)];
         randomNode = chooseNode(1);
         if (randomNode->joints.count(randomJoint) == 0) {
@@ -684,7 +700,7 @@ bool fS_Genotype::removeJoint() {
     // Choose a node with joints
     Node *randomNode;
     int jointsCount = 0, tries = 0;
-    while(tries < mutationTries && jointsCount < 1) {
+    while (tries < mutationTries && jointsCount < 1) {
         randomNode = chooseNode(1);    // First part does not have joints
         jointsCount = randomNode->joints.size();
         tries += 1;
@@ -758,12 +774,12 @@ bool fS_Genotype::removePart() {
     Node *randomNode, *chosenChild;
     bool success = false;
     // Choose a parent with children
-    for(int i=0; i<mutationTries; i++) {
+    for (int i = 0; i < mutationTries; i++) {
         randomNode = chooseNode();
         int childCount = randomNode->childSize;
-        if(childCount > 0){
+        if (childCount > 0) {
             chosenChild = randomNode->children[randomFromRange(childCount)];
-            if(chosenChild->childSize == 0) {
+            if (chosenChild->childSize == 0) {
                 success = true;
                 break;
             }
@@ -785,7 +801,8 @@ bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType;
     partType += PART_TYPES[randomFromRange(3, 0)];
-    Node *newNode = new Node(partType, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
+    Substring substring(partType, 0, INT_MAX);
+    Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
     // Add random rotation
     newNode->params["tx"] = randomFromRange(90, -90);
     newNode->params["ty"] = randomFromRange(90, -90);
@@ -829,54 +846,4 @@ bool fS_Genotype::removeModifier() {
     return true;
 }
 
-void fS_Genotype::mutate(int &method) {
-//    int operationCount = 5;
-    double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,};
-    if (!startNode->paramMode) {
-        operations[5] = 0.0;
-        operations[6] = 0.0;
-        operations[7] = 0.0;
-    }
-    if (!startNode->modifierMode) {
-        operations[8] = 0.0;
-        operations[9] = 0.0;
-    }
-
-    bool result = false;
-    while (!result) {
-        method = GenoOperators::roulette(operations, FS_OPCOUNT);
-        switch (method) {
-            case 0:
-                result = addPart();
-                break;
-            case 1:
-                result = removePart();
-                break;
-            case 2:
-                result = changePartType();
-                break;
-            case 3:
-                result = addJoint();
-                break;
-            case 4:
-                result = removeJoint();
-                break;
-            case 5:
-                result = addParam();
-                break;
-            case 6:
-                result = removeParam();
-                break;
-            case 7:
-                result = changeParam();
-                break;
-            case 8:
-                result = addModifier();
-                break;
-            case 9:
-                result = removeModifier();
-                break;
-        }
-    }
-}
 

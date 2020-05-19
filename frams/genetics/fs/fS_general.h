@@ -5,7 +5,6 @@
 #ifndef CPP_FS_CONV_H
 #define CPP_FS_CONV_H
 
-#define FS_OPCOUNT 10
 
 #include <iostream>
 #include <vector>
@@ -21,9 +20,30 @@
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
+#include <frams/util/multirange.h>
+
 
 using namespace std;
 
+
+
+class Substring {
+public:
+    SString str;
+    int start;
+    int len;
+
+    Substring(SString str_, int start_, int len_){
+        str = str_;
+        start = start_;
+        len = len_;
+    }
+    MultiRange toMultiRange(){
+        MultiRange range;
+        range.add(start, start + len - 1);
+        return range;
+    }
+};
 
 class State {
 public:
@@ -58,11 +78,13 @@ class Node {
     friend class fS_Operators;
 
 private:
+    Substring *partDescription;
     bool cycleMode, modifierMode, paramMode; /// Possible modes
     bool isStart;   /// Is a starting node of whole genotype
     char partType; /// The type of the part (E, P, C)
     Part *part;     /// A part object built from node. Used in building the Model
     unsigned int childSize = 0; /// The number of direct children
+    unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
 
     map<string, double> params; /// The map of all the node params
     vector<Node *> children;    /// Vector of all direct children
@@ -70,8 +92,11 @@ private:
     set<char> joints;           /// Set of all joints
 
     Pt3D getSize();
+
     Pt3D getRotation();
+
     Pt3D getVectorRotation();
+
     /**
      * Get the position of part type in genotype
      *
@@ -107,7 +132,7 @@ private:
      * Extract child branches from the rest of genotype
      * @return vector of child branches
      */
-    vector <SString> getBranches(SString restOfGenotype);
+    vector <Substring> getBranches(Substring restOfGenotype);
 
     /**
      * Get phenotypic state that derives from ancestors.
@@ -120,7 +145,7 @@ private:
      * Build children internal representations from fS genotype
      * @param restOfGenotype part of genotype that describes the subtree
      */
-    void getChildren(SString restOfGenotype);
+    void getChildren(Substring restOfGenotype);
 
     /**
      * Create part object from internal representation
@@ -133,7 +158,7 @@ private:
      * @param mode pointer to build model
      * @param child pointer to the child
      */
-    void addJointsToModel(Model *model, Node *child);
+    void addJointsToModel(Model &model, Node *child);
 
     /**
      * Get all the nodes from the subtree that starts in this node
@@ -145,12 +170,12 @@ private:
      * Build model from the subtree that starts in this node
      * @param pointer to model
      */
-    Part *buildModel(Model *model);
+    Part *buildModel(Model &model);
 
 public:
     State *state = nullptr; /// The phenotypic state, that inherits from ancestors
 
-    Node(const SString &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+    Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
     ~Node();
 
@@ -221,7 +246,7 @@ public:
      * Builds Model object from internal representation
      * @param pointer to model that will contain a built model
      */
-    void buildModel(Model *model);
+    void buildModel(Model &model);
 
     /**
      * @return genotype in fS format
@@ -287,12 +312,6 @@ public:
      * @return true if mutation succeeded, false otherwise
      */
     bool removeModifier();
-
-    /**
-     * Performs mutation on genotype.
-     * @return true if mutation succeeded, false otherwise
-     */
-    void mutate(int &method);
 };
 
 
