@@ -109,13 +109,18 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	int indexes[2];
 	for (int i = 0; i < parentCount; i++)
 	{
-		vector < Node * > allNodes = parents[i]->getAllNodes();
+		vector<Node*> allNodes = parents[i]->getAllNodes();
 		do
 		{
 			chosen[i] = allNodes[randomFromRange(allNodes.size(), 0)];
 		} while (chosen[i]->childSize == 0);
 		indexes[i] = randomFromRange(chosen[i]->childSize, 0);
 	}
+
+	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
+	double subtreeSize2 = chosen[1]->children[indexes[1]]->getNodeCount();
+	chg1 = 1.0 - (subtreeSize1 / parents[0]->getNodeCount());
+	chg2 = 1.0 - (subtreeSize2 / parents[1]->getNodeCount());
 	swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
 
 	free(g1);

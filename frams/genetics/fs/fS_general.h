@@ -20,8 +20,8 @@
 #include "frams/util/multirange.h"
 #include "frams/util/rndutil.h"
 
-#define mutationTries  100
-
+/** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
+#define mutationTries  20
 
 /**
  * Draws an integer value from given range
@@ -160,7 +160,7 @@ private:
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector <Substring> getBranches(Substring restOfGenotype);
+	vector<Substring> getBranches(Substring restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
@@ -212,6 +212,12 @@ public:
 	 * @param result the reference to an object which is used to contain fS genotype
 	 */
 	void getGeno(SString &result);
+
+	/**
+	 * Counts all the nodes in subtree
+	 * @return node count
+	 */
+	int getNodeCount();
 };
 
 /**

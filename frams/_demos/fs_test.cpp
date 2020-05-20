@@ -320,7 +320,7 @@ int main() {
 
 
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 1000;
+        int operationCount = 10;
         int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;
@@ -343,6 +343,10 @@ int main() {
             methodUsages[method] += 1;
 
             int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
+
+            cout<<f1<<" "<<f2<<endl;
+            assert(0. < f1 && f1 < 1.);
+            assert(0. < f2 && f2 < 1.);
 
             if (crossOverResult == GENOPER_OK) {
                 assert(0 == operators.checkValidity(arr1, ""));

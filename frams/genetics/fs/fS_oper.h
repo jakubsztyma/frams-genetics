@@ -8,6 +8,7 @@
 #include "fS_general.h"
 #include "../genooperators.h"
 
+/** @name Number of various genetic operations */
 #define FS_OPCOUNT 10
 
 /** @name Codes for general mutation types */

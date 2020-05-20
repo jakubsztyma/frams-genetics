@@ -5,9 +5,15 @@
 #include "fS_general.h"
 #include "frams/model/geometry/geometryutils.h"
 
+/** @name Names of genotype modes */
+//@{
 #define MODIFIER_MODE 'M'
 #define PARAM_MODE 'S'
 #define CYCLE_MODE 'J'
+//@}
+
+/** @name Values of constants used in encoding */
+//@{
 #define BRANCH_START '('
 #define BRANCH_END ')'
 #define BRANCH_SEPARATOR ','
@@ -16,11 +22,14 @@
 #define PARAM_SEPARATOR ';'
 #define PARAM_KEY_VALUE_SEPARATOR '='
 
-#define MULTIPLIER 1.1
+#define MODIFIER_MULTIPLIER 1.1
 #define JOINT_COUNT 2
 #define SPHERE_RELATIVE_DISTANCE 0.25
 #define MAX_DIAMETER_QUOTIENT 30
+//@}
 
+/** @name Names of node parameters and modifiers*/
+//@{
 #define INGESTION "i"
 #define FRICTION "f"
 #define SIZE_X "x"
@@ -33,20 +42,28 @@
 #define RY "ry"
 #define RZ "rz"
 #define JOINT_DISTANCE "j"
+//@}
 
+
+
+/** @name Macros and values used in collision detection */
+//@{
 #define DISJOINT 0
 #define COLLISION 1
 #define ADJACENT 2
-
-#define FS_OPCOUNT 10
-
 const double sphereDistanceTolerance = 0.999;
+//@}
+
+#define HINGE_X 'b'
+#define HINGE_XY 'c'
 
 const string PART_TYPES = "EPC";
 const string OTHER_JOINTS = "bc";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
-							 JOINT_DISTANCE};
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+							  JOINT_DISTANCE};
+
+/** @name Default values of node parameters*/
 const std::map<string, double> defaultParamValues = {
 		{INGESTION,      0.25},
 		{FRICTION,       0.4},
@@ -71,7 +88,7 @@ double round2(double var)
 
 int randomFromRange(int to, int from = 0)
 {
-	return (int)RndGen.Uni((double)to, (double)from);
+	return (int) RndGen.Uni((double) to, (double) from);
 }
 
 vector <SString> split(SString str, char delim)
@@ -117,7 +134,6 @@ void State::addVector(const double length)
 
 void rotateVector(Pt3D &vector, const Pt3D &rotation)
 {
-	// TODO maybe optimize
 	Orient rotmatrix = Orient_1;
 	rotmatrix.rotate(Pt3D(
 			Convert::toRadians(rotation.x),
@@ -214,8 +230,8 @@ SString Node::extractParams(SString restOfGenotype)
 		if (-1 == separatorIndex)
 			throw "Parameter separator expected";
 		string key = keyValue.substr(0, separatorIndex).c_str();
-		// TODO optimize, handle wrong value
-		double value = atof(keyValue.substr(separatorIndex + 1).c_str());
+		// TODO improve code quality
+		double value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
 		params[key] = value;
 	}
 
@@ -278,7 +294,7 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 	}
 	double sphereDiameter = 2 * sphereRadius;
 
-	double *diameters = new double[3]{2 * radii.x, 2 * radii.y, 2 * radii.z};
+	double *diameters = new double[3] {2 * radii.x, 2 * radii.y, 2 * radii.z};
 	int counts[3];
 	for (int i = 0; i < 3; i++)
 	{
@@ -356,7 +372,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii, rotation);
 
 	double distanceThreshold = sphereRadius + parentSphereRadius;
-	double minDistance = 0.0;   // TO make sure that program will not process forever
+	double minDistance = 0.0;
 	double maxDistance = 2 * (max3(radiiParent) + max3(radii));
 	double currentDistance = avg(maxDistance, minDistance);
 	int result = -1;
@@ -373,20 +389,10 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			minDistance = currentDistance;
 			currentDistance = avg(maxDistance, currentDistance);
 		}
-		// TODO decide what to do
-		string A = "Warning";
 		if (currentDistance > maxDistance)
-		{
-//            logMessage(A, A, 2, A);
-			currentDistance = maxDistance;
-			break;
-		}
+			throw "Internal error; then maximal distance between parts exceeded.";
 		if (currentDistance < minDistance)
-		{
-//            logMessage(A, A, 2, A);
-			currentDistance = minDistance;
-			break;
-		}
+			throw "Internal error; the minimal distance between parts exceeded.";
 
 	}
 
@@ -394,7 +400,6 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	delete[] centers;
 	return round2(currentDistance);
 }
-/// Get distance
 
 void Node::getState(State *_state, Pt3D parentSize)
 {
@@ -408,7 +413,7 @@ void Node::getState(State *_state, Pt3D parentSize)
 	for (unsigned int i = 0; i < modifiers.size(); i++)
 	{
 		char mod = modifiers[i];
-		double multiplier = isupper(mod) ? MULTIPLIER : 1.0 / MULTIPLIER;
+		double multiplier = isupper(mod) ? MODIFIER_MULTIPLIER : 1.0 / MODIFIER_MULTIPLIER;
 		switch (tolower(mod))
 		{
 			case 'i':
@@ -566,10 +571,10 @@ void Node::addJointsToModel(Model &model, Node *child)
 			joint->attachToParts(part, child->part);
 			switch (*it)
 			{
-				case 'b':
+				case HINGE_X:
 					joint->shape = Joint::Shape::SHAPE_HINGE_X;
 					break;
-				case 'c':
+				case HINGE_XY:
 					joint->shape = Joint::Shape::SHAPE_HINGE_XY;
 					break;
 			}
@@ -593,7 +598,7 @@ void Node::getGeno(SString &result)
 		result += PARAM_START;
 		for (auto it = params.begin(); it != params.end(); ++it)
 		{
-			result += it->first.c_str();					// Add parameter key to string
+			result += it->first.c_str();                    // Add parameter key to string
 			result += PARAM_KEY_VALUE_SEPARATOR;
 			string value_text = std::to_string(it->second);
 			// Round the value to two decimal places and add to string
@@ -624,6 +629,13 @@ void Node::getAllNodes(vector<Node *> &allNodes)
 	allNodes.push_back(this);
 	for (unsigned int i = 0; i < childSize; i++)
 		children[i]->getAllNodes(allNodes);
+}
+
+int Node::getNodeCount()
+{
+	vector < Node * > allNodes;
+	getAllNodes(allNodes);
+	return allNodes.size();
 }
 
 fS_Genotype::fS_Genotype(const SString &genotype)
@@ -718,12 +730,6 @@ SString fS_Genotype::getGeno()
 	return geno;
 }
 
-int fS_Genotype::getNodeCount()
-{
-	vector < Node * > allNodes = getAllNodes();
-	return allNodes.size();
-}
-
 
 char getRandomPartType()
 {
@@ -744,6 +750,9 @@ Node *fS_Genotype::chooseNode(int fromIndex = 0)
 	return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
+int fS_Genotype::getNodeCount(){
+	return startNode->getNodeCount();
+}
 
 bool fS_Genotype::addJoint()
 {
@@ -892,9 +901,9 @@ bool fS_Genotype::addPart()
 	Substring substring(partType, 0);
 	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
 	// Add random rotation
-	newNode->params["tx"] = randomFromRange(90, -90);
-	newNode->params["ty"] = randomFromRange(90, -90);
-	newNode->params["tz"] = randomFromRange(90, -90);
+	newNode->params[ROT_X] = randomFromRange(90, -90);
+	newNode->params[ROT_Y] = randomFromRange(90, -90);
+	newNode->params[ROT_Z] = randomFromRange(90, -90);
 
 	randomNode->children.push_back(newNode);
 	randomNode->childSize += 1;
