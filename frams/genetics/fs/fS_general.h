@@ -20,6 +20,77 @@
 #include "frams/util/multirange.h"
 #include "frams/util/rndutil.h"
 
+
+/** @name Names of genotype modes */
+//@{
+#define MODIFIER_MODE 'M'
+#define PARAM_MODE 'S'
+#define CYCLE_MODE 'J'
+//@}
+
+/** @name Values of constants used in encoding */
+//@{
+#define BRANCH_START '('
+#define BRANCH_END ')'
+#define BRANCH_SEPARATOR ','
+#define PARAM_START '{'
+#define PARAM_END '}'
+#define PARAM_SEPARATOR ';'
+#define PARAM_KEY_VALUE_SEPARATOR '='
+//@}
+
+/** @name Every modifier changes the underlying value by this multiplier */
+const float MODIFIER_MULTIPLIER = 1.1;
+/**
+ * Used in finding the proper distance between the parts
+ * distance between spheres / sphere radius
+ * That default value can be changed in certain cases
+ * */
+const float SPHERE_RELATIVE_DISTANCE = 0.25;
+/**
+ * Used in finding the proper distance between the parts
+ * The maximal allowed value for
+ * maximal radius of the node / sphere radius
+ */
+const int MAX_DIAMETER_QUOTIENT = 30;
+/**
+ * The tolerance of the value of distance between parts
+ */
+const double SPHERE_DISTANCE_TOLERANCE = 0.999;
+
+/** @name Names of node parameters and modifiers*/
+//@{
+#define INGESTION "i"
+#define FRICTION "f"
+#define SIZE_X "x"
+#define SIZE_Y "y"
+#define SIZE_Z "z"
+#define ROT_X "tx"
+#define ROT_Y "ty"
+#define ROT_Z "tz"
+#define RX "rx"
+#define RY "ry"
+#define RZ "rz"
+#define JOINT_DISTANCE "j"
+//@}
+
+/** @name Macros and values used in collision detection */
+//@{
+#define DISJOINT 0
+#define COLLISION 1
+#define ADJACENT 2
+//@}
+
+#define HINGE_X 'b'
+#define HINGE_XY 'c'
+
+const string PART_TYPES = "EPC";
+const string JOINTS = "bc";
+const int JOINT_COUNT = JOINTS.length();
+const string MODIFIERS = "ifxyz";
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+							  JOINT_DISTANCE};
+
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
 
@@ -38,9 +109,9 @@ int randomFromRange(int to, int from);
 class Substring
 {
 public:
-	SString str;	// The reference to the original string
-	int start;		// The beginning index of substring
-	int len;		// The length of substring
+	SString str;    // The reference to the original string
+	int start;        // The beginning index of substring
+	int len;        // The length of substring
 
 	Substring(const SString &_str, int _start, int _len = 1 << 30)
 	{
@@ -160,7 +231,7 @@ private:
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector<Substring> getBranches(Substring restOfGenotype);
+	vector <Substring> getBranches(Substring restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.

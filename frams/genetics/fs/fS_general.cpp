@@ -5,63 +5,6 @@
 #include "fS_general.h"
 #include "frams/model/geometry/geometryutils.h"
 
-/** @name Names of genotype modes */
-//@{
-#define MODIFIER_MODE 'M'
-#define PARAM_MODE 'S'
-#define CYCLE_MODE 'J'
-//@}
-
-/** @name Values of constants used in encoding */
-//@{
-#define BRANCH_START '('
-#define BRANCH_END ')'
-#define BRANCH_SEPARATOR ','
-#define PARAM_START '{'
-#define PARAM_END '}'
-#define PARAM_SEPARATOR ';'
-#define PARAM_KEY_VALUE_SEPARATOR '='
-
-#define MODIFIER_MULTIPLIER 1.1
-#define JOINT_COUNT 2
-#define SPHERE_RELATIVE_DISTANCE 0.25
-#define MAX_DIAMETER_QUOTIENT 30
-//@}
-
-/** @name Names of node parameters and modifiers*/
-//@{
-#define INGESTION "i"
-#define FRICTION "f"
-#define SIZE_X "x"
-#define SIZE_Y "y"
-#define SIZE_Z "z"
-#define ROT_X "tx"
-#define ROT_Y "ty"
-#define ROT_Z "tz"
-#define RX "rx"
-#define RY "ry"
-#define RZ "rz"
-#define JOINT_DISTANCE "j"
-//@}
-
-
-
-/** @name Macros and values used in collision detection */
-//@{
-#define DISJOINT 0
-#define COLLISION 1
-#define ADJACENT 2
-const double sphereDistanceTolerance = 0.999;
-//@}
-
-#define HINGE_X 'b'
-#define HINGE_XY 'c'
-
-const string PART_TYPES = "EPC";
-const string OTHER_JOINTS = "bc";
-const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
-							  JOINT_DISTANCE};
 
 /** @name Default values of node parameters*/
 const std::map<string, double> defaultParamValues = {
@@ -93,7 +36,7 @@ int randomFromRange(int to, int from = 0)
 
 vector <SString> split(SString str, char delim)
 {
-	// TODO optimize
+	// TODO optimize this function or find a better existing one
 	vector <SString> arr;
 	int index = 0, new_index = 0, arrayIndex = 0;
 	while (true)
@@ -200,7 +143,7 @@ SString Node::extractModifiers(SString restOfGenotype)
 	{
 		// Extract modifiers and joints
 		char mType = modifierString[i];
-		if (OTHER_JOINTS.find(mType) != string::npos)
+		if (JOINTS.find(mType) != string::npos)
 			joints.insert(mType);
 		else if (MODIFIERS.find(tolower(mType)) != string::npos)
 			modifiers.push_back(mType);
@@ -230,9 +173,8 @@ SString Node::extractParams(SString restOfGenotype)
 		if (-1 == separatorIndex)
 			throw "Parameter separator expected";
 		string key = keyValue.substr(0, separatorIndex).c_str();
-		// TODO improve code quality
-		double value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
-		params[key] = value;
+		// TODO better way to convert SString to double?
+		params[key] = std::stod(keyValue.substr(separatorIndex + 1).c_str());
 	}
 
 	return restOfGenotype.substr(paramsEndIndex + 1);
@@ -282,15 +224,15 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
 {
 	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
-	double maxDiameterQuotient = MAX_DIAMETER_QUOTIENT;
 	double minRadius = min3(radii);
 	double maxRadius = max3(radii);
-	if (maxRadius / minRadius < maxDiameterQuotient) // When max radius is much bigger than min radius
+	if (MAX_DIAMETER_QUOTIENT > maxRadius / minRadius) {
 		sphereRadius = minRadius;
 	else
 	{
+		// When max radius is much bigger than min radius
 		sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
-		sphereRadius = maxRadius / maxDiameterQuotient;
+		sphereRadius = maxRadius / MAX_DIAMETER_QUOTIENT;
 	}
 	double sphereDiameter = 2 * sphereRadius;
 
@@ -330,7 +272,7 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
 				double distanceThreshold)
 {
 	double upperThreshold = distanceThreshold;
-	double lowerThreshold = sphereDistanceTolerance * distanceThreshold;
+	double lowerThreshold = SPHERE_DISTANCE_TOLERANCE * distanceThreshold;
 	double distance;
 	double dx, dy, dz;
 	bool existsAdjacent = false;
@@ -414,24 +356,17 @@ void Node::getState(State *_state, Pt3D parentSize)
 	{
 		char mod = modifiers[i];
 		double multiplier = isupper(mod) ? MODIFIER_MULTIPLIER : 1.0 / MODIFIER_MULTIPLIER;
-		switch (tolower(mod))
-		{
-			case 'i':
-				state->ing *= multiplier;
-				break;
-			case 'f':
-				state->fr *= multiplier;
-				break;
-			case 'x':
-				state->sx *= multiplier;
-				break;
-			case 'y':
-				state->sy *= multiplier;
-				break;
-			case 'z':
-				state->sz *= multiplier;
-				break;
-		}
+		char modLower = tolower(mod);
+		if(modLower == MODIFIERS[0])
+			state->ing *= multiplier;
+		else if(modLower == MODIFIERS[1])
+			state->fr *= multiplier;
+		else if(modLower == MODIFIERS[2])
+			state->sx *= multiplier;
+		else if(modLower == MODIFIERS[3])
+			state->sy *= multiplier;
+		else if(modLower == MODIFIERS[4])
+			state->sz *= multiplier;
 	}
 
 	if (!isStart)
@@ -463,7 +398,7 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 		children.push_back(restOfGenotype);  // Only one child
 		return children;
 	}
-	// TODO handle wrong syntax
+	// TODO raise and error in case of wrong syntax
 
 	int depth = 0;
 	SString rest = restOfGenotype.str.substr(restOfGenotype.start, restOfGenotype.len);
@@ -633,7 +568,7 @@ void Node::getAllNodes(vector<Node *> &allNodes)
 
 int Node::getNodeCount()
 {
-	vector < Node * > allNodes;
+	vector<Node*> allNodes;
 	getAllNodes(allNodes);
 	return allNodes.size();
 }
@@ -667,7 +602,7 @@ void fS_Genotype::buildModel(Model &model)
 	startNode->buildModel(model);
 
 	// Additional joints
-	vector < Node * > allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
 		Node *node = allNodes[i];
@@ -739,14 +674,14 @@ char getRandomPartType()
 
 vector<Node *> fS_Genotype::getAllNodes()
 {
-	vector < Node * > allNodes;
+	vector<Node*> allNodes;
 	startNode->getAllNodes(allNodes);
 	return allNodes;
 }
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0)
 {
-	vector < Node * > allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -763,7 +698,7 @@ bool fS_Genotype::addJoint()
 	bool success = false;
 	for (int i = 0; i < mutationTries; i++)
 	{
-		char randomJoint = OTHER_JOINTS[randomFromRange(JOINT_COUNT)];
+		char randomJoint = JOINTS[randomFromRange(JOINT_COUNT)];
 		randomNode = chooseNode(1);
 		if (randomNode->joints.count(randomJoint) == 0)
 		{
@@ -837,7 +772,7 @@ bool fS_Genotype::changeParam()
 
 	auto it = randomNode->params.begin();
 	advance(it, randomFromRange(paramCount));
-	// TODO sensible parameter changes
+	// TODO change parameters by more sensible values
 
 	it->second += RndGen.Gauss(0, 0.5);
 	if (it->second < 0)

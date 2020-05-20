@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <assert.h>
 #include <chrono>
+#include "frams/genetics/fs/fS_general.h"
 #include "frams/genetics/fs/fS_conv.h"
 #include "frams/genetics/fs/fS_oper.h"
 
 using namespace std;
 
 
-int countSigns(SString genotype, char *chars, int count)
+int countSigns(SString genotype, string chars, int count)
 {
 	int result = 0;
 	for (int i = 0; i < genotype.len(); i++)
@@ -24,21 +25,17 @@ int countSigns(SString genotype, char *chars, int count)
 
 int countJoints(SString genotype)
 {
-	char signs[3] = {'b', 'c', 'd'};
-	return countSigns(genotype, signs, 3);
+	return countSigns(genotype, OTHER_JOINTS, 2);
 }
 
 int countParams(SString genotype)
 {
-	char signs[1] = {'='};
-	return countSigns(genotype, signs, 1);
+	return countSigns(genotype, "=", 1);
 }
 
 int countModifiers(SString genotype)
 {
-	int count = 10;
-	char signs[count] = {'I', 'i', 'F', 'f', 'X', 'x', 'Y', 'y', 'Z', 'z'};
-	return countSigns(genotype, signs, count);
+	return countSigns(genotype, "IiFfXxYyZz", 10);
 }
 
 int main()
