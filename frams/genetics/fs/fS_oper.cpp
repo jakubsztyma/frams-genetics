@@ -49,34 +49,34 @@ int fS_Operators::mutate(char *&geno, float& chg, int &method){
     for(int i=0; i<mutationTries; i++) {
         method = GenoOperators::roulette(prob, FS_OPCOUNT);
         switch (method) {
-            case 0:
+            case FS_ADD:
                 result = genotype.addPart();
                 break;
-            case 1:
+            case FS_RM:
                 result = genotype.removePart();
                 break;
-            case 2:
+            case FS_MOD:
                 result = genotype.changePartType();
                 break;
-            case 3:
+            case FS_ADD_JOINT:
                 result = genotype.addJoint();
                 break;
-            case 4:
+            case FS_RM_JOINT:
                 result = genotype.removeJoint();
                 break;
-            case 5:
+            case FS_ADD_PARAM:
                 result = genotype.addParam();
                 break;
-            case 6:
+            case FS_RM_PARAM:
                 result = genotype.removeParam();
                 break;
-            case 7:
+            case FS_MOD_PARAM:
                 result = genotype.changeParam();
                 break;
-            case 8:
+            case FS_ADD_MOD:
                 result = genotype.addModifier();
                 break;
-            case 9:
+            case FS_RM_MOD:
                 result = genotype.removeModifier();
                 break;
         }
@@ -105,11 +105,11 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2) {
     Node *chosen[parentCount];
     int indexes[2];
     for (int i = 0; i < parentCount; i++) {
-        vector < Node * > allNodes = parents[i]->getAllNodes();
+        vector<Node*> allNodes = parents[i]->getAllNodes();
         do {
-            chosen[i] = allNodes[parents[i]->randomFromRange(allNodes.size(), 0)];
+            chosen[i] = allNodes[randomFromRange(allNodes.size(), 0)];
         } while (chosen[i]->childSize == 0);
-        indexes[i] = parents[i]->randomFromRange(chosen[i]->childSize, 0);
+        indexes[i] = randomFromRange(chosen[i]->childSize, 0);
     }
     swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
 

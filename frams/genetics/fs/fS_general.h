@@ -22,6 +22,14 @@
 #include "frams/util/multirange.h"
 
 
+/**
+ * Draws an integer value from given range
+ * @param to maximal value
+ * @param from minimal value
+ * @return Drawn value
+ */
+int randomFromRange(int to, int from);
+
 class Substring {
 public:
     SString str;
@@ -56,7 +64,7 @@ public:
      * Add the vector of specified length to location
      * @param length the length of the vector
      */
-    void addVector(double length);
+    void addVector(const double length);
 
     /**
      * Rotate the vector by specified values
@@ -127,7 +135,7 @@ private:
      * Extract child branches from the rest of genotype
      * @return vector of child branches
      */
-    vector <Substring> getBranches(Substring restOfGenotype);
+    vector<Substring> getBranches(Substring restOfGenotype);
 
     /**
      * Get phenotypic state that derives from ancestors.
@@ -202,13 +210,6 @@ private:
      */
     Node *chooseNode(int fromIndex);
 
-    /**
-     * Draws an integer value from given range
-     * @param to maximal value
-     * @param from minimal value
-     * @return Drawn value
-     */
-    int randomFromRange(int to, int from);
 
     /**
      * Draws a value from defined distribution

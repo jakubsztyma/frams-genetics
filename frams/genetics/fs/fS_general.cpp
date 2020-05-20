@@ -48,7 +48,7 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector<string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
                              JOINT_DISTANCE};
 const std::map<string, double> defaultParamValues = {
         {INGESTION,      0.25},
@@ -72,11 +72,24 @@ double round2(double var) {
     return (double) value / 100;
 }
 
-const double operations[FS_OPCOUNT] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+int randomFromRange(int to, int from = 0) {
+    return from + rand() % (to - from);
+}
 
-vector <SString> split(SString str, char delim) {
+const double operations[FS_OPCOUNT] = {0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1,
+                                       0.1};
+
+vector<SString> split(SString str, char delim) {
     // TODO optimize
-    vector <SString> arr;
+    vector<SString> arr;
     int index = 0, new_index = 0, arrayIndex = 0;
     while (true) {
         new_index = str.indexOf(delim, index);
@@ -105,11 +118,11 @@ State::State(Pt3D _location, Pt3D _v) {
     v = Pt3D(_v);
 }
 
-void State::addVector(double length) {
+void State::addVector(const double length) {
     location += v * length;
 }
 
-void rotateVector(Pt3D &vector, Pt3D rotation) {
+void rotateVector(Pt3D &vector, const Pt3D rotation) {
     // TODO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
@@ -154,8 +167,7 @@ Node::~Node() {
 
 int Node::getPartPosition(SString restOfGenotype) {
     for (int i = 0; i < restOfGenotype.len(); i++) {
-        char tmp = restOfGenotype[i];
-        if (tmp == 'E' || tmp == 'P' || tmp == 'C')
+        if (PART_TYPES.find(restOfGenotype[i]) != string::npos)
             return i;
     }
     return -1;
@@ -191,7 +203,7 @@ SString Node::extractPartType(SString restOfGenotype) {
 SString Node::extractParams(SString restOfGenotype) {
     int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
     SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-    vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+    vector<SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
     for (unsigned int i = 0; i < keyValuePairs.size(); i++) {
         SString keyValue = keyValuePairs[i];
         int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
@@ -399,15 +411,15 @@ void Node::getState(State *_state, Pt3D parentSize) {
 }
 
 void Node::getChildren(Substring restOfGenotype) {
-    vector <Substring> branches = getBranches(restOfGenotype);
+    vector<Substring> branches = getBranches(restOfGenotype);
     childSize = branches.size();
     for (unsigned int i = 0; i < childSize; i++) {
         children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
     }
 }
 
-vector <Substring> Node::getBranches(Substring restOfGenotype) {
-    vector <Substring> children;
+vector<Substring> Node::getBranches(Substring restOfGenotype) {
+    vector<Substring> children;
     if (restOfGenotype.str[restOfGenotype.start] != BRANCH_START) {
         children.push_back(restOfGenotype);  // Only one child
         return children;
@@ -471,14 +483,16 @@ Part *Node::buildModel(Model &model) {
 
 void Node::createPart() {
     Part::Shape model_partType;
-    if (partType == 'E')
+    if (partType == PART_TYPES[0])
         model_partType = Part::Shape::SHAPE_ELLIPSOID;
-    else if (partType == 'P')
+    else if (partType == PART_TYPES[1])
         model_partType = Part::Shape::SHAPE_CUBOID;
-    else if (partType == 'C')
+    else if (partType == PART_TYPES[2])
         model_partType = Part::Shape::SHAPE_CYLINDER;
-    part = new Part(model_partType);
+    else
+        throw "Invalid part type";
 
+    part = new Part(model_partType);
     part->p = Pt3D(round2(state->location.x),
                    round2(state->location.y),
                    round2(state->location.z));
@@ -583,7 +597,7 @@ void fS_Genotype::buildModel(Model &model) {
     startNode->buildModel(model);
 
     // Additional joints
-    vector < Node * > allNodes = getAllNodes();
+    vector<Node*> allNodes = getAllNodes();
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *node = allNodes[i];
         if (node->params.find(JOINT_DISTANCE) != node->params.end()) {
@@ -638,12 +652,14 @@ SString fS_Genotype::getGeno() {
 }
 
 int fS_Genotype::getNodeCount() {
-    vector < Node * > allNodes = getAllNodes();
+    vector<Node*> allNodes = getAllNodes();
     return allNodes.size();
 }
 
-int fS_Genotype::randomFromRange(int to, int from = 0) {
-    return from + rand() % (to - from);
+
+char getRandomPartType() {
+    int randomIndex = randomFromRange(PART_TYPES.size());
+    return PART_TYPES[randomIndex];
 }
 
 double getRandomFromDistribution() {
@@ -651,13 +667,13 @@ double getRandomFromDistribution() {
 }
 
 vector<Node *> fS_Genotype::getAllNodes() {
-    vector < Node * > allNodes;
+    vector<Node*> allNodes;
     startNode->getAllNodes(allNodes);
     return allNodes;
 }
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0) {
-    vector < Node * > allNodes = getAllNodes();
+    vector<Node*> allNodes = getAllNodes();
     return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -790,7 +806,7 @@ bool fS_Genotype::removePart() {
 bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType;
-    partType += PART_TYPES[randomFromRange(3, 0)];
+    partType += getRandomPartType();
     Substring substring(partType, 0);
     Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
     // Add random rotation
@@ -807,7 +823,7 @@ bool fS_Genotype::changePartType() {
     Node *randomNode = chooseNode();
     char newType = randomNode->partType;
     while (newType == randomNode->partType)
-        newType = PART_TYPES[randomFromRange(PART_TYPES.size())];
+        newType = getRandomPartType();
 
     randomNode->partType = newType;
     return true;
@@ -816,7 +832,7 @@ bool fS_Genotype::changePartType() {
 bool fS_Genotype::addModifier() {
     Node *randomNode = chooseNode();
     char randomModifier = MODIFIERS[randomFromRange(MODIFIERS.length())];
-    if (1 == random() % 2)
+    if (random() % 2 == 1)
         randomModifier = toupper(randomModifier);
     randomNode->modifiers.push_back(randomModifier);
     return true;
