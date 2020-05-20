@@ -2,10 +2,7 @@
 // Created by jakub on 19.03.2020.
 //
 
-#include "fS_general.h"
 #include "fS_oper.h"
-
-using namespace std;
 
 #define mutationTries  100
 
@@ -88,8 +85,11 @@ int fS_Operators::mutate(char *&geno, float& chg, int &method){
     }
 
     free(geno);
-    geno = strdup(genotype.getGeno().c_str());
-    return GENOPER_OK;
+    if(result) {
+        geno = strdup(genotype.getGeno().c_str());
+        return GENOPER_OK;
+    }
+    return GENOPER_OPFAIL;
 }
 
 int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2) {

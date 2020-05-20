@@ -2,29 +2,24 @@
 // Created by jakub on 21.02.2020.
 //
 
-#ifndef CPP_FS_CONV_H
-#define CPP_FS_CONV_H
+#ifndef _FS_GENERAL_H_
+#define _FS_GENERAL_H_
 
 
-#include <iostream>
+
+#include<bits/stdc++.h>
+
+#include <float.h>
 #include <vector>
 #include <map>
-#include <regex>
 #include <set>
-#include <iterator>
 #include <math.h>
-#include <cctype>
-#include <algorithm>
 #include "common/Convert.h"
 #include "frams/genetics/genooperators.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
-#include <frams/util/multirange.h>
-
-
-using namespace std;
-
+#include "frams/util/multirange.h"
 
 
 class Substring {
@@ -33,10 +28,10 @@ public:
     int start;
     int len;
 
-    Substring(SString str_, int start_, int len_){
-        str = str_;
-        start = start_;
-        len = len_;
+    Substring(SString _str, int _start, int _len=INT_MAX){
+        str = _str;
+        start = _start;
+        len = _len;
     }
     MultiRange toMultiRange(){
         MultiRange range;
@@ -86,10 +81,10 @@ private:
     unsigned int childSize = 0; /// The number of direct children
     unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
 
-    map<string, double> params; /// The map of all the node params
+    std::map<string, double> params; /// The map of all the node params
     vector<Node *> children;    /// Vector of all direct children
     vector<char> modifiers;     /// Vector of all modifiers
-    set<char> joints;           /// Set of all joints
+    std::set<char> joints;           /// Set of all joints
 
     Pt3D getSize();
 
@@ -173,14 +168,14 @@ private:
     Part *buildModel(Model &model);
 
 public:
-    State *state = nullptr; /// The phenotypic state, that inherits from ancestors
+    State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
     Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
     ~Node();
 
     /**
-     * Get fS representation of the subtree that starts from this noce
+     * Get fS representation of the subtree that starts from this node
      * @param result the reference to an object which is used to contain fS genotype
      */
     void getGeno(SString &result);
@@ -192,7 +187,7 @@ class fS_Genotype {
     friend class fS_Operators;
 
 private:
-    Node *startNode = nullptr;    /// The start (root) node. All other nodes are it's descendants
+    Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
 
     /**
      * Get all existing nodes
@@ -201,7 +196,7 @@ private:
     vector<Node *> getAllNodes();
 
     /**
-     * Draws a node, which has a index greater that specified
+     * Draws a node that has an index greater that specified
      * @param fromIndex minimal index of the node
      * @return pointer to drawn node
      */
@@ -229,7 +224,7 @@ private:
 
 public:
     /**
-     * Counts all the nodes in genotyp
+     * Counts all the nodes in genotype
      * @return node count
      */
     int getNodeCount();
@@ -315,4 +310,4 @@ public:
 };
 
 
-#endif //CPP_FS_CONV_H
+#endif

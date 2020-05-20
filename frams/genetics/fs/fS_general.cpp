@@ -2,15 +2,8 @@
 // Created by jakub on 21.02.2020.
 //
 
-#include <iostream>
-#include <stdlib.h>
-#include<bits/stdc++.h>
-#include <regex>
-#include <time.h>
 #include "fS_general.h"
-#include <frams/model/geometry/geometryutils.h>
-
-using namespace std;
+#include "frams/model/geometry/geometryutils.h"
 
 #define MODIFIER_MODE 'M'
 #define PARAM_MODE 'S'
@@ -49,13 +42,15 @@ using namespace std;
 #define FS_OPCOUNT 10
 #define mutationTries  100
 
+const double sphereDistanceTolerance = 0.999;
+
 const string PART_TYPES = "EPC";
 const string JOINTS = "abcd";
 const string OTHER_JOINTS = "bcd";
 const string MODIFIERS = "ifxyz";
 const vector <string> PARAMS{INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
                              JOINT_DISTANCE};
-const map<string, double> defaultParamValues = {
+const std::map<string, double> defaultParamValues = {
         {INGESTION,      0.25},
         {FRICTION,       0.4},
         {ROT_X,          0.0},
@@ -69,8 +64,8 @@ const map<string, double> defaultParamValues = {
         {SIZE_Z,         1.0},
         {JOINT_DISTANCE, 1.0}
 };
-default_random_engine generator;
-normal_distribution<double> distribution(0.0, 0.5);
+std::default_random_engine generator;
+std::normal_distribution<double> distribution(0.0, 0.5);
 
 double round2(double var) {
     double value = (int) (var * 100 + .5);
@@ -86,7 +81,7 @@ vector <SString> split(SString str, char delim) {
     while (true) {
         new_index = str.indexOf(delim, index);
         if (new_index == -1) {
-            arr.push_back(str.substr(index, INT_MAX));
+            arr.push_back(str.substr(index));
             break;
         }
         arr.push_back(str.substr(index, new_index - index));
@@ -115,7 +110,7 @@ void State::addVector(double length) {
 }
 
 void rotateVector(Pt3D &vector, Pt3D rotation) {
-    // TOTO maybe optimize
+    // TODO maybe optimize
     Orient rotmatrix = Orient_1;
     rotmatrix.rotate(Pt3D(
             Convert::toRadians(rotation.x),
@@ -183,14 +178,14 @@ SString Node::extractModifiers(SString restOfGenotype) {
         else
             throw "Invalid modifier";
     }
-    return restOfGenotype.substr(partTypePosition, INT_MAX);
+    return restOfGenotype.substr(partTypePosition);
 }
 
 SString Node::extractPartType(SString restOfGenotype) {
     partType = restOfGenotype[0];
     if (PART_TYPES.find(partType) == string::npos)
         throw "Invalid part type";
-    return restOfGenotype.substr(1, INT_MAX);
+    return restOfGenotype.substr(1);
 }
 
 SString Node::extractParams(SString restOfGenotype) {
@@ -204,11 +199,11 @@ SString Node::extractParams(SString restOfGenotype) {
             throw "Parameter separator expected";
         string key = keyValue.substr(0, separatorIndex).c_str();
         // TODO optimize, handle wrong value
-        double value = atof(keyValue.substr(separatorIndex + 1, INT_MAX).c_str());
+        double value = atof(keyValue.substr(separatorIndex + 1).c_str());
         params[key] = value;
     }
 
-    return restOfGenotype.substr(paramsEndIndex + 1, INT_MAX);
+    return restOfGenotype.substr(paramsEndIndex + 1);
 }
 
 double Node::getParam(string key) {
@@ -218,8 +213,6 @@ double Node::getParam(string key) {
     else
         return defaultParamValues.at(key);
 }
-
-/// Get distance
 
 double avg(double a, double b) {
     return 0.5 * (a + b);
@@ -254,7 +247,7 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
     double maxDiameterQuotient = MAX_DIAMETER_QUOTIENT;
     double minRadius = min3(radii);
     double maxRadius = max3(radii);
-    if (maxRadius / minRadius < maxDiameterQuotient) // WHen max radius is much bigger than min radius
+    if (maxRadius / minRadius < maxDiameterQuotient) // When max radius is much bigger than min radius
         sphereRadius = minRadius;
     else {
         sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
@@ -292,12 +285,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector,
                 double distanceThreshold) {
-//    return ADJACENT;
-    double toleration = 0.999;
-//    double upperThreshold = 1.0001 * distanceThreshold;
-//    double lowerThreshold = 0.9999 * toleration * distanceThreshold;
     double upperThreshold = distanceThreshold;
-    double lowerThreshold = toleration * distanceThreshold;
+    double lowerThreshold = sphereDistanceTolerance * distanceThreshold;
     double distance;
     double dx, dy, dz;
     bool existsAdjacent = false;
@@ -349,13 +338,14 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
             currentDistance = avg(maxDistance, currentDistance);
         }
         // TODO decide what to do
+        string A = "Warning";
         if (currentDistance > maxDistance) {
-            cout << "Warning" << endl;
+//            logMessage(A, A, 2, A);
             currentDistance = maxDistance;
             break;
         }
         if (currentDistance < minDistance) {
-            cout << "Warning" << endl;
+//            logMessage(A, A, 2, A);
             currentDistance = minDistance;
             break;
         }
@@ -491,8 +481,8 @@ void Node::createPart() {
 
     part->p = Pt3D(round2(state->location.x),
                    round2(state->location.y),
-                   round2(state->location.z)
-    );
+                   round2(state->location.z));
+
     part->friction = round2(getParam(FRICTION) * state->fr);
     part->ingest = round2(getParam(INGESTION) * state->ing);
     Pt3D size = getSize();
@@ -540,8 +530,8 @@ void Node::getGeno(SString &result) {
         for (auto it = params.begin(); it != params.end(); ++it) {
             result += it->first.c_str();
             result += PARAM_KEY_VALUE_SEPARATOR;
-            string value_text = to_string(it->second);
-            result += value_text.substr(0, value_text.find(".") + 2).c_str(); // ROund
+            string value_text = std::to_string(it->second);
+            result += value_text.substr(0, value_text.find(".") + 2).c_str(); // Round
             result += PARAM_SEPARATOR;
         }
         result = result.substr(0, result.len() - 1);
@@ -615,7 +605,7 @@ void fS_Genotype::buildModel(Model &model) {
 
 Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node) {
     Node *result = nullptr;
-    double minDistance = 9999999.0, distance = 999999.0;
+    double minDistance = DBL_MAX, distance = DBL_MAX;
     for (unsigned int i = 0; i < allNodes.size(); i++) {
         Node *otherNode = allNodes[i];
         auto v = node->children;
@@ -760,7 +750,7 @@ bool fS_Genotype::addParam() {
     if (paramCount == PARAMS.size())
         return false;
     string chosenParam = PARAMS[randomFromRange(PARAMS.size())];
-    // Not allow jd when cycle mode is not on
+    // Not allow 'j' parameter when the cycle mode is not on
     if (chosenParam == JOINT_DISTANCE && !startNode->cycleMode)
         return false;
     if (randomNode->params.count(chosenParam) > 0)
@@ -801,7 +791,7 @@ bool fS_Genotype::addPart() {
     Node *randomNode = chooseNode();
     SString partType;
     partType += PART_TYPES[randomFromRange(3, 0)];
-    Substring substring(partType, 0, INT_MAX);
+    Substring substring(partType, 0);
     Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
     // Add random rotation
     newNode->params["tx"] = randomFromRange(90, -90);

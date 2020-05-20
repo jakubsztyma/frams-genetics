@@ -3,15 +3,12 @@
 //
 
 
-#ifndef FS_FS_CONV_H
-#define FS_FS_CONV_H
+#ifndef _FS_CONV_H_
+#define _FS_CONV_H_
 
-#include <iostream>
 #include "fS_general.h"
-#include "frams/util/sstring.h"
 #include "frams/util/multimap.h"
 
-using namespace std;
 
 class GenoConv_fS0 : public GenoConverter
 {
@@ -28,4 +25,4 @@ public:
     SString convert(SString &i, MultiMap *map, bool using_checkpoints);
     ~GenoConv_fS0() {};
 };
-#endif //FS_FS_CONV_H
+#endif

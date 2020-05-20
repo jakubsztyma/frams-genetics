@@ -2,9 +2,10 @@
 // Created by jakub on 21.02.2020.
 //
 
-#ifndef CPP_FS_OPER_H
-#define CPP_FS_OPER_H
+#ifndef _FS_OPER_H_
+#define _FS_OPER_H_
 
+#include "fS_general.h"
 #include "../genooperators.h"
 
 #define FS_OPCOUNT 10
@@ -21,8 +22,6 @@
 #define FS_RM_MOD 9
 
 
-using namespace std;
-
 class fS_Operators : public GenoOperators {
 public:
     fS_Operators();
@@ -36,4 +35,4 @@ public:
     int mutate(char *&geno, float &chg, int &method);
 };
 
-#endif //CPP_FS_OPER_H
+#endif
