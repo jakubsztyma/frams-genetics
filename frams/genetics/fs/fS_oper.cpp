@@ -119,8 +119,11 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 
 	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
 	double subtreeSize2 = chosen[1]->children[indexes[1]]->getNodeCount();
-	chg1 = 1.0 - (subtreeSize1 / parents[0]->getNodeCount());
-	chg2 = 1.0 - (subtreeSize2 / parents[1]->getNodeCount());
+	double restSize1 = parents[0]->getNodeCount() - subtreeSize1;
+	double restSize2 = parents[1]->getNodeCount() - subtreeSize2;
+
+	chg1 = restSize1 / (restSize1 + subtreeSize2);
+	chg2 = restSize2 / (restSize2 + subtreeSize1);
 	swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
 
 	free(g1);
