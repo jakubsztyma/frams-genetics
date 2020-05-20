@@ -10,6 +10,8 @@
 
 #define FS_OPCOUNT 10
 
+/** @name Codes for general mutation types */
+//@{
 #define FS_ADD 0
 #define FS_RM 1
 #define FS_MOD 2
@@ -20,19 +22,20 @@
 #define FS_MOD_PARAM 7
 #define FS_ADD_MOD 8
 #define FS_RM_MOD 9
+//@}
 
-
-class fS_Operators : public GenoOperators {
+class fS_Operators : public GenoOperators
+{
 public:
-    fS_Operators();
+	fS_Operators();
 
-    double prob[FS_OPCOUNT];
+	double prob[FS_OPCOUNT];
 
-    int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
+	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
 
-    int checkValidity(const char *geno, const char *genoname);
+	int checkValidity(const char *geno, const char *genoname);
 
-    int mutate(char *&geno, float &chg, int &method);
+	int mutate(char *&geno, float &chg, int &method);
 };
 
 #endif

@@ -6,20 +6,21 @@
 #define _FS_GENERAL_H_
 
 
-
-#include<bits/stdc++.h>
-
 #include <float.h>
 #include <vector>
 #include <map>
 #include <set>
 #include <math.h>
 #include "common/Convert.h"
+#include "common/nonstd_math.h"
 #include "frams/genetics/genooperators.h"
 #include "frams/util/3d.h"
 #include "frams/util/sstring.h"
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
+#include "frams/util/rndutil.h"
+
+#define mutationTries  100
 
 
 /**
@@ -30,284 +31,312 @@
  */
 int randomFromRange(int to, int from);
 
-class Substring {
+/**
+ * Represents a substring of a larger string.
+ * The reference to the original string is stored along with indexes of beginning end length of the substring.
+ */
+class Substring
+{
 public:
-    SString str;
-    int start;
-    int len;
+	SString str;	// The reference to the original string
+	int start;		// The beginning index of substring
+	int len;		// The length of substring
 
-    Substring(SString _str, int _start, int _len=INT_MAX){
-        str = _str;
-        start = _start;
-        len = _len;
-    }
-    MultiRange toMultiRange(){
-        MultiRange range;
-        range.add(start, start + len - 1);
-        return range;
-    }
+	Substring(const SString &_str, int _start, int _len = 1 << 30)
+	{
+		str = _str;
+		start = _start;
+		len = _len;
+	}
+
+	/**
+	 * Create a new instance of multirange, corresponding to the substring
+	 * @return a created multirange
+	 */
+	MultiRange toMultiRange()
+	{
+		MultiRange range;
+		range.add(start, start + len - 1);
+		return range;
+	}
 };
 
-class State {
+/**
+ * Stores the state of the node.
+ * The state consists od current location, the direction in which the branch develops
+ * and the current default values of the parameters (default values can be changed by modifiers).
+ */
+class State
+{
 public:
-    Pt3D location;  /// Location of the node
-    Pt3D v;         /// The normalised vector in which current branch develops
-    double fr = 1.0;      /// Friction multiplier
-    double ing = 1.0;      /// Ingestion multiplier
-    double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
+	Pt3D location;  /// Location of the node
+	Pt3D v;         /// The normalised vector in which current branch develops
+	double fr = 1.0;      /// Friction multiplier
+	double ing = 1.0;      /// Ingestion multiplier
+	double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
 
-    State(State *_state); /// Derive the state from parent
+	State(State *_state); /// Derive the state from parent
 
-    State(Pt3D _location, Pt3D _v); /// Create the state from parameters
+	State(Pt3D _location, Pt3D _v); /// Create the state from parameters
 
-    /**
-     * Add the vector of specified length to location
-     * @param length the length of the vector
-     */
-    void addVector(const double length);
+	/**
+	 * Add the vector of specified length to location
+	 * @param length the length of the vector
+	 */
+	void addVector(const double length);
 
-    /**
-     * Rotate the vector by specified values
-     * @param rx rotation by x axis
-     * @param ry rotation by y axis
-     * @param rz rotation by z axis
-     */
-    void rotate(Pt3D rotation);
+	/**
+	 * Rotate the vector by specified values
+	 * @param rx rotation by x axis
+	 * @param ry rotation by y axis
+	 * @param rz rotation by z axis
+	 */
+	void rotate(const Pt3D &rotation);
 };
 
-class Node {
-    friend class fS_Genotype;
+/**
+ * Represents a node in the graph that represents a genotype.
+ * A node corresponds to a single part.
+ * However, it also stores attributes that are specific to fS encoding, such as modifiers and joint types.
+ */
+class Node
+{
+	friend class fS_Genotype;
 
-    friend class fS_Operators;
+	friend class fS_Operators;
 
 private:
-    Substring *partDescription;
-    bool cycleMode, modifierMode, paramMode; /// Possible modes
-    bool isStart;   /// Is a starting node of whole genotype
-    char partType; /// The type of the part (E, P, C)
-    Part *part;     /// A part object built from node. Used in building the Model
-    unsigned int childSize = 0; /// The number of direct children
-    unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
+	Substring *partDescription;
+	bool cycleMode, modifierMode, paramMode; /// Possible modes
+	bool isStart;   /// Is a starting node of whole genotype
+	char partType; /// The type of the part (E, P, C)
+	Part *part;     /// A part object built from node. Used in building the Model
+	unsigned int childSize = 0; /// The number of direct children
+	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
 
-    std::map<string, double> params; /// The map of all the node params
-    vector<Node *> children;    /// Vector of all direct children
-    vector<char> modifiers;     /// Vector of all modifiers
-    std::set<char> joints;           /// Set of all joints
+	std::map<string, double> params; /// The map of all the node params
+	vector<Node *> children;    /// Vector of all direct children
+	vector<char> modifiers;     /// Vector of all modifiers
+	std::set<char> joints;           /// Set of all joints
 
-    Pt3D getSize();
+	Pt3D getSize();
 
-    Pt3D getRotation();
+	Pt3D getRotation();
 
-    Pt3D getVectorRotation();
+	Pt3D getVectorRotation();
 
-    /**
-     * Get the position of part type in genotype
-     *
-     * @return the position of part type
-     */
-    int getPartPosition(SString restOfGenotype);
+	/**
+	 * Get the position of part type in genotype
+	 *
+	 * @return the position of part type
+	 */
+	int getPartPosition(SString restOfGenotype);
 
-    /**
-     * Extract the value of parameter or return default if parameter not exists
-     * @return the param value
-     */
-    double getParam(string key);
+	/**
+	 * Extract the value of parameter or return default if parameter not exists
+	 * @return the param value
+	 */
+	double getParam(string key);
 
-    /**
-     * Extract modifiers from the rest of genotype
-     * @return the remainder of the genotype
-     */
-    SString extractModifiers(SString restOfGenotype);
+	/**
+	 * Extract modifiers from the rest of genotype
+	 * @return the remainder of the genotype
+	 */
+	SString extractModifiers(SString restOfGenotype);
 
-    /**
-     * Extract part type from the rest of genotype
-     * @return the remainder of the genotype
-     */
-    SString extractPartType(SString restOfGenotype);
+	/**
+	 * Extract part type from the rest of genotype
+	 * @return the remainder of the genotype
+	 */
+	SString extractPartType(SString restOfGenotype);
 
-    /**
-     * Extract params from the rest of genotype
-     * @return the remainder of the genotype
-     */
-    SString extractParams(SString restOfGenotype);
+	/**
+	 * Extract params from the rest of genotype
+	 * @return the remainder of the genotype
+	 */
+	SString extractParams(SString restOfGenotype);
 
-    /**
-     * Extract child branches from the rest of genotype
-     * @return vector of child branches
-     */
-    vector<Substring> getBranches(Substring restOfGenotype);
+	/**
+	 * Extract child branches from the rest of genotype
+	 * @return vector of child branches
+	 */
+	vector <Substring> getBranches(Substring restOfGenotype);
 
-    /**
-     * Get phenotypic state that derives from ancestors.
-     * Used when building model
-     * @param _state state of the parent
-     */
-    void getState(State *_state, Pt3D parentSize);
+	/**
+	 * Get phenotypic state that derives from ancestors.
+	 * Used when building model
+	 * @param _state state of the parent
+	 */
+	void getState(State *_state, Pt3D parentSize);
 
-    /**
-     * Build children internal representations from fS genotype
-     * @param restOfGenotype part of genotype that describes the subtree
-     */
-    void getChildren(Substring restOfGenotype);
+	/**
+	 * Build children internal representations from fS genotype
+	 * @param restOfGenotype part of genotype that describes the subtree
+	 */
+	void getChildren(Substring restOfGenotype);
 
-    /**
-     * Create part object from internal representation
-     */
-    void createPart();
+	/**
+	 * Create part object from internal representation
+	 */
+	void createPart();
 
-    /**
-     * Add joints between current node and the specified child
-     * Used in building model
-     * @param mode pointer to build model
-     * @param child pointer to the child
-     */
-    void addJointsToModel(Model &model, Node *child);
+	/**
+	 * Add joints between current node and the specified child
+	 * Used in building model
+	 * @param mode pointer to build model
+	 * @param child pointer to the child
+	 */
+	void addJointsToModel(Model &model, Node *child);
 
-    /**
-     * Get all the nodes from the subtree that starts in this node
-     * @param reference to vector which contains nodes
-     */
-    void getAllNodes(vector<Node *> &allNodes);
+	/**
+	 * Get all the nodes from the subtree that starts in this node
+	 * @param reference to vector which contains nodes
+	 */
+	void getAllNodes(vector<Node *> &allNodes);
 
-    /**
-     * Build model from the subtree that starts in this node
-     * @param pointer to model
-     */
-    Part *buildModel(Model &model);
+	/**
+	 * Build model from the subtree that starts in this node
+	 * @param pointer to model
+	 */
+	Part *buildModel(Model &model);
 
 public:
-    State *state = nullptr; /// The phenotypic state that inherits from ancestors
+	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-    Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+	Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
-    ~Node();
+	~Node();
 
-    /**
-     * Get fS representation of the subtree that starts from this node
-     * @param result the reference to an object which is used to contain fS genotype
-     */
-    void getGeno(SString &result);
+	/**
+	 * Get fS representation of the subtree that starts from this node
+	 * @param result the reference to an object which is used to contain fS genotype
+	 */
+	void getGeno(SString &result);
 };
 
-class fS_Genotype {
-    friend class Node;
+/**
+ * Represents an fS genotype.
+ */
+class fS_Genotype
+{
+	friend class Node;
 
-    friend class fS_Operators;
+	friend class fS_Operators;
 
 private:
-    Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
+	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
 
-    /**
-     * Get all existing nodes
-     * @return vector of all nodes
-     */
-    vector<Node *> getAllNodes();
+	/**
+	 * Get all existing nodes
+	 * @return vector of all nodes
+	 */
+	vector<Node *> getAllNodes();
 
-    /**
-     * Draws a node that has an index greater that specified
-     * @param fromIndex minimal index of the node
-     * @return pointer to drawn node
-     */
-    Node *chooseNode(int fromIndex);
+	/**
+	 * Draws a node that has an index greater that specified
+	 * @param fromIndex minimal index of the node
+	 * @return pointer to drawn node
+	 */
+	Node *chooseNode(int fromIndex);
 
 
-    /**
-     * Draws a value from defined distribution
-     * @return Drawn value
-     */
-    void randomFromDistribution();
+	/**
+	 * Draws a value from defined distribution
+	 * @return Drawn value
+	 */
+	void randomFromDistribution();
 
-    /**
-     * Find a node that is nearest (euclidean distance to specified node) and is not a child of specified node
-     * @return Nearest node
-     */
-    Node *getNearestNode(vector<Node *> allNodes, Node *node);
+	/**
+	 * Find a node that is nearest (euclidean distance to specified node) and is not a child of specified node
+	 * @return Nearest node
+	 */
+	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
-    /**
-     * Counts all the nodes in genotype
-     * @return node count
-     */
-    int getNodeCount();
+	/**
+	 * Counts all the nodes in genotype
+	 * @return node count
+	 */
+	int getNodeCount();
 
-    /**
-     * Build internal representation from fS format
-     * @param genotype in fS format
-     */
-    fS_Genotype(const SString &genotype);
+	/**
+	 * Build internal representation from fS format
+	 * @param genotype in fS format
+	 */
+	fS_Genotype(const SString &genotype);
 
-    ~fS_Genotype();
+	~fS_Genotype();
 
-    /**
-     * Builds Model object from internal representation
-     * @param pointer to model that will contain a built model
-     */
-    void buildModel(Model &model);
+	/**
+	 * Builds Model object from internal representation
+	 * @param pointer to model that will contain a built model
+	 */
+	void buildModel(Model &model);
 
-    /**
-     * @return genotype in fS format
-     */
-    SString getGeno();
+	/**
+	 * @return genotype in fS format
+	 */
+	SString getGeno();
 
-    /**
-     * Performs add joint mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool addJoint();
+	/**
+	 * Performs add joint mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addJoint();
 
-    /**
-     * Performs remove mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool removeJoint();
+	/**
+	 * Performs remove mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeJoint();
 
-    /**
-     * Performs add part mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool addPart();
+	/**
+	 * Performs add part mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addPart();
 
-    /**
-     * Performs change part type mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool changePartType();
+	/**
+	 * Performs change part type mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool changePartType();
 
-    /**
-     * Performs remove part type mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool removePart();
+	/**
+	 * Performs remove part type mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removePart();
 
-    /**
-     * Performs add param mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool addParam();
+	/**
+	 * Performs add param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addParam();
 
-    /**
-     * Performs remove param mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool removeParam();
+	/**
+	 * Performs remove param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeParam();
 
-    /**
-     * Performs change param mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool changeParam();
+	/**
+	 * Performs change param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool changeParam();
 
-    /**
-     * Performs add modifier mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool addModifier();
+	/**
+	 * Performs add modifier mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addModifier();
 
-    /**
-     * Performs remove modifier mutation on genotype
-     * @return true if mutation succeeded, false otherwise
-     */
-    bool removeModifier();
+	/**
+	 * Performs remove modifier mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeModifier();
 };
 
 

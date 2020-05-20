@@ -312,15 +312,15 @@ int main() {
 
         int gen_size = 5;
         SString **gens = new SString*[gen_size];
-        gens[0] = new SString("SMJ:EbcEcdCbPbdE{x=3.0;y=3.0;z=3.0}");
-        gens[1] = new SString("SMJ:C{j=3.9}cdCbC");
-        gens[2] = new SString("SMJ:C{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bdCcdC");
+        gens[0] = new SString("SMJ:EbcEcCbPbE{x=3.0;y=3.0;z=3.0}");
+        gens[1] = new SString("SMJ:C{j=3.9}cCbC");
+        gens[2] = new SString("SMJ:C{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bCcC");
         gens[3] = new SString("SMJ:C{j=3.9;x=2.0;y=3.4;z=5.1}CcCP{x=4.3}");
-        gens[4] = new SString("SMJ:E(cE(bdE,cE,dP,dC),bdE,cE(bcE,bcdE),E)");
+        gens[4] = new SString("SMJ:E(cE(bE,cE,bP,cC),bE,cE(bcE,bcE),E)");
 
 
         FILE *pFile = fopen("output.txt", "w");
-        int operationCount = 1;
+        int operationCount = 1000;
         int methodUsages[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for (int i = 0; i < operationCount; i++) {
             int i1 = rand() % gen_size;
