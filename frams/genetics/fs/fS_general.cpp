@@ -115,7 +115,23 @@ Neuron::Neuron(SString str)
 
 	vector <SString> inputStrings = split(str.substr(index), NEURON_INPUT_SEPARATOR);
 	for (unsigned int i = 0; i < inputStrings.size(); i++)
-		inputs[std::stod(inputStrings[i].c_str())] = 1.0;
+	{
+		SString keyValue = inputStrings[i];
+		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);
+		string key;
+		double value;
+		if (-1 == separatorIndex)
+		{
+			key = keyValue.c_str();
+			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
+		} else
+		{
+			key = keyValue.substr(0, separatorIndex).c_str();
+			value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
+		}
+		// TODO better way to convert SString to double?
+		inputs[std::stod(key)] = value;
+	}
 }
 
 Node::Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false)
@@ -596,6 +612,11 @@ void Node::getGeno(SString &result)
 				if (it != n.inputs.begin())
 					result += NEURON_INPUT_SEPARATOR;
 				result += SString::valueOf(it->first);
+				if(it->second != DEFAULT_NEURO_CONNECTION_WEIGHT){
+					result += NEURON_I_W_SEPARATOR;
+					result += SString::valueOf(it->second);
+				}
+
 			}
 		}
 		result += NEURON_END;
@@ -707,7 +728,7 @@ void fS_Genotype::buildModel(Model &model)
 void fS_Genotype::buildNeuroConnections(Model &model)
 {
 	// All the neurons are already created in the model
-	vector <Neuron*> allNeurons = getAllNeurons();
+	vector < Neuron * > allNeurons = getAllNeurons();
 	for (unsigned int i = 0; i < allNeurons.size(); i++)
 	{
 		Neuron *neuron = allNeurons[i];
@@ -773,9 +794,9 @@ vector<Node *> fS_Genotype::getAllNodes()
 	return allNodes;
 }
 
-vector <Neuron*> fS_Genotype::getAllNeurons()
+vector<Neuron *> fS_Genotype::getAllNeurons()
 {
-	vector <Neuron*> allNeurons;
+	vector < Neuron * > allNeurons;
 	vector < Node * > allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
@@ -1003,36 +1024,51 @@ bool fS_Genotype::removeNeuro()
 
 bool fS_Genotype::changeNeuroConnection()
 {
-	// TODO implement
+	vector < Neuron * > neurons = getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	int size = neurons.size();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Neuron *chosenNeuron = neurons[randomFromRange(size)];
+		if(chosenNeuron->inputs.size() != 0)
+		{
+			int inputCount = chosenNeuron->inputs.size();
+			auto it = chosenNeuron->inputs.begin();
+			advance(it, randomFromRange(inputCount));
+			// TODO sensible weight changes
+			it->second *= 1.1;
+			return true;
+		}
+	}
 	return false;
 }
 
 bool fS_Genotype::addNeuroConnection()
 {
-	vector <Neuron*> neurons = getAllNeurons();
+	vector < Neuron * > neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
 	int size = neurons.size();
 	Neuron *chosenNeuron = neurons[randomFromRange(size)];
 
-	int index = randomFromRange(size);
-	for(int i=0; i<mutationTries; i++)
+	for (int i = 0; i < mutationTries; i++)
 	{
+		int index = randomFromRange(size);
 		if (chosenNeuron->inputs.count(index) == 0)
 		{
-			index = randomFromRange(size);
-			chosenNeuron->inputs[index] = 1.0;
+			chosenNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 			return true;
 		}
 	}
-
 	return false;
 }
 
 bool fS_Genotype::removeNeuroConnection()
 {
-	vector <Neuron*> neurons = getAllNeurons();
+	vector < Neuron * > neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -1054,5 +1090,6 @@ bool fS_Genotype::removeNeuroConnection()
 
 bool fS_Genotype::changeNeuroParam()
 {
+	// TODO implement
 	return false;
 }

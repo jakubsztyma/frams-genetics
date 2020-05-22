@@ -40,9 +40,9 @@ int countModifiers(SString genotype)
 
 int countNeuroConnections(fS_Genotype &geno)
 {
-	vector<Neuron*> neurons = geno.getAllNeurons();
+	vector < Neuron * > neurons = geno.getAllNeurons();
 	int result = 0;
-	for(unsigned int i=0; i<neurons.size(); i++)
+	for (unsigned int i = 0; i < neurons.size(); i++)
 		result += neurons[i]->inputs.size();
 	return result;
 }
@@ -52,114 +52,104 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	GenoConv_fS0 converter = GenoConv_fS0();
 	MultiMap map;
 	int tmp = -1;
-	bool success = false;
+	SString tmpStr;
 	SString genotype_str = test[0];
+
 	/// Test translate
 	cout << "Geno: " << test[0].c_str() << endl;
-	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
-	fS_Genotype geno1(test[0]);
-	cout << geno1.getGeno().c_str() << endl;
-	assert(geno1.getGeno() == test[0]);
+	fS_Genotype geno(test[0]);
+	cout << geno.getGeno().c_str() << endl;
+	assert(geno.getGeno() == test[0]);
 
 	////Test operations
 	// Test part count
-	fS_Genotype geno2(test[0]);
-	cout << geno2.getNodeCount() << " " << expectedPartCount << endl;
-	assert(geno2.getNodeCount() == expectedPartCount);
-
-	// Test add joint
-	fS_Genotype geno3(genotype_str);
-	success = geno3.addJoint();
-	if (success)
-		assert(countJoints(genotype_str) + 1 == countJoints(geno3.getGeno()));
-
-	// Test remove joint
-	fS_Genotype geno4(genotype_str);
-	success = geno4.removeJoint();
-	if (success)
-		assert(countJoints(genotype_str) - 1 == countJoints(geno4.getGeno()));
-
-	// Test add param
-	fS_Genotype geno5(genotype_str);
-	success = geno5.addParam();
-	if (success)
-		assert(countParams(genotype_str) + 1 == countParams(geno5.getGeno()));
+	assert(geno.getNodeCount() == expectedPartCount);
 
 	// Test add part
-	fS_Genotype geno6(genotype_str);
-	tmp = geno6.getNodeCount();
-	geno6.addPart();
-	assert(tmp + 1 == geno6.getNodeCount());
-
-	// Test remove part
-	fS_Genotype geno7(genotype_str);
-	tmp = geno7.getNodeCount();
-	success = geno7.removePart();
-	if (success)
-		assert(tmp == 1 + geno7.getNodeCount());
-
-	// Test change param
-	fS_Genotype geno8(genotype_str);
-	success = geno8.changeParam();
-	if (success)
-		assert(countParams(genotype_str) == countParams(geno8.getGeno()));
-
-	// Test remove param
-	fS_Genotype geno9(genotype_str);
-	success = geno9.removeParam();
-	if (success)
-		assert(countParams(genotype_str) == 1 + countParams(geno9.getGeno()));
+	tmp = geno.getNodeCount();
+	geno.addPart();
+	assert(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
-	fS_Genotype geno11(genotype_str);
-	tmp = geno11.getNodeCount();
-	success = geno11.changePartType();
-	if (success)
-		assert(tmp == geno11.getNodeCount());
+	tmp = geno.getNodeCount();
+	if (geno.changePartType())
+		assert(tmp == geno.getNodeCount());
 
-	// Test remove modifier
-	fS_Genotype geno12(genotype_str);
-	success = geno12.removeModifier();
-	if (success)
-		assert(countModifiers(genotype_str) == 1 + countModifiers(geno12.getGeno()));
+	// Test remove part
+	tmp = geno.getNodeCount();
+	if (geno.removePart())
+		assert(tmp == 1 + geno.getNodeCount());
+
+	// Test add joint
+	tmp = countJoints(geno.getGeno());
+	if (geno.addJoint())
+		assert(tmp + 1 == countJoints(geno.getGeno()));
+
+	// Test remove joint
+	tmp = countJoints(geno.getGeno());
+	if (geno.removeJoint())
+		assert(tmp - 1 == countJoints(geno.getGeno()));
+
+	// Test add param
+	tmp = countParams(geno.getGeno());
+	if (geno.addParam())
+		assert(tmp + 1 == countParams(geno.getGeno()));
+
+	// Test change param
+	tmpStr = geno.getGeno();
+	tmp = countParams(geno.getGeno());
+	if (geno.changeParam())
+	{
+		SString resultGeno = geno.getGeno();
+		assert(tmp == countParams(resultGeno));
+		// TODO figure out how to test it. Param can be changed by very small value
+//		assert(tmpStr != resultGeno);
+	}
+
+	// Test remove param
+	tmp = countParams(geno.getGeno());
+	if (geno.removeParam())
+		assert(tmp == 1 + countParams(geno.getGeno()));
 
 	// Test add modifier
-	fS_Genotype geno13(genotype_str);
-	success = geno13.addModifier();
-	if (success)
-		assert(countModifiers(genotype_str) + 1 == countModifiers(geno13.getGeno()));
+	tmp = countModifiers(geno.getGeno());
+	if (geno.addModifier())
+		assert(tmp + 1 == countModifiers(geno.getGeno()));
+
+	// Test remove modifier
+	tmp = countModifiers(geno.getGeno());
+	if (geno.removeModifier())
+		assert(tmp == 1 + countModifiers(geno.getGeno()));
 
 	// Test add neuro
-	fS_Genotype geno14(genotype_str);
-	tmp = geno14.getAllNeurons().size();
-	success = geno14.addNeuro();
-	if (success)
-		assert(tmp + 1 == (int)geno14.getAllNeurons().size());
-
-	// Test remove neuro
-	fS_Genotype geno15(genotype_str);
-	tmp = geno15.getAllNeurons().size();
-	success = geno15.removeNeuro();
-	if (success)
-		assert(tmp - 1 == (int)geno15.getAllNeurons().size());
+	tmp = geno.getAllNeurons().size();
+	if (geno.addNeuro())
+		assert(tmp + 1 == (int) geno.getAllNeurons().size());
 
 	// Test add neuro connections
-	fS_Genotype geno16(genotype_str);
-	tmp = countNeuroConnections(geno16);
-	success = geno16.addNeuroConnection();
-	if (success)
-		assert(tmp + 1 == countNeuroConnections(geno16));
+	tmp = countNeuroConnections(geno);
+	if (geno.addNeuroConnection())
+		assert(tmp + 1 == countNeuroConnections(geno));
+
+	// Test change neuro connection
+	tmpStr = geno.getGeno();
+	if (geno.changeNeuroConnection())
+		assert(genotype_str != geno.getGeno());
 
 	// Test remove neuro connections
-	fS_Genotype geno17(genotype_str);
-	tmp = countNeuroConnections(geno17);
-	success = geno17.removeNeuroConnection();
-	if (success)
-		assert(tmp - 1 == countNeuroConnections(geno17));
+	tmp = countNeuroConnections(geno);
+	if (geno.removeNeuroConnection())
+		assert(tmp - 1 == countNeuroConnections(geno));
+
+	// Test remove neuro
+	tmp = geno.getAllNeurons().size();
+	if (geno.removeNeuro())
+		assert(tmp - 1 == (int) geno.getAllNeurons().size());
 }
 
 void validationTest()
@@ -192,15 +182,15 @@ void evolutionTest()
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1-2]cCbP[G0-2]bE[0-1-2]{x=3.0;y=3.0;z=3.0}");
-	gens[1] = new SString("SMJ:C{j=3.9}cC[0]bC[0-1]");
-	gens[2] = new SString("SMJ:C[0;0-1]{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bCcC");
+	gens[0] = new SString("SMJ:EbcE[1_2]cCbP[G0_2]bE[0_1_2]{x=3.0;y=3.0;z=3.0}");
+	gens[1] = new SString("SMJ:C{j=3.9}cC[0]bC[0_1]");
+	gens[2] = new SString("SMJ:C[0;0_1]{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bCcC");
 	gens[3] = new SString("SMJ:C[1]{j=3.9;x=2.0;y=3.4;z=5.1}C[1]cCP[0;1]{x=4.3}");
-	gens[4] = new SString("SMJ:E(cE(bE[T;T1-2],cE,bP[0],cC),bE[0-2;0-2],cE(bcE,bcE[;0-1-2]),E)");
+	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bP[0],cC),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 1000;
+	int operationCount = 100;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
@@ -233,8 +223,8 @@ void evolutionTest()
 
 		if (crossOverResult == GENOPER_OK)
 		{
-			if(1 == operators.checkValidity(arr2, ""))
-				cout<<arr2;
+			if (1 == operators.checkValidity(arr2, ""))
+				cout << arr2;
 			assert(0 == operators.checkValidity(arr1, ""));
 			assert(0 == operators.checkValidity(arr2, ""));
 		}
@@ -448,7 +438,7 @@ int main()
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "c:1, 0\n"},
-			{"S:E[G2;T0;T0-1]",                                "p:sh=1\n"
+			{"S:E[G2;T0;T0_1]",                                "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "n:p=0, d=T\n"
@@ -456,7 +446,7 @@ int main()
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
-			{"S:E[G2;T0;T0-1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
+			{"S:E[G2;T0;T0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
 															   "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 															   "j:0, 1, sh=1\n"
 															   "n:p=0, d=G\n"
@@ -466,11 +456,19 @@ int main()
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
+			{"S:E[G2:2.0;T0:3.0;T0:4.0_1:5.0]",                "p:sh=1\n"
+															   "n:p=0, d=G\n"
+															   "n:p=0, d=T\n"
+															   "n:p=0, d=T\n"
+															   "c:0, 2, 2.0\n"
+															   "c:1, 0, 3.0\n"
+															   "c:2, 0, 4.0\n"
+															   "c:2, 1, 5.0\n"},
 	};
 
-	const int size = 53;
+	const int size = 54;
 	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2};
+							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1};
 	auto start = chrono::steady_clock::now();
 
 	for (int i = 0; i < size; i++)

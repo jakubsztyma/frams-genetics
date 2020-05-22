@@ -37,11 +37,12 @@
 #define PARAM_START '{'
 #define PARAM_END '}'
 #define PARAM_SEPARATOR ';'
+#define PARAM_KEY_VALUE_SEPARATOR '='
 #define NEURON_START '['
 #define NEURON_END ']'
 #define NEURON_SEPARATOR ';'
-#define NEURON_INPUT_SEPARATOR '-'
-#define PARAM_KEY_VALUE_SEPARATOR '='
+#define NEURON_INPUT_SEPARATOR '_'
+#define NEURON_I_W_SEPARATOR ':'
 //@}
 
 /** @name Every modifier changes the underlying value by this multiplier */
@@ -88,6 +89,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.999;
 #define HINGE_X 'b'
 #define HINGE_XY 'c'
 
+const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const string NEURONS = "NGT";
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
