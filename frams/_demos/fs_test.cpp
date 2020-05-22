@@ -57,8 +57,8 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	/// Test translate
 	cout << "Geno: " << test[0].c_str() << endl;
-//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
@@ -372,7 +372,7 @@ int main()
 															   "p:2.08, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
 															   "j:0, 1, sh=1\n"},  // size modifiers
 			{"M:XYYZZZEE",                                     "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
-															   "p:2.2, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+															   "p:2.18, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
 															   "j:0, 1, sh=1\n"},  // size modifiers
 			{"M:IE",                                           "p:sh=1, ing=0.28\n"},  // Ingestion modifier
 			{"M:iE",                                           "p:sh=1, ing=0.23\n"},  // Ingestion modifier
@@ -389,13 +389,13 @@ int main()
 															   "p:z=6.0, sh=1, sz=5.0\n"
 															   "j:0, 1, sh=1\n"},
 			{"S:E{x=1.5;z=2.0}E{tz=90.0;x=2.0;y=5.0;z=3.0}",   "p:sh=1, sx=1.5, sz=2.0\n"
-															   "p:y=6.0, sh=1, sx=2.0, sy=5.0, sz=3.0\n"
+															   "p:y=5.99, sh=1, sx=2.0, sy=5.0, sz=3.0\n"
 															   "j:0, 1, sh=1\n"},
 			{"S:E{y=3.0;z=4.0}E{y=4.0;z=5.0}",                 "p:sh=1, sy=3.0, sz=4.0\n"
-															   "p:2.0, sh=1, sy=4.0, sz=5.0\n"
+															   "p:1.99, sh=1, sy=4.0, sz=5.0\n"
 															   "j:0, 1, sh=1\n"},
 			{"S:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",         "p:sh=1, sy=399.0, sz=599.0\n"
-															   "p:53.25, sh=1, sy=799.0, sz=999.0\n"
+															   "p:53.06, sh=1, sy=799.0, sz=999.0\n"
 															   "j:0, 1, sh=1\n"},  // Test a lot of spheres
 			{"S:EE{ty=45.0}",                                  "p:sh=1\n"
 															   "p:1.41, z=1.41, sh=1\n"
@@ -410,7 +410,7 @@ int main()
 															   "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 															   "j:0, 1, sh=1\n"},
 			{"S:EE{ry=45.0;z=2.0}",                            "p:sh=1\n"
-															   "p:2.58, sh=1, sz=2.0, ry=45.0\n"
+															   "p:2.57, sh=1, sz=2.0, ry=45.0\n"
 															   "j:0, 1, sh=1\n"},
 			{"S:EE{ry=30.0;z=2.0}",                            "p:sh=1\n"
 															   "p:2.3, sh=1, sz=2.0, ry=30.0\n"

@@ -224,7 +224,7 @@ SString Node::extractParams(SString restOfGenotype)
 
 	int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
 	SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-	vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+	vector<SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
 	for (unsigned int i = 0; i < keyValuePairs.size(); i++)
 	{
 		SString keyValue = keyValuePairs[i];
@@ -327,7 +327,7 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 	return centers;
 }
 
-int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D vector,
+int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D &vector,
 				double distanceThreshold)
 {
 	double upperThreshold = distanceThreshold;
@@ -596,7 +596,7 @@ void Node::getGeno(SString &result)
 		result += *it;
 	result += partType;
 
-	if (neurons.size() > 0)
+	if (!neurons.empty())
 	{
 		// Add neurons to genotype string
 		result += NEURON_START;
@@ -622,7 +622,7 @@ void Node::getGeno(SString &result)
 		result += NEURON_END;
 	}
 
-	if (params.size() > 0)
+	if (!params.empty())
 	{
 		// Add parameters to genotype string
 		result += PARAM_START;
@@ -1032,7 +1032,7 @@ bool fS_Genotype::changeNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Neuron *chosenNeuron = neurons[randomFromRange(size)];
-		if(chosenNeuron->inputs.size() != 0)
+		if(!chosenNeuron->inputs.empty())
 		{
 			int inputCount = chosenNeuron->inputs.size();
 			auto it = chosenNeuron->inputs.begin();

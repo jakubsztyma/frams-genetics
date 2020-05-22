@@ -44,7 +44,8 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname)
 	}
 	catch (const char *msg)
 	{
-		std::cout<<msg<<std::endl;	// TODO change to log function
+//		std::cout<<msg<<std::endl;
+		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, msg);
 		return 1;
 	}
 	return 0;

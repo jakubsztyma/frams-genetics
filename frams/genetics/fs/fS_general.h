@@ -62,7 +62,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
 /**
  * The tolerance of the value of distance between parts
  */
-const double SPHERE_DISTANCE_TOLERANCE = 0.999;
+const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 
 /** @name Names of node parameters and modifiers*/
 //@{
