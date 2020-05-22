@@ -224,7 +224,7 @@ SString Node::extractParams(SString restOfGenotype)
 
 	int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
 	SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-	vector<SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+	vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
 	for (unsigned int i = 0; i < keyValuePairs.size(); i++)
 	{
 		SString keyValue = keyValuePairs[i];
@@ -467,7 +467,7 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 	{
 		char c = rest[i];
 		if (c == BRANCH_START)
-			depth += 1;
+			depth++;
 		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length)
 		{
 			Substring substring(restOfGenotype.str, restOfGenotype.start + start, i - start);
@@ -612,7 +612,8 @@ void Node::getGeno(SString &result)
 				if (it != n.inputs.begin())
 					result += NEURON_INPUT_SEPARATOR;
 				result += SString::valueOf(it->first);
-				if(it->second != DEFAULT_NEURO_CONNECTION_WEIGHT){
+				if (it->second != DEFAULT_NEURO_CONNECTION_WEIGHT)
+				{
 					result += NEURON_I_W_SEPARATOR;
 					result += SString::valueOf(it->second);
 				}
@@ -956,7 +957,7 @@ bool fS_Genotype::addPart()
 	newNode->params[ROT_Z] = randomFromRange(90, -90);
 
 	randomNode->children.push_back(newNode);
-	randomNode->childSize += 1;
+	randomNode->childSize++;
 	return true;
 }
 
@@ -1032,7 +1033,7 @@ bool fS_Genotype::changeNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Neuron *chosenNeuron = neurons[randomFromRange(size)];
-		if(!chosenNeuron->inputs.empty())
+		if (!chosenNeuron->inputs.empty())
 		{
 			int inputCount = chosenNeuron->inputs.size();
 			auto it = chosenNeuron->inputs.begin();

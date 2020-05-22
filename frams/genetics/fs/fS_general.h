@@ -182,6 +182,7 @@ public:
 	std::map<int, double> inputs;
 
 	Neuron(SString str);
+
 	Neuron(char neuronType);
 };
 
@@ -209,7 +210,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector<Neuron> neurons;	/// Vector of all the neurons
+	vector <Neuron> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -360,7 +361,7 @@ public:
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
-	vector<Neuron*> getAllNeurons();
+	vector<Neuron *> getAllNeurons();
 
 	/**
 	 * Counts all the nodes in genotype
@@ -452,11 +453,17 @@ public:
 	 * @return true if mutation succeeded, false otherwise
 	 */
 	bool removeModifier();
+
 	bool addNeuro();
+
 	bool removeNeuro();
+
 	bool changeNeuroConnection();
+
 	bool addNeuroConnection();
+
 	bool removeNeuroConnection();
+
 	bool changeNeuroParam();
 };
 

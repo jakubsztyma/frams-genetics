@@ -4,7 +4,7 @@
 
 #ifndef _FS_OPER_H_
 #define _FS_OPER_H_
-	
+
 #include "fS_general.h"
 #include "../genooperators.h"
 

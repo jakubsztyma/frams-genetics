@@ -212,9 +212,9 @@ void evolutionTest()
 		char *arr2 = strdup(gens[i2]->c_str());
 
 		if (operators.mutate(arr1, gp, method) == GENOPER_OK)
-			methodUsages[method] += 1;
+			methodUsages[method] ++;
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
-			methodUsages[method] += 1;
+			methodUsages[method] ++;
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
