@@ -210,7 +210,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector <Neuron> neurons;    /// Vector of all the neurons
+	vector <Neuron*> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -393,6 +393,11 @@ public:
 	 * @return genotype in fS format
 	 */
 	SString getGeno();
+
+	/**
+	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
+	 */
+	void rearrangeNeurons(Neuron *newNeuron);
 
 	/**
 	 * Performs add joint mutation on genotype

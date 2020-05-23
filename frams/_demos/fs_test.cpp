@@ -190,7 +190,7 @@ void evolutionTest()
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 100;
+	int operationCount = 20;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
