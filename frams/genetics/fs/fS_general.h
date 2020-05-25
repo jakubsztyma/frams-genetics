@@ -5,6 +5,7 @@
 #ifndef _FS_GENERAL_H_
 #define _FS_GENERAL_H_
 
+#include <iostream>
 
 #include <float.h>
 #include <vector>
@@ -37,6 +38,11 @@
 #define PARAM_END '}'
 #define PARAM_SEPARATOR ';'
 #define PARAM_KEY_VALUE_SEPARATOR '='
+#define NEURON_START '['
+#define NEURON_END ']'
+#define NEURON_SEPARATOR ';'
+#define NEURON_INPUT_SEPARATOR '_'
+#define NEURON_I_W_SEPARATOR ':'
 //@}
 
 /** @name Every modifier changes the underlying value by this multiplier */
@@ -56,7 +62,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
 /**
  * The tolerance of the value of distance between parts
  */
-const double SPHERE_DISTANCE_TOLERANCE = 0.999;
+const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 
 /** @name Names of node parameters and modifiers*/
 //@{
@@ -73,7 +79,6 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.999;
 #define RZ "rz"
 #define JOINT_DISTANCE "j"
 //@}
-
 /** @name Macros and values used in collision detection */
 //@{
 #define DISJOINT 0
@@ -84,6 +89,8 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.999;
 #define HINGE_X 'b'
 #define HINGE_XY 'c'
 
+const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+const string NEURONS = "NGT";
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
@@ -166,6 +173,20 @@ public:
 };
 
 /**
+ * Represent a neuron and its inputs
+ */
+class Neuron
+{
+public:
+	SString cls = SString();
+	std::map<int, double> inputs;
+
+	Neuron(SString str);
+
+	Neuron(char neuronType);
+};
+
+/**
  * Represents a node in the graph that represents a genotype.
  * A node corresponds to a single part.
  * However, it also stores attributes that are specific to fS encoding, such as modifiers and joint types.
@@ -189,6 +210,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
+	vector <Neuron*> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -220,6 +242,12 @@ private:
 	 * @return the remainder of the genotype
 	 */
 	SString extractPartType(SString restOfGenotype);
+
+	/**
+	 * Extract neurons from the rest of genotype
+	 * @return the remainder of the genotype
+	 */
+	SString extractNeurons(SString restOfGenotype);
 
 	/**
 	 * Extract params from the rest of genotype
@@ -316,7 +344,6 @@ private:
 	 */
 	Node *chooseNode(int fromIndex);
 
-
 	/**
 	 * Draws a value from defined distribution
 	 * @return Drawn value
@@ -330,6 +357,12 @@ private:
 	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
+	/**
+	 * Get all existing neurons
+	 * @return vector of all neurons
+	 */
+	vector<Neuron *> getAllNeurons();
+
 	/**
 	 * Counts all the nodes in genotype
 	 * @return node count
@@ -346,14 +379,25 @@ public:
 
 	/**
 	 * Builds Model object from internal representation
-	 * @param pointer to model that will contain a built model
+	 * @param a reference to a model that will contain a built model
 	 */
 	void buildModel(Model &model);
+
+	/**
+	 * Adds neuro connections to model
+	 * @param a reference to a model where the connections will be added
+	 */
+	void buildNeuroConnections(Model &model);
 
 	/**
 	 * @return genotype in fS format
 	 */
 	SString getGeno();
+
+	/**
+	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
+	 */
+	void rearrangeNeuronConnections(Neuron *newNeuron, int shift);
 
 	/**
 	 * Performs add joint mutation on genotype
@@ -414,6 +458,18 @@ public:
 	 * @return true if mutation succeeded, false otherwise
 	 */
 	bool removeModifier();
+
+	bool addNeuro();
+
+	bool removeNeuro();
+
+	bool changeNeuroConnection();
+
+	bool addNeuroConnection();
+
+	bool removeNeuroConnection();
+
+	bool changeNeuroParam();
 };
 
 

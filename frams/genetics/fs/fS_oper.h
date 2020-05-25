@@ -9,7 +9,7 @@
 #include "../genooperators.h"
 
 /** @name Number of various genetic operations */
-#define FS_OPCOUNT 10
+#define FS_OPCOUNT 16
 
 /** @name Codes for general mutation types */
 //@{
@@ -23,6 +23,12 @@
 #define FS_MOD_PARAM 7
 #define FS_ADD_MOD 8
 #define FS_RM_MOD 9
+#define FS_ADD_NEURO 10
+#define FS_RM_NEURO 11
+#define FS_MOD_NEURO_CONNECTION 12
+#define FS_ADD_NEURO_CONNECTION 13
+#define FS_RM_NEURO_CONNECTION 14
+#define FS_MOD_NEURO_PARAMS 15
 //@}
 
 class fS_Operators : public GenoOperators
