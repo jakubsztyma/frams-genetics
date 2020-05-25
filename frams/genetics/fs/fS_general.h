@@ -397,7 +397,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeurons(Neuron *newNeuron);
+	void rearrangeNeuronConnections(Neuron *newNeuron, int shift);
 
 	/**
 	 * Performs add joint mutation on genotype

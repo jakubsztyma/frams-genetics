@@ -1001,8 +1001,11 @@ bool fS_Genotype::removeModifier()
 	return false;
 }
 
-void fS_Genotype::rearrangeNeurons(Neuron *changedNeuron)
+void fS_Genotype::rearrangeNeuronConnections(Neuron *changedNeuron, int shift=1)
 {
+	if(shift != 1 && shift != -1)
+		throw "Wrong value of shift";
+
 	vector<Neuron*> neurons = getAllNeurons();
 	int changedNeuronIndex = -1;
 	for(unsigned int i=0; i<neurons.size(); i++)
@@ -1024,31 +1027,31 @@ void fS_Genotype::rearrangeNeurons(Neuron *changedNeuron)
 		{
 			if(it->first < changedNeuronIndex)
 				newInputs[it->first] = it->second;
-			else if(it->first >= changedNeuronIndex)
-				newInputs[it->first + 1] = it->second;
+			else if(it->first > changedNeuronIndex)
+				newInputs[it->first + shift] = it->second;
+			else if(it->first == changedNeuronIndex){
+				if(shift == 1)
+					newInputs[it->first + shift] = it->second;
+				// If shift == -1, just delete the input
+			}
 		}
-		n->inputs.clear();
-		for (auto it = newInputs.begin(); it != newInputs.end(); ++it)
-			n->inputs[it->first] = it->second;
+		n->inputs = newInputs;
 	}
 }
 
 bool fS_Genotype::addNeuro()
 {
-	// TODO change connection indexes
 	Node *randomNode = chooseNode();
 	char randomNeuro = NEURONS[randomFromRange(NEURONS.length())];
 	Neuron *newNeuron = new Neuron(randomNeuro);
 	randomNode->neurons.push_back(newNeuron);
 
-	rearrangeNeurons(newNeuron);
+	rearrangeNeuronConnections(newNeuron);
 	return true;
 }
 
 bool fS_Genotype::removeNeuro()
 {
-	// TODO change connection indexes
-
 	Node *randomNode = chooseNode();
 	for (int i = 0; i < mutationTries; i++)
 	{
@@ -1058,6 +1061,7 @@ bool fS_Genotype::removeNeuro()
 			// Remove the chosen neuron
 			int size = randomNode->neurons.size();
 			Neuron *it = randomNode->neurons[randomFromRange(size)];
+			rearrangeNeuronConnections(it, -1);		// Important to rearrange the neurons before deleting
 			swap(it, randomNode->neurons.back());
 			randomNode->neurons.pop_back();
 			randomNode->neurons.shrink_to_fit();

@@ -177,6 +177,49 @@ void validationTest()
 	}
 }
 
+void testRearrangeInputs()
+{
+	int size = 6;
+	SString before = "MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	int shift[size] = {
+			1,
+			1,
+			1,
+			-1,
+			-1,
+			-1,
+	};
+	int neuronNumber[size] = {
+			0,	// First
+			2,   // Middle
+			5,	// Last
+			0,
+			2,
+			5,
+	};
+	SString after[size] = {
+			"MSJ:E[T]bcE[3_4]cCbP[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bcE[3_4]cCbP[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bcE[1_2]cCbP[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bcE[2]cCbP[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+	};
+
+	for(int i=0; i<size; i++)
+	{
+		fS_Genotype geno(before);
+		vector<Neuron*> allNeurons = geno.getAllNeurons();
+		Neuron *neuron = allNeurons[neuronNumber[i]];
+
+		geno.rearrangeNeuronConnections(neuron, shift[i]);
+
+		cout<<geno.getGeno().c_str()<<endl;
+		assert(geno.getGeno() == after[i]);
+	}
+
+}
+
 void evolutionTest()
 {
 	int gen_size = 5;
@@ -190,7 +233,7 @@ void evolutionTest()
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 20;
+	int operationCount = 50;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
@@ -476,6 +519,7 @@ int main()
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
+	testRearrangeInputs();
 	validationTest();
 	evolutionTest();
 
