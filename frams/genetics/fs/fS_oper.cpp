@@ -138,9 +138,9 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 		vector < Node * > allNodes = parents[i]->getAllNodes();
 		do
 		{
-			chosen[i] = allNodes[randomFromRange(allNodes.size(), 0)];
+			chosen[i] = allNodes[RndGen.Uni(0, allNodes.size())];
 		} while (chosen[i]->childSize == 0);
-		indexes[i] = randomFromRange(chosen[i]->childSize, 0);
+		indexes[i] = RndGen.Uni(0,chosen[i]->childSize);
 	}
 
 	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
