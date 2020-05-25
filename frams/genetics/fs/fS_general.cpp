@@ -94,7 +94,7 @@ Neuron::Neuron(SString str)
 	}
 
 	vector<SString> inputStrings;
-	strSplit(str.substr(index), NEURON_INPUT_SEPARATOR, true, inputStrings);
+	strSplit(str.substr(index), NEURON_INPUT_SEPARATOR, false, inputStrings);
 
 	for (unsigned int i = 0; i < inputStrings.size(); i++)
 	{
