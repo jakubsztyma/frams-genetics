@@ -34,26 +34,6 @@ int randomFromRange(int to, int from = 0)
 	return (int) RndGen.Uni((double) to, (double) from);
 }
 
-vector <SString> split(SString str, char delim)
-{
-	// TODO optimize this function or find a better existing one
-	vector <SString> arr;
-	int index = 0, new_index = 0, arrayIndex = 0;
-	while (true)
-	{
-		new_index = str.indexOf(delim, index);
-		if (new_index == -1)
-		{
-			arr.push_back(str.substr(index));
-			break;
-		}
-		arr.push_back(str.substr(index, new_index - index));
-		arrayIndex += 1;
-		index = new_index + 1;
-	}
-	return arr;
-}
-
 State::State(State *_state)
 {
 	location = Pt3D(_state->location);
@@ -113,7 +93,9 @@ Neuron::Neuron(SString str)
 			return;
 	}
 
-	vector <SString> inputStrings = split(str.substr(index), NEURON_INPUT_SEPARATOR);
+	vector<SString> inputStrings;
+	strSplit(str.substr(index), NEURON_INPUT_SEPARATOR, true, inputStrings);
+
 	for (unsigned int i = 0; i < inputStrings.size(); i++)
 	{
 		SString keyValue = inputStrings[i];
@@ -212,7 +194,8 @@ SString Node::extractNeurons(SString restOfGenotype)
 
 	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END);
 	SString neuronsString = restOfGenotype.substr(1, neuronsEndIndex - 1);
-	vector <SString> neuronStrings = split(neuronsString, NEURON_SEPARATOR);
+	vector<SString> neuronStrings;
+	strSplit(neuronsString, NEURON_SEPARATOR, false, neuronStrings);
 	for (unsigned int i = 0; i < neuronStrings.size(); i++)
 	{
 		Neuron *newNeuron = new Neuron(neuronStrings[i]);
@@ -229,7 +212,8 @@ SString Node::extractParams(SString restOfGenotype)
 
 	int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
 	SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-	vector <SString> keyValuePairs = split(paramString, PARAM_SEPARATOR);
+	vector<SString> keyValuePairs;
+	strSplit(paramString, PARAM_SEPARATOR, false, keyValuePairs);
 	for (unsigned int i = 0; i < keyValuePairs.size(); i++)
 	{
 		SString keyValue = keyValuePairs[i];
@@ -802,7 +786,7 @@ vector<Node *> fS_Genotype::getAllNodes()
 
 vector<Neuron *> fS_Genotype::getAllNeurons()
 {
-	vector < Neuron * > allNeurons;
+	vector<Neuron*> allNeurons;
 	vector<Node*> allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
@@ -1074,7 +1058,7 @@ bool fS_Genotype::removeNeuro()
 
 bool fS_Genotype::changeNeuroConnection()
 {
-	vector < Neuron * > neurons = getAllNeurons();
+	vector<Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
