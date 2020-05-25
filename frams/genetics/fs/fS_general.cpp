@@ -670,7 +670,7 @@ void Node::getAllNodes(vector<Node *> &allNodes)
 
 int Node::getNodeCount()
 {
-	vector < Node * > allNodes;
+	vector<Node*> allNodes;
 	getAllNodes(allNodes);
 	return allNodes.size();
 }
@@ -706,7 +706,7 @@ void fS_Genotype::buildModel(Model &model)
 	buildNeuroConnections(model);
 
 	// Additional joints
-	vector < Node * > allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
 		Node *node = allNodes[i];
@@ -795,7 +795,7 @@ char getRandomPartType()
 
 vector<Node *> fS_Genotype::getAllNodes()
 {
-	vector < Node * > allNodes;
+	vector<Node*> allNodes;
 	startNode->getAllNodes(allNodes);
 	return allNodes;
 }
@@ -803,7 +803,7 @@ vector<Node *> fS_Genotype::getAllNodes()
 vector<Neuron *> fS_Genotype::getAllNeurons()
 {
 	vector < Neuron * > allNeurons;
-	vector < Node * > allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
 		for (unsigned int j = 0; j < allNodes[i]->neurons.size(); j++)
@@ -816,7 +816,7 @@ vector<Neuron *> fS_Genotype::getAllNeurons()
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0)
 {
-	vector < Node * > allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	return allNodes[randomFromRange(allNodes.size(), fromIndex)];
 }
 
@@ -1097,7 +1097,7 @@ bool fS_Genotype::changeNeuroConnection()
 
 bool fS_Genotype::addNeuroConnection()
 {
-	vector < Neuron * > neurons = getAllNeurons();
+	vector<Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -1118,7 +1118,7 @@ bool fS_Genotype::addNeuroConnection()
 
 bool fS_Genotype::removeNeuroConnection()
 {
-	vector < Neuron * > neurons = getAllNeurons();
+	vector<Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
