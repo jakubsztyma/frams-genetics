@@ -21,6 +21,7 @@
 #include "frams/util/multirange.h"
 #include "frams/util/rndutil.h"
 #include "frams/util/sstringutils.h"
+#include "frams/util/extvalue.h"
 
 
 /** @name Names of genotype modes */
@@ -121,11 +122,14 @@ public:
 	int start;        // The beginning index of substring
 	int len;        // The length of substring
 
-	Substring(const SString &_str, int _start, int _len = 1 << 30)
+	Substring(const SString &_str, int _start, int _len = -1)
 	{
 		str = _str;
 		start = _start;
-		len = _len;
+		if(_len == -1)
+			len = _str.len() - start;
+		else
+			len = _len;
 	}
 
 	/**
