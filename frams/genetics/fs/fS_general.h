@@ -20,6 +20,7 @@
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
 #include "frams/util/rndutil.h"
+#include "frams/util/sstringutils.h"
 
 
 /** @name Names of genotype modes */
@@ -36,12 +37,12 @@
 #define BRANCH_SEPARATOR ','
 #define PARAM_START '{'
 #define PARAM_END '}'
-#define PARAM_SEPARATOR ';'
-#define PARAM_KEY_VALUE_SEPARATOR '='
+const SString  PARAM_SEPARATOR(";");
+const SString PARAM_KEY_VALUE_SEPARATOR("=");
 #define NEURON_START '['
-#define NEURON_END ']'
-#define NEURON_SEPARATOR ';'
-#define NEURON_INPUT_SEPARATOR '_'
+const SString NEURON_END("]");
+const SString NEURON_SEPARATOR(";");
+const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
@@ -95,7 +96,7 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifxyz";
-const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -210,7 +211,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector <Neuron*> neurons;    /// Vector of all the neurons
+	vector<Neuron*> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -259,7 +260,7 @@ private:
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector <Substring> getBranches(Substring restOfGenotype);
+	vector<Substring> getBranches(Substring restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
