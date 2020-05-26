@@ -179,12 +179,29 @@ void Node::extractPartType(Substring &restOfGenotype)
 	restOfGenotype.startFrom(1);
 }
 
+vector<int> getSeparatorPositions(const char *str, int len, char separator, char endSign, int &endIndex)
+{
+	vector<int> separators{-1};
+	for(int i=0; i<len; i++)
+	{
+		if (str[i] == separator)
+			separators.push_back(i);
+		else if (str[i] == endSign)
+		{
+			endIndex = i;
+			break;
+		}
+	}
+	separators.push_back(endIndex); // End of string as last separator
+	return separators;
+}
+
 void Node::extractNeurons(Substring &restOfGenotype)
 {
 	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != NEURON_START)
 		return;
 
-	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END[0]);
+	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END);
 	SString neuronsString = restOfGenotype.substr(1, neuronsEndIndex - 1);
 	vector<SString> neuronStrings;
 	strSplit(neuronsString, NEURON_SEPARATOR, false, neuronStrings);
@@ -202,22 +219,41 @@ void Node::extractParams(Substring &restOfGenotype)
 	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != PARAM_START)
 		return;
 
-	int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
-	SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
-	vector<SString> keyValuePairs;
-	strSplit(paramString, PARAM_SEPARATOR, false, keyValuePairs);
-	for (unsigned int i = 0; i < keyValuePairs.size(); i++)
+	const char *paramString = restOfGenotype.c_str() + 1;
+
+	// Find the indexes of the parameter separators
+
+	int paramsEndIndex;
+	vector<int> separators = getSeparatorPositions(paramString, restOfGenotype.len, PARAM_SEPARATOR, PARAM_END, paramsEndIndex);
+	for (unsigned int i = 0; i < separators.size() - 1; i++)
 	{
-		SString keyValue = keyValuePairs[i];
-		int separatorIndex = keyValuePairs[i].indexOf(PARAM_KEY_VALUE_SEPARATOR);
+		int start = separators[i] + 1;
+		int length = separators[i+1] - start;
+		const char *buffer = paramString + start;
+
+		// Find the index of key-value separator
+		int separatorIndex = -1;
+		for(int i=0; i<length; i++)
+		{
+			if(buffer[i] == PARAM_KEY_VALUE_SEPARATOR)
+			{
+				separatorIndex = i;
+				break;
+			}
+		}
 		if (-1 == separatorIndex)
 			throw "Parameter separator expected";
-		string key = keyValue.substr(0, separatorIndex).c_str();
-		// TODO better way to convert SString to double?
-		params[key] = std::stod(keyValue.substr(separatorIndex + 1).c_str());
+
+		// Compute the value of parameter and assign it to the key
+		int valueStartIndex = separatorIndex + 1;
+		string key(buffer,  separatorIndex);
+		const char *val = buffer + valueStartIndex;
+		size_t len = length - valueStartIndex;
+		params[key] = std::stod(val, &len);
+
 	}
 
-	restOfGenotype.startFrom(paramsEndIndex + 1);
+	restOfGenotype.startFrom(paramsEndIndex + 2);
 }
 
 double Node::getParam(string key)

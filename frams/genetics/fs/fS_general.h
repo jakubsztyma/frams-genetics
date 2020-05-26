@@ -38,10 +38,10 @@
 #define BRANCH_SEPARATOR ','
 #define PARAM_START '{'
 #define PARAM_END '}'
-const SString  PARAM_SEPARATOR(";");
-const SString PARAM_KEY_VALUE_SEPARATOR("=");
+const char PARAM_SEPARATOR =';';
+const char PARAM_KEY_VALUE_SEPARATOR='=';
 #define NEURON_START '['
-const SString NEURON_END("]");
+const char NEURON_END=']';
 const SString NEURON_SEPARATOR(";");
 const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
@@ -132,6 +132,11 @@ public:
 			len = _len;
 	}
 
+	const char *c_str()
+	{
+		return str.c_str() + start;
+	}
+
 	SString toSString()
 	{
 		return str.substr(start, len);
@@ -160,11 +165,6 @@ public:
 	{
 		return str[start + index];
 	}
-
-//	int end()
-//	{
-//		return start + len;
-//	}
 
 	/**
 	 * Create a new instance of multirange, corresponding to the substring

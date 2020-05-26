@@ -233,7 +233,7 @@ void evolutionTest()
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 2000;
+	int operationCount = 20;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
@@ -516,7 +516,7 @@ int main()
 
 	for (int i = 0; i < size; i++)
 	{
-		testOneGenotype(test_cases[i], expectedPartCount[i]);
+//		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testRearrangeInputs();
