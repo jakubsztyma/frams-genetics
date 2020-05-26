@@ -481,9 +481,11 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 
 	int depth = 0;
 	int start = 1;
+	char c;
+	const char *str = restOfGenotype.c_str();
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		char c = restOfGenotype.at(i);
+		c = str[i];
 		if (c == BRANCH_START)
 			depth++;
 		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len)

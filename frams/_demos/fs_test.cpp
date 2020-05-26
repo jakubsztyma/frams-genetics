@@ -214,13 +214,13 @@ void testRearrangeInputs()
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
-		cout<<geno.getGeno().c_str()<<endl;
+//		cout<<geno.getGeno().c_str()<<endl;
 		assert(geno.getGeno() == after[i]);
 	}
 
 }
 
-void evolutionTest()
+void evolutionTest(int operationCount)
 {
 	int gen_size = 5;
 	fS_Operators operators;
@@ -233,7 +233,6 @@ void evolutionTest()
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 20;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
@@ -245,9 +244,9 @@ void evolutionTest()
 		if (i2 == i1)
 			i2 = (i1 + 1) % gen_size;
 
-		cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-		cout << gens[i1]->c_str() << endl;
-		cout << gens[i2]->c_str() << endl;
+//		cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
+//		cout << gens[i1]->c_str() << endl;
+//		cout << gens[i2]->c_str() << endl;
 		int method;
 		float f1, f2, gp;
 
@@ -516,12 +515,13 @@ int main()
 
 	for (int i = 0; i < size; i++)
 	{
-		testOneGenotype(test_cases[i], expectedPartCount[i]);
+//		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testRearrangeInputs();
 	validationTest();
-	evolutionTest();
+	int operationCount = 2000;
+	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
 	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
