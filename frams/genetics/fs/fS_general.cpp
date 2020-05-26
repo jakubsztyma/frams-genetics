@@ -71,7 +71,7 @@ Neuron::Neuron(char neuronType)
 {
 	if (NEURONS.find(neuronType) == string::npos)
 		throw "Invalid neuron type";
-	cls += neuronType;
+	cls = neuronType;
 }
 
 Neuron::Neuron(SString str)
@@ -82,7 +82,7 @@ Neuron::Neuron(SString str)
 	int index = 0;
 	if (NEURONS.find(str[0]) != string::npos)
 	{
-		cls += str[0];
+		cls = str[0];
 		index = 1;
 		if (str.len() == 1)
 			return;
@@ -95,19 +95,16 @@ Neuron::Neuron(SString str)
 	{
 		SString keyValue = inputStrings[i];
 		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);
-		string key;
-		double value;
-		if (-1 == separatorIndex)
+		const char *buffer = keyValue.c_str();
+		size_t keyLen = keyValue.len();
+		double value = DEFAULT_NEURO_CONNECTION_WEIGHT;
+		if (-1 != separatorIndex)
 		{
-			key = keyValue.c_str();
-			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
-		} else
-		{
-			key = keyValue.substr(0, separatorIndex).c_str();
-			value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
+			keyLen = separatorIndex;
+			const char *valueBuffer = buffer + separatorIndex + 1;
+			value = std::stod(valueBuffer);
 		}
-		// TODO better way to convert SString to double?
-		inputs[std::stod(key)] = value;
+		inputs[std::stod(buffer, &keyLen)] = value;
 	}
 }
 
@@ -527,8 +524,12 @@ Part *Node::buildModel(Model &model)
 	{
 		Neuron* n = neurons[i];
 		Neuro *neuro = model.addNewNeuro();
-		if (n->cls != SString())
-			neuro->setDetails(n->cls);
+		if (n->cls != DEFAULT_NEURON)
+		{
+			SString details;
+			details += n->cls;
+			neuro->setDetails(details);
+		}
 
 		neuro->attachToPart(part);
 	}
@@ -620,7 +621,7 @@ void Node::getGeno(SString &result)
 			Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->cls != "N")
+			if (n->cls != DEFAULT_NEURON)
 				result += n->cls;
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{

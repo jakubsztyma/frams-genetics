@@ -516,7 +516,7 @@ int main()
 
 	for (int i = 0; i < size; i++)
 	{
-//		testOneGenotype(test_cases[i], expectedPartCount[i]);
+		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testRearrangeInputs();

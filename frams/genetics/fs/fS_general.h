@@ -92,6 +92,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+const char DEFAULT_NEURON = 'N';
 const string NEURONS = "NGT";
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
@@ -217,7 +218,7 @@ public:
 class Neuron
 {
 public:
-	SString cls = SString();
+	char cls = DEFAULT_NEURON;
 	std::map<int, double> inputs;
 
 	Neuron(SString str);
