@@ -111,24 +111,23 @@ Neuron::Neuron(SString str)
 	}
 }
 
-Node::Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false)
+Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false)
 {
 	isStart = _isStart;
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
-	SString restOfGenotype = genotype.str.substr(genotype.start, genotype.len);
-	restOfGenotype = extractModifiers(restOfGenotype);
-	restOfGenotype = extractPartType(restOfGenotype);
-	restOfGenotype = extractNeurons(restOfGenotype);
-	restOfGenotype = extractParams(restOfGenotype);
 
-	partCodeLen = genotype.len - restOfGenotype.len();
-	partDescription = new Substring(genotype.str, genotype.start, partCodeLen);
+	extractModifiers(restOfGeno);
+	extractPartType(restOfGeno);
+	extractNeurons(restOfGeno);
+	extractParams(restOfGeno);
 
-	Substring rest(genotype.str, genotype.start + partCodeLen, genotype.len - partCodeLen);
-	if (restOfGenotype.len() > 0)
-		getChildren(rest);
+	partCodeLen = restOfGeno.len - restOfGeno.len;
+	partDescription = new Substring(restOfGeno.str, restOfGeno.start, partCodeLen);
+
+	if (restOfGeno.len > 0)
+		getChildren(restOfGeno);
 }
 
 Node::~Node()
@@ -152,9 +151,9 @@ int Node::getPartPosition(SString restOfGenotype)
 	return -1;
 }
 
-SString Node::extractModifiers(SString restOfGenotype)
+void Node::extractModifiers(Substring &restOfGenotype)
 {
-	int partTypePosition = getPartPosition(restOfGenotype);
+	int partTypePosition = getPartPosition(restOfGenotype.toSString());
 	if (partTypePosition == -1)
 		throw "Part type missing";
 	// Get a string containing all modifiers and joints for this node
@@ -171,23 +170,23 @@ SString Node::extractModifiers(SString restOfGenotype)
 		else
 			throw "Invalid modifier";
 	}
-	return restOfGenotype.substr(partTypePosition);
+	restOfGenotype.startFrom(partTypePosition);
 }
 
-SString Node::extractPartType(SString restOfGenotype)
+void Node::extractPartType(Substring &restOfGenotype)
 {
-	partType = restOfGenotype[0];
+	partType = restOfGenotype.at(0);
 	if (PART_TYPES.find(partType) == string::npos)
 		throw "Invalid part type";
-	return restOfGenotype.substr(1);
+	restOfGenotype.startFrom(1);
 }
 
-SString Node::extractNeurons(SString restOfGenotype)
+void Node::extractNeurons(Substring &restOfGenotype)
 {
-	if (restOfGenotype.len() == 0 || restOfGenotype[0] != NEURON_START)
-		return restOfGenotype;
+	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != NEURON_START)
+		return;
 
-	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END);
+	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END[0]);
 	SString neuronsString = restOfGenotype.substr(1, neuronsEndIndex - 1);
 	vector<SString> neuronStrings;
 	strSplit(neuronsString, NEURON_SEPARATOR, false, neuronStrings);
@@ -197,13 +196,13 @@ SString Node::extractNeurons(SString restOfGenotype)
 		neurons.push_back(newNeuron);
 	}
 
-	return restOfGenotype.substr(neuronsEndIndex + 1);
+	restOfGenotype.startFrom(neuronsEndIndex + 1);
 }
 
-SString Node::extractParams(SString restOfGenotype)
+void Node::extractParams(Substring &restOfGenotype)
 {
-	if (restOfGenotype.len() == 0 || restOfGenotype[0] != PARAM_START)
-		return restOfGenotype;
+	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != PARAM_START)
+		return;
 
 	int paramsEndIndex = restOfGenotype.indexOf(PARAM_END);
 	SString paramString = restOfGenotype.substr(1, paramsEndIndex - 1);
@@ -220,7 +219,7 @@ SString Node::extractParams(SString restOfGenotype)
 		params[key] = std::stod(keyValue.substr(separatorIndex + 1).c_str());
 	}
 
-	return restOfGenotype.substr(paramsEndIndex + 1);
+	restOfGenotype.startFrom(paramsEndIndex + 1);
 }
 
 double Node::getParam(string key)

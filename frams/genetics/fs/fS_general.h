@@ -132,6 +132,32 @@ public:
 			len = _len;
 	}
 
+	SString toSString()
+	{
+		return str.substr(start, len);
+	}
+
+	SString substr(int relativeStart, int len)
+	{
+		return str.substr(start + relativeStart, len);
+	}
+
+	int indexOf(char ch)
+	{
+		return toSString().indexOf(ch);
+	}
+
+	void startFrom(int index)
+	{
+		start += index;
+		len -= index;
+	}
+
+	char at(int index)
+	{
+		return str[start + index];
+	}
+
 	/**
 	 * Create a new instance of multirange, corresponding to the substring
 	 * @return a created multirange
@@ -240,25 +266,25 @@ private:
 	 * Extract modifiers from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractModifiers(SString restOfGenotype);
+	void extractModifiers(Substring &restOfGenotype);
 
 	/**
 	 * Extract part type from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractPartType(SString restOfGenotype);
+	void extractPartType(Substring &restOfGenotype);
 
 	/**
 	 * Extract neurons from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractNeurons(SString restOfGenotype);
+	void extractNeurons(Substring &restOfGenotype);
 
 	/**
 	 * Extract params from the rest of genotype
-	 * @return the remainder of the genotype
+	 * @return the length og the remainder of the genotype
 	 */
-	SString extractParams(SString restOfGenotype);
+	 void extractParams(Substring &restOfGenotype);
 
 	/**
 	 * Extract child branches from the rest of genotype
@@ -307,7 +333,7 @@ private:
 public:
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
 	~Node();
 
