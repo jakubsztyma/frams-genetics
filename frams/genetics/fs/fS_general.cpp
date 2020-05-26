@@ -141,11 +141,11 @@ Node::~Node()
 		delete children[i];
 }
 
-int Node::getPartPosition(SString restOfGenotype)
+int Node::getPartPosition(Substring restOfGenotype)
 {
-	for (int i = 0; i < restOfGenotype.len(); i++)
+	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (PART_TYPES.find(restOfGenotype[i]) != string::npos)
+		if (PART_TYPES.find(restOfGenotype.at(i)) != string::npos)
 			return i;
 	}
 	return -1;
@@ -153,16 +153,14 @@ int Node::getPartPosition(SString restOfGenotype)
 
 void Node::extractModifiers(Substring &restOfGenotype)
 {
-	int partTypePosition = getPartPosition(restOfGenotype.toSString());
+	int partTypePosition = getPartPosition(restOfGenotype);
 	if (partTypePosition == -1)
 		throw "Part type missing";
-	// Get a string containing all modifiers and joints for this node
-	SString modifierString = restOfGenotype.substr(0, partTypePosition);
 
-	for (int i = 0; i < modifierString.len(); i++)
+	for (int i = 0; i < partTypePosition; i++)
 	{
 		// Extract modifiers and joints
-		char mType = modifierString[i];
+		char mType = restOfGenotype.at(i);
 		if (JOINTS.find(mType) != string::npos)
 			joints.insert(mType);
 		else if (MODIFIERS.find(tolower(mType)) != string::npos)
@@ -443,15 +441,13 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 	// TODO raise and error in case of wrong syntax
 
 	int depth = 0;
-	SString rest = restOfGenotype.str.substr(restOfGenotype.start, restOfGenotype.len);
 	int start = 1;
-	int length = rest.len();
-	for (int i = 0; i < length; i++)
+	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		char c = rest[i];
+		char c = restOfGenotype.at(i);
 		if (c == BRANCH_START)
 			depth++;
-		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == length)
+		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len)
 		{
 			Substring substring(restOfGenotype.str, restOfGenotype.start + start, i - start);
 			children.push_back(substring);

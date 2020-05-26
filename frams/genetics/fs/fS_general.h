@@ -144,7 +144,10 @@ public:
 
 	int indexOf(char ch)
 	{
-		return toSString().indexOf(ch);
+		for(int i=start; i<start + len; i++)
+			if(str[i] == ch)
+				return i - start;
+		return -1;
 	}
 
 	void startFrom(int index)
@@ -157,6 +160,11 @@ public:
 	{
 		return str[start + index];
 	}
+
+//	int end()
+//	{
+//		return start + len;
+//	}
 
 	/**
 	 * Create a new instance of multirange, corresponding to the substring
@@ -254,7 +262,7 @@ private:
 	 *
 	 * @return the position of part type
 	 */
-	int getPartPosition(SString restOfGenotype);
+	int getPartPosition(Substring restOfGenotype);
 
 	/**
 	 * Extract the value of parameter or return default if parameter not exists
