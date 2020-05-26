@@ -74,9 +74,9 @@ Neuron::Neuron(char neuronType)
 	cls = neuronType;
 }
 
-Neuron::Neuron(SString str)
+Neuron::Neuron(const char *str, int length)
 {
-	if (str.len() == 0)
+	if (length == 0)
 		return;
 
 	int index = 0;
@@ -84,30 +84,31 @@ Neuron::Neuron(SString str)
 	{
 		cls = str[0];
 		index = 1;
-		if (str.len() == 1)
+		if (length == 1)
 			return;
 	}
 
 	vector<SString> inputStrings;
-	strSplit(str.substr(index), NEURON_INPUT_SEPARATOR, false, inputStrings);
+	strSplit(SString(str + index, length), NEURON_INPUT_SEPARATOR, false, inputStrings);
 
 	for (unsigned int i = 0; i < inputStrings.size(); i++)
 	{
 		SString keyValue = inputStrings[i];
 		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);
-		string key;
+		const char *buffer = keyValue.c_str();
+		size_t keyLength;
 		double value;
 		if (-1 == separatorIndex)
 		{
-			key = keyValue.c_str();
+			keyLength = keyValue.len();
 			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		} else
 		{
-			key = keyValue.substr(0, separatorIndex).c_str();
-			value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
+			keyLength = separatorIndex;
+			value = std::stod(buffer + separatorIndex + 1);
 		}
 		// TODO better way to convert SString to double?
-		inputs[std::stod(key)] = value;
+		inputs[std::stod(buffer, &keyLength)] = value;
 	}
 }
 
@@ -201,18 +202,19 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != NEURON_START)
 		return;
 
-	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END);
-	SString neuronsString = restOfGenotype.substr(1, neuronsEndIndex - 1);
+	const char *ns = restOfGenotype.c_str() + 1;
+	int neuronsEndIndex;
+	vector<int> separators = getSeparatorPositions(ns, restOfGenotype.len, NEURON_SEPARATOR, NEURON_END, neuronsEndIndex);
 
-	vector<SString> neuronStrings;
-	strSplit(neuronsString, NEURON_SEPARATOR, false, neuronStrings);
-	for (unsigned int i = 0; i < neuronStrings.size(); i++)
+	for (unsigned int i = 0; i < separators.size() - 1; i++)
 	{
-		Neuron *newNeuron = new Neuron(neuronStrings[i]);
+		int start = separators[i] + 1;
+		int length = separators[i+1] - start;
+		Neuron *newNeuron = new Neuron(ns + start, length);
 		neurons.push_back(newNeuron);
 	}
 
-	restOfGenotype.startFrom(neuronsEndIndex + 1);
+	restOfGenotype.startFrom(neuronsEndIndex + 2);
 }
 
 void Node::extractParams(Substring &restOfGenotype)

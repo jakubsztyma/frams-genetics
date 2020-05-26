@@ -42,7 +42,7 @@ const char PARAM_SEPARATOR =';';
 const char PARAM_KEY_VALUE_SEPARATOR='=';
 #define NEURON_START '['
 const char NEURON_END=']';
-const SString NEURON_SEPARATOR(";");
+const char NEURON_SEPARATOR =';';
 const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
@@ -215,7 +215,7 @@ public:
 	char cls = DEFAULT_NEURON;
 	std::map<int, double> inputs;
 
-	Neuron(SString str);
+	Neuron(const char* str, int length);
 
 	Neuron(char neuronType);
 };
