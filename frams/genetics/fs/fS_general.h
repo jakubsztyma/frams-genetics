@@ -119,52 +119,46 @@ int randomFromRange(int to, int from);
 class Substring
 {
 public:
-	SString str;    // The reference to the original string
+	char *str;		// Pointer to the beginning of the substring
 	int start;        // The beginning index of substring
 	int len;        // The length of substring
 
-	Substring(const SString &_str, int _start, int _len = -1)
+	Substring(const char *_str, int _start, int _len)
 	{
-		str = _str;
+		str = (char*)_str + _start;
 		start = _start;
-		if(_len == -1)
-			len = _str.len() - start;
-		else
-			len = _len;
+		len = _len;
 	}
 
 	const char *c_str()
 	{
-		return str.c_str() + start;
-	}
-
-	SString toSString()
-	{
-		return str.substr(start, len);
+		return str;
 	}
 
 	SString substr(int relativeStart, int len)
 	{
-		return str.substr(start + relativeStart, len);
+		const char *substrStart = str + relativeStart;
+		return SString(substrStart, len);
 	}
 
 	int indexOf(char ch)
 	{
-		for(int i=start; i<start + len; i++)
+		for(int i=0; i<len; i++)
 			if(str[i] == ch)
-				return i - start;
+				return i;
 		return -1;
 	}
 
 	void startFrom(int index)
 	{
+		str += index;
 		start += index;
 		len -= index;
 	}
 
 	char at(int index)
 	{
-		return str[start + index];
+		return str[index];
 	}
 
 	/**

@@ -95,16 +95,19 @@ Neuron::Neuron(SString str)
 	{
 		SString keyValue = inputStrings[i];
 		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);
-		const char *buffer = keyValue.c_str();
-		size_t keyLen = keyValue.len();
-		double value = DEFAULT_NEURO_CONNECTION_WEIGHT;
-		if (-1 != separatorIndex)
+		string key;
+		double value;
+		if (-1 == separatorIndex)
 		{
-			keyLen = separatorIndex;
-			const char *valueBuffer = buffer + separatorIndex + 1;
-			value = std::stod(valueBuffer);
+			key = keyValue.c_str();
+			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
+		} else
+		{
+			key = keyValue.substr(0, separatorIndex).c_str();
+			value = std::stod(keyValue.substr(separatorIndex + 1).c_str());
 		}
-		inputs[std::stod(buffer, &keyLen)] = value;
+		// TODO better way to convert SString to double?
+		inputs[std::stod(key)] = value;
 	}
 }
 
@@ -121,7 +124,7 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	extractParams(restOfGeno);
 
 	partCodeLen = restOfGeno.len - restOfGeno.len;
-	partDescription = new Substring(restOfGeno.str, restOfGeno.start, partCodeLen);
+	partDescription = new Substring(restOfGeno.str, 0, partCodeLen);
 
 	if (restOfGeno.len > 0)
 		getChildren(restOfGeno);
@@ -200,6 +203,7 @@ void Node::extractNeurons(Substring &restOfGenotype)
 
 	int neuronsEndIndex = restOfGenotype.indexOf(NEURON_END);
 	SString neuronsString = restOfGenotype.substr(1, neuronsEndIndex - 1);
+
 	vector<SString> neuronStrings;
 	strSplit(neuronsString, NEURON_SEPARATOR, false, neuronStrings);
 	for (unsigned int i = 0; i < neuronStrings.size(); i++)
@@ -466,7 +470,7 @@ void Node::getChildren(Substring restOfGenotype)
 vector <Substring> Node::getBranches(Substring restOfGenotype)
 {
 	vector <Substring> children;
-	if (restOfGenotype.str[restOfGenotype.start] != BRANCH_START)
+	if (restOfGenotype.at(0) != BRANCH_START)
 	{
 		children.push_back(restOfGenotype);  // Only one child
 		return children;
@@ -482,7 +486,7 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 			depth++;
 		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len)
 		{
-			Substring substring(restOfGenotype.str, restOfGenotype.start + start, i - start);
+			Substring substring(restOfGenotype.str, start, i - start);
 			children.push_back(substring);
 			start = i + 1;
 		} else if (c == BRANCH_END)
@@ -699,7 +703,7 @@ fS_Genotype::fS_Genotype(const SString &genotype)
 	bool cycleMode = -1 != modeStr.indexOf(CYCLE_MODE);
 
 	int actualGenoStart = modeSeparatorIndex + 1;
-	Substring substring(genotype, actualGenoStart, genotype.len() - actualGenoStart);
+	Substring substring(genotype.c_str(), actualGenoStart, genotype.len() - actualGenoStart);
 	startNode = new Node(substring, modifierMode, paramMode, cycleMode, true);
 }
 
@@ -963,9 +967,8 @@ bool fS_Genotype::removePart()
 bool fS_Genotype::addPart()
 {
 	Node *randomNode = chooseNode();
-	SString partType;
-	partType += getRandomPartType();
-	Substring substring(partType, 0);
+	char partType= getRandomPartType();
+	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
 	// Add random rotation
 	newNode->params[ROT_X] = RndGen.Uni(90, -90);
