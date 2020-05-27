@@ -119,13 +119,23 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
-	std::cout<<restOfGeno.start<<std::endl;
+
 	partDescription = new Substring(restOfGeno);
 
-	extractModifiers(restOfGeno);
-	extractPartType(restOfGeno);
-	extractNeurons(restOfGeno);
-	extractParams(restOfGeno);
+	// TODO decide what causes the problems with part description memory leaks
+	try
+	{
+		extractModifiers(restOfGeno);
+		extractPartType(restOfGeno);
+		extractNeurons(restOfGeno);
+		extractParams(restOfGeno);
+	}
+	catch(const char* msg)
+	{
+		delete partDescription;
+		throw msg;
+	}
+
 
 	partDescription->shortenBy(restOfGeno.len);
 	if (restOfGeno.len > 0)
