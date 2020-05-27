@@ -119,15 +119,15 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
+	std::cout<<restOfGeno.start<<std::endl;
+	partDescription = new Substring(restOfGeno);
 
 	extractModifiers(restOfGeno);
 	extractPartType(restOfGeno);
 	extractNeurons(restOfGeno);
 	extractParams(restOfGeno);
 
-	partCodeLen = restOfGeno.len - restOfGeno.len;
-	partDescription = new Substring(restOfGeno.str, 0, partCodeLen);
-
+	partDescription->shortenBy(restOfGeno.len);
 	if (restOfGeno.len > 0)
 		getChildren(restOfGeno);
 }
@@ -143,7 +143,7 @@ Node::~Node()
 		delete children[i];
 }
 
-int Node::getPartPosition(Substring restOfGenotype)
+int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
@@ -460,7 +460,7 @@ void Node::getState(State *_state, Pt3D parentSize)
 	}
 }
 
-void Node::getChildren(Substring restOfGenotype)
+void Node::getChildren(Substring &restOfGenotype)
 {
 	vector <Substring> branches = getBranches(restOfGenotype);
 	childSize = branches.size();
@@ -470,7 +470,7 @@ void Node::getChildren(Substring restOfGenotype)
 	}
 }
 
-vector <Substring> Node::getBranches(Substring restOfGenotype)
+vector <Substring> Node::getBranches(Substring &restOfGenotype)
 {
 	vector <Substring> children;
 	if (restOfGenotype.at(0) != BRANCH_START)
@@ -491,7 +491,9 @@ vector <Substring> Node::getBranches(Substring restOfGenotype)
 			depth++;
 		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len)
 		{
-			Substring substring(restOfGenotype.str, start, i - start);
+			Substring substring(restOfGenotype);
+			substring.startFrom(start);
+			substring.len = i - start;
 			children.push_back(substring);
 			start = i + 1;
 		} else if (c == BRANCH_END)

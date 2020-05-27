@@ -129,6 +129,13 @@ public:
 		len = _len;
 	}
 
+	Substring(const Substring &other)
+	{
+		str = other.str;
+		start = other.start;
+		len = other.len;
+	}
+
 	const char *c_str()
 	{
 		return str;
@@ -153,6 +160,13 @@ public:
 		str += index;
 		start += index;
 		len -= index;
+	}
+
+	void shortenBy(int signs)
+	{
+		if(signs > len)
+			len = 0;
+		len -= signs;
 	}
 
 	char at(int index)
@@ -258,7 +272,7 @@ private:
 	 *
 	 * @return the position of part type
 	 */
-	int getPartPosition(Substring restOfGenotype);
+	int getPartPosition(Substring &restOfGenotype);
 
 	/**
 	 * Extract the value of parameter or return default if parameter not exists
@@ -294,7 +308,7 @@ private:
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector<Substring> getBranches(Substring restOfGenotype);
+	vector<Substring> getBranches(Substring &restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
@@ -307,7 +321,7 @@ private:
 	 * Build children internal representations from fS genotype
 	 * @param restOfGenotype part of genotype that describes the subtree
 	 */
-	void getChildren(Substring restOfGenotype);
+	void getChildren(Substring &restOfGenotype);
 
 	/**
 	 * Create part object from internal representation
