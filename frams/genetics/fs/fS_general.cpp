@@ -69,9 +69,9 @@ void State::rotate(const Pt3D &rotation)
 
 Neuron::Neuron(char neuronType)
 {
-	if (NEURONS.find(neuronType) == string::npos)
+	cls += neuronType;
+	if (NeuroLibrary::staticlibrary.findClassIndex(cls, true) == -1)
 		throw "Invalid neuron type";
-	cls = neuronType;
 }
 
 Neuron::Neuron(const char *str, int length)
@@ -80,9 +80,11 @@ Neuron::Neuron(const char *str, int length)
 		return;
 
 	int index = 0;
-	if (NEURONS.find(str[0]) != string::npos)
+	SString _cls;
+	_cls += str[0];
+	if (NeuroLibrary::staticlibrary.findClassIndex(_cls, true) != -1)
 	{
-		cls = str[0];
+		cls = _cls;
 		index = 1;
 		if (length == 1)
 			return;
@@ -107,7 +109,6 @@ Neuron::Neuron(const char *str, int length)
 			keyLength = separatorIndex;
 			value = std::stod(buffer + separatorIndex + 1);
 		}
-		// TODO better way to convert SString to double?
 		inputs[std::stod(buffer, &keyLength)] = value;
 	}
 }
@@ -532,7 +533,7 @@ Part *Node::buildModel(Model &model)
 	{
 		Neuron* n = neurons[i];
 		Neuro *neuro = model.addNewNeuro();
-		if (n->cls != DEFAULT_NEURON)
+		if (n->cls != SString())
 		{
 			SString details;
 			details += n->cls;
@@ -629,7 +630,7 @@ void Node::getGeno(SString &result)
 			Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->cls != DEFAULT_NEURON)
+			if (n->cls != SString())
 				result += n->cls;
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{
@@ -1060,8 +1061,16 @@ void fS_Genotype::rearrangeNeuronConnections(Neuron *changedNeuron, int shift=1)
 bool fS_Genotype::addNeuro()
 {
 	Node *randomNode = chooseNode();
-	char randomNeuro = NEURONS[RndGen.Uni(0,NEURONS.length())];
-	Neuron *newNeuron = new Neuron(randomNeuro);
+	Neuron *newNeuron;
+	NeuroClass *rndclass= GenoOperators::getRandomNeuroClass();
+	if(rndclass == NULL)
+		newNeuron = new Neuron();
+	else
+	{
+		const char *name = rndclass->getName().c_str();
+		newNeuron = new Neuron(name, sizeof(name) / sizeof(char));
+	}
+
 	randomNode->neurons.push_back(newNeuron);
 
 	rearrangeNeuronConnections(newNeuron);
@@ -1105,8 +1114,13 @@ bool fS_Genotype::changeNeuroConnection()
 			int inputCount = chosenNeuron->inputs.size();
 			auto it = chosenNeuron->inputs.begin();
 			advance(it, RndGen.Uni(0,inputCount));
-			// TODO sensible weight changes
-			it->second *= 1.1;
+
+			Neuro *neuro = new Neuro();
+			SString details;
+			details += chosenNeuron->cls;
+			neuro->setDetails(details);
+			it->second *= GenoOperators::mutateNeuProperty(it->second, neuro, -1);
+			delete neuro;
 			return true;
 		}
 	}

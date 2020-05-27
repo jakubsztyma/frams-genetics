@@ -22,6 +22,7 @@
 #include "frams/util/rndutil.h"
 #include "frams/util/sstringutils.h"
 #include "frams/util/extvalue.h"
+#include "frams/neuro/neurolibrary.h"
 
 
 /** @name Names of genotype modes */
@@ -92,8 +93,6 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
-const char DEFAULT_NEURON = 'N';
-const string NEURONS = "NGT";
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
@@ -212,12 +211,14 @@ public:
 class Neuron
 {
 public:
-	char cls = DEFAULT_NEURON;
+	SString cls;
 	std::map<int, double> inputs;
 
 	Neuron(const char* str, int length);
 
 	Neuron(char neuronType);
+
+	Neuron(){};
 };
 
 /**
