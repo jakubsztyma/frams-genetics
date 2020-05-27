@@ -1077,6 +1077,14 @@ bool fS_Genotype::addNeuro()
 	{
 		const char *name = rndclass->getName().c_str();
 		newNeuron = new Neuron(name, sizeof(name) / sizeof(char));
+		if(rndclass->prefinputs > 0)
+		{
+			// Create as many connections for the neuron as possible (at most prefinputs)
+			vector<Neuron*> allNeurons = getAllNeurons();
+			int connectionsToCreate = std::max((int)allNeurons.size(), rndclass->prefinputs);
+			for(int i=0; i<connectionsToCreate; i++)
+				newNeuron->inputs[i] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+		}
 	}
 
 	randomNode->neurons.push_back(newNeuron);
