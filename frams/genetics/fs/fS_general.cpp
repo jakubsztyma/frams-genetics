@@ -90,7 +90,7 @@ Neuron::Neuron(const char *str, int length)
 			return;
 	}
 
-	vector<SString> inputStrings;
+	vector <SString> inputStrings;
 	strSplit(SString(str + index, length), NEURON_INPUT_SEPARATOR, false, inputStrings);
 
 	for (unsigned int i = 0; i < inputStrings.size(); i++)
@@ -130,7 +130,7 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 		extractNeurons(restOfGeno);
 		extractParams(restOfGeno);
 	}
-	catch(const char* msg)
+	catch (const char *msg)
 	{
 		delete partDescription;
 		throw msg;
@@ -147,7 +147,7 @@ Node::~Node()
 	delete partDescription;
 	if (state != nullptr)
 		delete state;
-	for(unsigned int i=0; i<neurons.size(); i++)
+	for (unsigned int i = 0; i < neurons.size(); i++)
 		delete neurons[i];
 	for (unsigned int i = 0; i < childSize; i++)
 		delete children[i];
@@ -193,8 +193,8 @@ void Node::extractPartType(Substring &restOfGenotype)
 
 vector<int> getSeparatorPositions(const char *str, int len, char separator, char endSign, int &endIndex)
 {
-	vector<int> separators{-1};
-	for(int i=0; i<len; i++)
+	vector<int> separators {-1};
+	for (int i = 0; i < len; i++)
 	{
 		if (str[i] == separator)
 			separators.push_back(i);
@@ -220,7 +220,7 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	for (unsigned int i = 0; i < separators.size() - 1; i++)
 	{
 		int start = separators[i] + 1;
-		int length = separators[i+1] - start;
+		int length = separators[i + 1] - start;
 		Neuron *newNeuron = new Neuron(ns + start, length);
 		neurons.push_back(newNeuron);
 	}
@@ -242,14 +242,14 @@ void Node::extractParams(Substring &restOfGenotype)
 	for (unsigned int i = 0; i < separators.size() - 1; i++)
 	{
 		int start = separators[i] + 1;
-		int length = separators[i+1] - start;
+		int length = separators[i + 1] - start;
 		const char *buffer = paramString + start;
 
 		// Find the index of key-value separator
 		int separatorIndex = -1;
-		for(int i=0; i<length; i++)
+		for (int i = 0; i < length; i++)
 		{
-			if(buffer[i] == PARAM_KEY_VALUE_SEPARATOR)
+			if (buffer[i] == PARAM_KEY_VALUE_SEPARATOR)
 			{
 				separatorIndex = i;
 				break;
@@ -260,7 +260,7 @@ void Node::extractParams(Substring &restOfGenotype)
 
 		// Compute the value of parameter and assign it to the key
 		int valueStartIndex = separatorIndex + 1;
-		string key(buffer,  separatorIndex);
+		string key(buffer, separatorIndex);
 		const char *val = buffer + valueStartIndex;
 		size_t len = length - valueStartIndex;
 		params[key] = std::stod(val, &len);
@@ -540,13 +540,13 @@ void Node::buildModel(Model &model, Node *parent)
 {
 	createPart();
 	model.addPart(part);
-	if(parent != nullptr)
+	if (parent != nullptr)
 		addJointsToModel(model, parent);
 
 
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
-		Neuron* n = neurons[i];
+		Neuron *n = neurons[i];
 		Neuro *neuro = model.addNewNeuro();
 		if (n->cls != SString())
 		{
@@ -554,14 +554,13 @@ void Node::buildModel(Model &model, Node *parent)
 			details += n->cls;
 			neuro->setDetails(details);
 		}
-		if(neuro->getClass()->preflocation == 2)
+		if (neuro->getClass()->preflocation == 2)
 		{
-			if(parent != nullptr)
+			if (parent != nullptr)
 				neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
 			else
 				neuro->attachToPart(part);
-		}
-		else
+		} else
 			neuro->attachToPart(part);
 	}
 
@@ -710,7 +709,7 @@ void Node::getAllNodes(vector<Node *> &allNodes)
 
 int Node::getNodeCount()
 {
-	vector<Node*> allNodes;
+	vector<Node *>allNodes;
 	getAllNodes(allNodes);
 	return allNodes.size();
 }
@@ -746,7 +745,7 @@ void fS_Genotype::buildModel(Model &model)
 	buildNeuroConnections(model);
 
 	// Additional joints
-	vector<Node*> allNodes = getAllNodes();
+	vector<Node *>allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
 		Node *node = allNodes[i];
@@ -774,7 +773,7 @@ void fS_Genotype::buildModel(Model &model)
 void fS_Genotype::buildNeuroConnections(Model &model)
 {
 	// All the neurons are already created in the model
-	vector < Neuron * > allNeurons = getAllNeurons();
+	vector<Neuron *>allNeurons = getAllNeurons();
 	for (unsigned int i = 0; i < allNeurons.size(); i++)
 	{
 		Neuron *neuron = allNeurons[i];
@@ -829,21 +828,21 @@ SString fS_Genotype::getGeno()
 
 char getRandomPartType()
 {
-	int randomIndex =  RndGen.Uni(0, PART_TYPES.size());
+	int randomIndex = RndGen.Uni(0, PART_TYPES.size());
 	return PART_TYPES[randomIndex];
 }
 
 vector<Node *> fS_Genotype::getAllNodes()
 {
-	vector<Node*> allNodes;
+	vector<Node *>allNodes;
 	startNode->getAllNodes(allNodes);
 	return allNodes;
 }
 
 vector<Neuron *> fS_Genotype::getAllNeurons()
 {
-	vector<Neuron*> allNeurons;
-	vector<Node*> allNodes = getAllNodes();
+	vector<Neuron *>allNeurons;
+	vector<Node *>allNodes = getAllNodes();
 	for (unsigned int i = 0; i < allNodes.size(); i++)
 	{
 		for (unsigned int j = 0; j < allNodes[i]->neurons.size(); j++)
@@ -856,7 +855,7 @@ vector<Neuron *> fS_Genotype::getAllNeurons()
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0)
 {
-	vector<Node*> allNodes = getAllNodes();
+	vector<Node *>allNodes = getAllNodes();
 	return allNodes[RndGen.Uni(fromIndex, allNodes.size())];
 }
 
@@ -992,7 +991,7 @@ bool fS_Genotype::removePart()
 bool fS_Genotype::addPart()
 {
 	Node *randomNode = chooseNode();
-	char partType= getRandomPartType();
+	char partType = getRandomPartType();
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
 	// Add random rotation
@@ -1019,7 +1018,7 @@ bool fS_Genotype::changePartType()
 bool fS_Genotype::addModifier()
 {
 	Node *randomNode = chooseNode();
-	char randomModifier = MODIFIERS[RndGen.Uni(0,MODIFIERS.length())];
+	char randomModifier = MODIFIERS[RndGen.Uni(0, MODIFIERS.length())];
 	if (rndUint(2) == 1)
 		randomModifier = toupper(randomModifier);
 	randomNode->modifiers.push_back(randomModifier);
@@ -1040,36 +1039,37 @@ bool fS_Genotype::removeModifier()
 	return false;
 }
 
-void fS_Genotype::rearrangeNeuronConnections(Neuron *changedNeuron, int shift=1)
+void fS_Genotype::rearrangeNeuronConnections(Neuron *changedNeuron, int shift = 1)
 {
-	if(shift != 1 && shift != -1)
+	if (shift != 1 && shift != -1)
 		throw "Wrong value of shift";
 
-	vector<Neuron*> neurons = getAllNeurons();
+	vector<Neuron *>neurons = getAllNeurons();
 	int changedNeuronIndex = -1;
-	for(unsigned int i=0; i<neurons.size(); i++)
+	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
-		if(changedNeuron == neurons[i])
+		if (changedNeuron == neurons[i])
 		{
 			changedNeuronIndex = i;
 			break;
 		}
 	}
-	if(changedNeuronIndex == -1)
+	if (changedNeuronIndex == -1)
 		throw "Neuron not in all neurons";
 
-	for(unsigned int i=0; i<neurons.size(); i++)
+	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
 		Neuron *n = neurons[i];
 		std::map<int, double> newInputs;
 		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 		{
-			if(it->first < changedNeuronIndex)
+			if (it->first < changedNeuronIndex)
 				newInputs[it->first] = it->second;
-			else if(it->first > changedNeuronIndex)
+			else if (it->first > changedNeuronIndex)
 				newInputs[it->first + shift] = it->second;
-			else if(it->first == changedNeuronIndex){
-				if(shift == 1)
+			else if (it->first == changedNeuronIndex)
+			{
+				if (shift == 1)
 					newInputs[it->first + shift] = it->second;
 				// If shift == -1, just delete the input
 			}
@@ -1082,19 +1082,19 @@ bool fS_Genotype::addNeuro()
 {
 	Node *randomNode = chooseNode();
 	Neuron *newNeuron;
-	NeuroClass *rndclass= GenoOperators::getRandomNeuroClass();
-	if(rndclass == NULL)
+	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass();
+	if (rndclass == NULL)
 		newNeuron = new Neuron();
 	else
 	{
 		const char *name = rndclass->getName().c_str();
 		newNeuron = new Neuron(name, sizeof(name) / sizeof(char));
-		if(rndclass->prefinputs > 0)
+		if (rndclass->prefinputs > 0)
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
-			vector<Neuron*> allNeurons = getAllNeurons();
-			int connectionsToCreate = std::max((int)allNeurons.size(), rndclass->prefinputs);
-			for(int i=0; i<connectionsToCreate; i++)
+			vector<Neuron *>allNeurons = getAllNeurons();
+			int connectionsToCreate = std::max((int) allNeurons.size(), rndclass->prefinputs);
+			for (int i = 0; i < connectionsToCreate; i++)
 				newNeuron->inputs[i] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		}
 	}
@@ -1115,8 +1115,8 @@ bool fS_Genotype::removeNeuro()
 		{
 			// Remove the chosen neuron
 			int size = randomNode->neurons.size();
-			Neuron *it = randomNode->neurons[RndGen.Uni(0,size)];
-			rearrangeNeuronConnections(it, -1);		// Important to rearrange the neurons before deleting
+			Neuron *it = randomNode->neurons[RndGen.Uni(0, size)];
+			rearrangeNeuronConnections(it, -1);        // Important to rearrange the neurons before deleting
 			swap(it, randomNode->neurons.back());
 			randomNode->neurons.pop_back();
 			randomNode->neurons.shrink_to_fit();
@@ -1129,19 +1129,19 @@ bool fS_Genotype::removeNeuro()
 
 bool fS_Genotype::changeNeuroConnection()
 {
-	vector<Neuron*> neurons = getAllNeurons();
+	vector<Neuron *>neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
 	int size = neurons.size();
 	for (int i = 0; i < mutationTries; i++)
 	{
-		Neuron *chosenNeuron = neurons[RndGen.Uni(0,size)];
+		Neuron *chosenNeuron = neurons[RndGen.Uni(0, size)];
 		if (!chosenNeuron->inputs.empty())
 		{
 			int inputCount = chosenNeuron->inputs.size();
 			auto it = chosenNeuron->inputs.begin();
-			advance(it, RndGen.Uni(0,inputCount));
+			advance(it, RndGen.Uni(0, inputCount));
 
 			Neuro *neuro = new Neuro();
 			SString details;
@@ -1157,16 +1157,16 @@ bool fS_Genotype::changeNeuroConnection()
 
 bool fS_Genotype::addNeuroConnection()
 {
-	vector<Neuron*> neurons = getAllNeurons();
+	vector<Neuron *>neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
 	int size = neurons.size();
-	Neuron *chosenNeuron = neurons[RndGen.Uni(0,size)];
+	Neuron *chosenNeuron = neurons[RndGen.Uni(0, size)];
 
 	for (int i = 0; i < mutationTries; i++)
 	{
-		int index = RndGen.Uni(0,size);
+		int index = RndGen.Uni(0, size);
 		if (chosenNeuron->inputs.count(index) == 0)
 		{
 			chosenNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
@@ -1178,19 +1178,19 @@ bool fS_Genotype::addNeuroConnection()
 
 bool fS_Genotype::removeNeuroConnection()
 {
-	vector<Neuron*> neurons = getAllNeurons();
+	vector<Neuron *>neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
 	int size = neurons.size();
 	for (int i = 0; i < mutationTries; i++)
 	{
-		Neuron *chosenNeuron = neurons[RndGen.Uni(0,size)];
+		Neuron *chosenNeuron = neurons[RndGen.Uni(0, size)];
 		if (!chosenNeuron->inputs.empty())
 		{
 			int inputCount = chosenNeuron->inputs.size();
 			auto it = chosenNeuron->inputs.begin();
-			advance(it, RndGen.Uni(0,inputCount));
+			advance(it, RndGen.Uni(0, inputCount));
 			chosenNeuron->inputs.erase(it->first);
 			return true;
 		}

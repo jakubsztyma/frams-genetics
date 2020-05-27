@@ -39,11 +39,11 @@
 #define BRANCH_SEPARATOR ','
 #define PARAM_START '{'
 #define PARAM_END '}'
-const char PARAM_SEPARATOR =';';
-const char PARAM_KEY_VALUE_SEPARATOR='=';
+const char PARAM_SEPARATOR = ';';
+const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
-const char NEURON_END=']';
-const char NEURON_SEPARATOR =';';
+const char NEURON_END = ']';
+const char NEURON_SEPARATOR = ';';
 const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
@@ -97,7 +97,7 @@ const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifxyz";
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -118,13 +118,13 @@ int randomFromRange(int to, int from);
 class Substring
 {
 public:
-	char *str;		// Pointer to the beginning of the substring
+	char *str;        // Pointer to the beginning of the substring
 	int start;        // The beginning index of substring
 	int len;        // The length of substring
 
 	Substring(const char *_str, int _start, int _len)
 	{
-		str = (char*)_str + _start;
+		str = (char *) _str + _start;
 		start = _start;
 		len = _len;
 	}
@@ -149,8 +149,8 @@ public:
 
 	int indexOf(char ch)
 	{
-		for(int i=0; i<len; i++)
-			if(str[i] == ch)
+		for (int i = 0; i < len; i++)
+			if (str[i] == ch)
 				return i;
 		return -1;
 	}
@@ -164,7 +164,7 @@ public:
 
 	void shortenBy(int signs)
 	{
-		if(signs > len)
+		if (signs > len)
 			len = 0;
 		len -= signs;
 	}
@@ -228,11 +228,12 @@ public:
 	SString cls;
 	std::map<int, double> inputs;
 
-	Neuron(const char* str, int length);
+	Neuron(const char *str, int length);
 
 	Neuron(char neuronType);
 
-	Neuron(){};
+	Neuron()
+	{};
 };
 
 /**
@@ -259,7 +260,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector<Neuron*> neurons;    /// Vector of all the neurons
+	vector<Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -302,13 +303,13 @@ private:
 	 * Extract params from the rest of genotype
 	 * @return the length og the remainder of the genotype
 	 */
-	 void extractParams(Substring &restOfGenotype);
+	void extractParams(Substring &restOfGenotype);
 
 	/**
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector<Substring> getBranches(Substring &restOfGenotype);
+	vector <Substring> getBranches(Substring &restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
