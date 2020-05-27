@@ -524,10 +524,13 @@ Pt3D Node::getRotation()
 	return Pt3D(rx, ry, rz);
 }
 
-Part *Node::buildModel(Model &model)
+void Node::buildModel(Model &model, Node *parent)
 {
 	createPart();
 	model.addPart(part);
+	if(parent != nullptr)
+		addJointsToModel(model, parent);
+
 
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
@@ -539,8 +542,15 @@ Part *Node::buildModel(Model &model)
 			details += n->cls;
 			neuro->setDetails(details);
 		}
-
-		neuro->attachToPart(part);
+		if(neuro->getClass()->preflocation == 2)
+		{
+			if(parent != nullptr)
+				neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
+			else
+				neuro->attachToPart(part);
+		}
+		else
+			neuro->attachToPart(part);
 	}
 
 	model.checkpoint();
@@ -550,10 +560,8 @@ Part *Node::buildModel(Model &model)
 	{
 		Node *child = children[i];
 		child->getState(state, getSize());
-		child->buildModel(model);
-		addJointsToModel(model, child);
+		child->buildModel(model, this);
 	}
-	return part;
 }
 
 void Node::createPart()
@@ -582,22 +590,22 @@ void Node::createPart()
 	part->setRot(getRotation());
 }
 
-void Node::addJointsToModel(Model &model, Node *child)
+void Node::addJointsToModel(Model &model, Node *parent)
 {
-	if (child->joints.empty())
+	if (joints.empty())
 	{
 		Joint *joint = new Joint();
 		joint->shape = Joint::Shape::SHAPE_FIXED;
-		joint->attachToParts(part, child->part);
+		joint->attachToParts(parent->part, part);
 		model.addJoint(joint);
 
 		joint->addMapping(partDescription->toMultiRange());
 	} else
 	{
-		for (auto it = child->joints.begin(); it != child->joints.end(); ++it)
+		for (auto it = joints.begin(); it != joints.end(); ++it)
 		{
 			Joint *joint = new Joint();
-			joint->attachToParts(part, child->part);
+			joint->attachToParts(parent->part, part);
 			switch (*it)
 			{
 				case HINGE_X:
@@ -721,7 +729,7 @@ void fS_Genotype::buildModel(Model &model)
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
 	startNode->getState(initialState, Pt3D(1.0));
-	startNode->buildModel(model);
+	startNode->buildModel(model, nullptr);
 
 	buildNeuroConnections(model);
 

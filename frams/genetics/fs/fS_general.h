@@ -320,7 +320,7 @@ private:
 	 * @param mode pointer to build model
 	 * @param child pointer to the child
 	 */
-	void addJointsToModel(Model &model, Node *child);
+	void addJointsToModel(Model &model, Node *parent);
 
 	/**
 	 * Get all the nodes from the subtree that starts in this node
@@ -332,7 +332,7 @@ private:
 	 * Build model from the subtree that starts in this node
 	 * @param pointer to model
 	 */
-	Part *buildModel(Model &model);
+	void buildModel(Model &model, Node *parent);
 
 public:
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
