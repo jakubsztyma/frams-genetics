@@ -100,7 +100,7 @@ Neuron::Neuron(const char *str, int length)
 		const char *buffer = keyValue.c_str();
 		size_t keyLength;
 		double value;
-		if (-1 == separatorIndex)
+		if (separatorIndex == -1)
 		{
 			keyLength = keyValue.len();
 			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
@@ -722,9 +722,9 @@ fS_Genotype::fS_Genotype(const SString &genotype)
 		throw "No mode separator";
 
 	SString modeStr = genotype.substr(0, modeSeparatorIndex);
-	bool modifierMode = -1 != modeStr.indexOf(MODIFIER_MODE);
-	bool paramMode = -1 != modeStr.indexOf(PARAM_MODE);
-	bool cycleMode = -1 != modeStr.indexOf(CYCLE_MODE);
+	bool modifierMode = modeStr.indexOf(MODIFIER_MODE) != -1;
+	bool paramMode = modeStr.indexOf(PARAM_MODE) != -1;
+	bool cycleMode = modeStr.indexOf(CYCLE_MODE) != -1;
 
 	int actualGenoStart = modeSeparatorIndex + 1;
 	Substring substring(genotype.c_str(), actualGenoStart, genotype.len() - actualGenoStart);
