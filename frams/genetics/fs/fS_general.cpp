@@ -1166,7 +1166,15 @@ bool fS_Genotype::addNeuroConnection()
 		return false;
 
 	int size = neurons.size();
-	Fs_Neuron *chosenNeuron = neurons[RndGen.Uni(0, size)];
+	Fs_Neuron *chosenNeuron;
+	for (int i = 0; i < mutationTries; i++)
+	{
+		chosenNeuron = neurons[RndGen.Uni(0, size)];
+		if(chosenNeuron->acceptsInputs())
+			break;
+	}
+	if(!chosenNeuron->acceptsInputs())
+		return false;
 
 	for (int i = 0; i < mutationTries; i++)
 	{

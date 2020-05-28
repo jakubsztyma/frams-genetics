@@ -231,8 +231,14 @@ public:
 
 	Fs_Neuron(char neuronType);
 
-	Fs_Neuron()
-	{};
+	Fs_Neuron(){};
+
+	bool acceptsInputs()
+	{
+		if(ncls == nullptr)
+			return true;
+		return ncls->prefinputs < (int)inputs.size();
+	}
 };
 
 /**
