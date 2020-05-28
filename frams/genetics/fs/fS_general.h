@@ -222,17 +222,17 @@ public:
 /**
  * Represent a neuron and its inputs
  */
-class Neuron
+class Fs_Neuron
 {
 public:
 	SString cls;
 	std::map<int, double> inputs;
 
-	Neuron(const char *str, int length);
+	Fs_Neuron(const char *str, int length);
 
-	Neuron(char neuronType);
+	Fs_Neuron(char neuronType);
 
-	Neuron()
+	Fs_Neuron()
 	{};
 };
 
@@ -260,7 +260,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector<Neuron *> neurons;    /// Vector of all the neurons
+	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -411,7 +411,7 @@ public:
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
-	vector<Neuron *> getAllNeurons();
+	vector<Fs_Neuron *> getAllNeurons();
 
 	/**
 	 * Counts all the nodes in genotype
@@ -447,7 +447,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeuronConnections(Neuron *newNeuron, int shift);
+	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, int shift);
 
 	/**
 	 * Performs add joint mutation on genotype

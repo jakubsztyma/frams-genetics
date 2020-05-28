@@ -40,7 +40,7 @@ int countModifiers(SString genotype)
 
 int countNeuroConnections(fS_Genotype &geno)
 {
-	vector<Neuron*> neurons = geno.getAllNeurons();
+	vector<Fs_Neuron*> neurons = geno.getAllNeurons();
 	int result = 0;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 		result += neurons[i]->inputs.size();
@@ -209,8 +209,8 @@ void testRearrangeInputs()
 	for(int i=0; i<size; i++)
 	{
 		fS_Genotype geno(before);
-		vector<Neuron*> allNeurons = geno.getAllNeurons();
-		Neuron *neuron = allNeurons[neuronNumber[i]];
+		vector<Fs_Neuron*> allNeurons = geno.getAllNeurons();
+		Fs_Neuron *neuron = allNeurons[neuronNumber[i]];
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
