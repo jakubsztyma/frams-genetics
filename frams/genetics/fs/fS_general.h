@@ -223,7 +223,8 @@ public:
 class Fs_Neuron
 {
 public:
-	SString cls;
+	SString clss;
+	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 
 	Fs_Neuron(const char *str, int length);

@@ -69,9 +69,11 @@ void State::rotate(const Pt3D &rotation)
 
 Fs_Neuron::Fs_Neuron(char neuronType)
 {
+	SString cls;
 	cls += neuronType;
 	if (NeuroLibrary::staticlibrary.findClassIndex(cls, true) == -1)
 		throw "Invalid neuron type";
+	ncls = NeuroLibrary::staticlibrary.findClass(cls, true);
 }
 
 Fs_Neuron::Fs_Neuron(const char *str, int length)
@@ -80,11 +82,11 @@ Fs_Neuron::Fs_Neuron(const char *str, int length)
 		return;
 
 	int index = 0;
-	SString _cls;
-	_cls += str[0];
-	if (NeuroLibrary::staticlibrary.findClassIndex(_cls, true) != -1)
+	SString cls;
+	cls += str[0];
+	if (NeuroLibrary::staticlibrary.findClassIndex(cls, true) != -1)
 	{
-		cls = _cls;
+		ncls = NeuroLibrary::staticlibrary.findClass(cls, true);
 		index = 1;
 		if (length == 1)
 			return;
@@ -548,12 +550,8 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		Fs_Neuron *n = neurons[i];
 		Neuro *neuro = model.addNewNeuro();
-		if (n->cls != SString())
-		{
-			SString details;
-			details += n->cls;
-			neuro->setDetails(details);
-		}
+		if (n->ncls != nullptr)
+			neuro->setClass(n->ncls);
 		if (neuro->getClass()->preflocation == 2)
 		{
 			if (parent != nullptr)
@@ -649,8 +647,8 @@ void Node::getGeno(SString &result)
 			Fs_Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->cls != SString())
-				result += n->cls;
+			if (n->ncls != nullptr)
+				result += n->ncls->getName().c_str();
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{
 				if (it != n->inputs.begin())
@@ -1144,9 +1142,8 @@ bool fS_Genotype::changeNeuroConnection()
 			advance(it, RndGen.Uni(0, inputCount));
 
 			Neuro *neuro = new Neuro();
-			SString details;
-			details += chosenNeuron->cls;
-			neuro->setDetails(details);
+			if(chosenNeuron->ncls != nullptr)
+				neuro->setClass(chosenNeuron->ncls);
 			it->second *= GenoOperators::mutateNeuProperty(it->second, neuro, -1);
 			delete neuro;
 			return true;
