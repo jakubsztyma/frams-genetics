@@ -1091,9 +1091,16 @@ bool fS_Genotype::addNeuro()
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
 			vector<Fs_Neuron *>allNeurons = getAllNeurons();
-			int connectionsToCreate = std::min((int) allNeurons.size(), rndclass->prefinputs);
+			vector<int>neuronsWithOutput;
+			for(unsigned int i=0; i<allNeurons.size(); i++)
+			{
+				if(allNeurons[i]->ncls->getPreferredOutput() > 0)
+					neuronsWithOutput.push_back(i);
+			}
+			int connectionsToCreate = std::min((int) neuronsWithOutput.size(), rndclass->prefinputs);
+			std::sort(neuronsWithOutput.begin(), neuronsWithOutput.end());
 			for (int i = 0; i < connectionsToCreate; i++)
-				newNeuron->inputs[i] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+				newNeuron->inputs[neuronsWithOutput[i]] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		}
 	}
 
@@ -1164,7 +1171,8 @@ bool fS_Genotype::addNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		int index = RndGen.Uni(0, size);
-		if (chosenNeuron->inputs.count(index) == 0)
+		NeuroClass *nc = neurons[index]->ncls;
+		if (chosenNeuron->inputs.count(index) == 0 && nc != nullptr && nc->getPreferredOutput() > 0)
 		{
 			chosenNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 			return true;
