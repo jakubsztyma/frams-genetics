@@ -1093,7 +1093,7 @@ bool fS_Genotype::addNeuro()
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
 			vector<Neuron *>allNeurons = getAllNeurons();
-			int connectionsToCreate = std::max((int) allNeurons.size(), rndclass->prefinputs);
+			int connectionsToCreate = std::min((int) allNeurons.size(), rndclass->prefinputs);
 			for (int i = 0; i < connectionsToCreate; i++)
 				newNeuron->inputs[i] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		}
