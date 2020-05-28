@@ -13,21 +13,21 @@
 
 /** @name Codes for general mutation types */
 //@{
-#define FS_ADD 0
-#define FS_RM 1
-#define FS_MOD 2
+#define FS_ADD_PART 0
+#define FS_REM_PART 1
+#define FS_MOD_PART 2
 #define FS_ADD_JOINT 3
-#define FS_RM_JOINT 4
+#define FS_REM_JOINT 4
 #define FS_ADD_PARAM 5
-#define FS_RM_PARAM 6
+#define FS_REM_PARAM 6
 #define FS_MOD_PARAM 7
 #define FS_ADD_MOD 8
-#define FS_RM_MOD 9
+#define FS_REM_MOD 9
 #define FS_ADD_NEURO 10
-#define FS_RM_NEURO 11
+#define FS_REM_NEURO 11
 #define FS_MOD_NEURO_CONNECTION 12
 #define FS_ADD_NEURO_CONNECTION 13
-#define FS_RM_NEURO_CONNECTION 14
+#define FS_REM_NEURO_CONNECTION 14
 #define FS_MOD_NEURO_PARAMS 15
 //@}
 

@@ -21,6 +21,8 @@
 #include "frams/util/multirange.h"
 #include "frams/util/rndutil.h"
 #include "frams/util/sstringutils.h"
+#include "frams/util/extvalue.h"
+#include "frams/neuro/neurolibrary.h"
 
 
 /** @name Names of genotype modes */
@@ -37,11 +39,11 @@
 #define BRANCH_SEPARATOR ','
 #define PARAM_START '{'
 #define PARAM_END '}'
-const SString  PARAM_SEPARATOR(";");
-const SString PARAM_KEY_VALUE_SEPARATOR("=");
+const char PARAM_SEPARATOR = ';';
+const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
-const SString NEURON_END("]");
-const SString NEURON_SEPARATOR(";");
+const char NEURON_END = ']';
+const char NEURON_SEPARATOR = ';';
 const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
@@ -91,12 +93,11 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
-const string NEURONS = "NGT";
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifxyz";
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -117,15 +118,60 @@ int randomFromRange(int to, int from);
 class Substring
 {
 public:
-	SString str;    // The reference to the original string
+	char *str;        // Pointer to the beginning of the substring
 	int start;        // The beginning index of substring
 	int len;        // The length of substring
 
-	Substring(const SString &_str, int _start, int _len = 1 << 30)
+	Substring(const char *_str, int _start, int _len)
 	{
-		str = _str;
+		str = (char *) _str + _start;
 		start = _start;
 		len = _len;
+	}
+
+	Substring(const Substring &other)
+	{
+		str = other.str;
+		start = other.start;
+		len = other.len;
+	}
+
+	const char *c_str()
+	{
+		return str;
+	}
+
+	SString substr(int relativeStart, int len)
+	{
+		const char *substrStart = str + relativeStart;
+		return SString(substrStart, len);
+	}
+
+	int indexOf(char ch)
+	{
+		for (int i = 0; i < len; i++)
+			if (str[i] == ch)
+				return i;
+		return -1;
+	}
+
+	void startFrom(int index)
+	{
+		str += index;
+		start += index;
+		len -= index;
+	}
+
+	void shortenBy(int signs)
+	{
+		if (signs > len)
+			len = 0;
+		len -= signs;
+	}
+
+	char at(int index)
+	{
+		return str[index];
 	}
 
 	/**
@@ -179,12 +225,15 @@ public:
 class Neuron
 {
 public:
-	SString cls = SString();
+	SString cls;
 	std::map<int, double> inputs;
 
-	Neuron(SString str);
+	Neuron(const char *str, int length);
 
 	Neuron(char neuronType);
+
+	Neuron()
+	{};
 };
 
 /**
@@ -211,7 +260,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	std::set<char> joints;           /// Set of all joints
-	vector<Neuron*> neurons;    /// Vector of all the neurons
+	vector<Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -224,7 +273,7 @@ private:
 	 *
 	 * @return the position of part type
 	 */
-	int getPartPosition(SString restOfGenotype);
+	int getPartPosition(Substring &restOfGenotype);
 
 	/**
 	 * Extract the value of parameter or return default if parameter not exists
@@ -236,31 +285,31 @@ private:
 	 * Extract modifiers from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractModifiers(SString restOfGenotype);
+	void extractModifiers(Substring &restOfGenotype);
 
 	/**
 	 * Extract part type from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractPartType(SString restOfGenotype);
+	void extractPartType(Substring &restOfGenotype);
 
 	/**
 	 * Extract neurons from the rest of genotype
 	 * @return the remainder of the genotype
 	 */
-	SString extractNeurons(SString restOfGenotype);
+	void extractNeurons(Substring &restOfGenotype);
 
 	/**
 	 * Extract params from the rest of genotype
-	 * @return the remainder of the genotype
+	 * @return the length og the remainder of the genotype
 	 */
-	SString extractParams(SString restOfGenotype);
+	void extractParams(Substring &restOfGenotype);
 
 	/**
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector<Substring> getBranches(Substring restOfGenotype);
+	vector <Substring> getBranches(Substring &restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
@@ -273,7 +322,7 @@ private:
 	 * Build children internal representations from fS genotype
 	 * @param restOfGenotype part of genotype that describes the subtree
 	 */
-	void getChildren(Substring restOfGenotype);
+	void getChildren(Substring &restOfGenotype);
 
 	/**
 	 * Create part object from internal representation
@@ -286,7 +335,7 @@ private:
 	 * @param mode pointer to build model
 	 * @param child pointer to the child
 	 */
-	void addJointsToModel(Model &model, Node *child);
+	void addJointsToModel(Model &model, Node *parent);
 
 	/**
 	 * Get all the nodes from the subtree that starts in this node
@@ -298,12 +347,12 @@ private:
 	 * Build model from the subtree that starts in this node
 	 * @param pointer to model
 	 */
-	Part *buildModel(Model &model);
+	void buildModel(Model &model, Node *parent);
 
 public:
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(const Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
 	~Node();
 

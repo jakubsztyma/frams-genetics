@@ -214,13 +214,13 @@ void testRearrangeInputs()
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
-		cout<<geno.getGeno().c_str()<<endl;
+//		cout<<geno.getGeno().c_str()<<endl;
 		assert(geno.getGeno() == after[i]);
 	}
 
 }
 
-void evolutionTest()
+void evolutionTest(int operationCount)
 {
 	int gen_size = 5;
 	fS_Operators operators;
@@ -233,7 +233,6 @@ void evolutionTest()
 
 
 	FILE *pFile = fopen("output.txt", "w");
-	int operationCount = 50;
 	int methodUsages[FS_OPCOUNT];
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		methodUsages[i] = 0;
@@ -245,9 +244,13 @@ void evolutionTest()
 		if (i2 == i1)
 			i2 = (i1 + 1) % gen_size;
 
-		cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-		cout << gens[i1]->c_str() << endl;
-		cout << gens[i2]->c_str() << endl;
+		if(i % 1000 == 0)
+		{
+			cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
+			cout << gens[i1]->c_str() << endl;
+			cout << gens[i2]->c_str() << endl;
+		}
+
 		int method;
 		float f1, f2, gp;
 
@@ -300,13 +303,11 @@ void evolutionTest()
 
 int main()
 {
-	srand(time(NULL));
-
 	SString test_cases[][2] = {
 			{"S:E",                                            "p:sh=1\n"},
 			{"S:P",                                            "p:sh=2\n"},
 			{"S:C",                                            "p:sh=3\n"},
-			{"S:EEE",                                          "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:1, 2, sh=1\nj:0, 1, sh=1\n"},
+			{"S:EEE",                                          "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
 			{"S:E(E,E)",                                       "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
 			{"S:E(E(E,E),E,E(E,E),E)",                         "p:sh=1\n"
 															   "p:2.0, sh=1\n"
@@ -317,13 +318,13 @@ int main()
 															   "p:4.0, sh=1\n"
 															   "p:4.0, sh=1\n"
 															   "p:2.0, sh=1\n"
+															   "j:0, 1, sh=1\n"
 															   "j:1, 2, sh=1\n"
 															   "j:1, 3, sh=1\n"
-															   "j:0, 1, sh=1\n"
 															   "j:0, 4, sh=1\n"
+															   "j:0, 5, sh=1\n"
 															   "j:5, 6, sh=1\n"
 															   "j:5, 7, sh=1\n"
-															   "j:0, 5, sh=1\n"
 															   "j:0, 8, sh=1\n"
 			},
 			{"S:EbE",                                          "p:sh=1\n"
@@ -340,14 +341,15 @@ int main()
 															   "p:8.0, sh=3\n"
 															   "p:10.0, sh=2\n"
 															   "p:12.0, sh=1\n"
-															   "j:5, 6, sh=2\n"
-															   "j:5, 6, sh=3\n"
+															   "j:0, 1, sh=1\n"
+															   "j:1, 2, sh=2\n"
+															   "j:2, 3, sh=3\n"
+															   "j:3, 4, sh=1\n"
 															   "j:4, 5, sh=2\n"
 															   "j:4, 5, sh=3\n"
-															   "j:3, 4, sh=1\n"
-															   "j:2, 3, sh=3\n"
-															   "j:1, 2, sh=2\n"
-															   "j:0, 1, sh=1\n"},
+															   "j:5, 6, sh=2\n"
+															   "j:5, 6, sh=3\n"
+			},
 // Modifier mode
 			{"M:E",                                            "p:sh=1\n"},  // Basic modifier mode
 			{"M:FE",                                           "p:sh=1, fr=0.44\n"},  // Friction modifier
@@ -366,41 +368,42 @@ int main()
 															   "p:y=2.0, sh=1\n"
 															   "p:y=2.0, 2.0, sh=1\n"
 															   "p:-1.99, 2.0, 2.0, sh=1\n"
-															   "j:2, 3, sh=1\n"
+															   "j:0, 1, sh=1\n"
 															   "j:1, 2, sh=1\n"
-															   "j:0, 1, sh=1\n"},  // All rotations
+															   "j:2, 3, sh=1\n"},  // All rotations
 			{"S:EE{tz=45.0}E{tx=45.0}E{ty=45.0}",              "p:sh=1\n"
 															   "p:1.41, 1.41, sh=1\n"
 															   "p:2.83, 2.41, 1.0, sh=1\n"
 															   "p:3.12, 3.41, 2.71, sh=1\n"
-															   "j:2, 3, sh=1\n"
+															   "j:0, 1, sh=1\n"
 															   "j:1, 2, sh=1\n"
-															   "j:0, 1, sh=1\n"},  // Acute angle rotations
+															   "j:2, 3, sh=1\n"
+															   },  // Acute angle rotations
 			{"S:EE{tz=-90.0}E{tx=-90.0}E{ty=-90.0}",           "p:sh=1\n"
 															   "p:y=-1.99, sh=1\n"
 															   "p:y=-1.99, 2.0, sh=1\n"
 															   "p:2.0, -1.99, 2.0, sh=1\n"
-															   "j:2, 3, sh=1\n"
+															   "j:0, 1, sh=1\n"
 															   "j:1, 2, sh=1\n"
-															   "j:0, 1, sh=1\n"},   // Negative rotations
+															   "j:2, 3, sh=1\n"},   // Negative rotations
 			{"S:E{j=4.1}EE",                                   "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "p:4.0, sh=1\n"
-															   "j:1, 2, sh=1\n"
 															   "j:0, 1, sh=1\n"
+															   "j:1, 2, sh=1\n"
 															   "j:0, 2, sh=1\n"},
 			{"S:E{j=3.9}EE",                                   "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "p:4.0, sh=1\n"
-															   "j:1, 2, sh=1\n"
-															   "j:0, 1, sh=1\n"},
+															   "j:0, 1, sh=1\n"
+															   "j:1, 2, sh=1\n"},
 			{"S:E{j=4.1}EEE",                                  "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "p:4.0, sh=1\n"
 															   "p:6.0, sh=1\n"
-															   "j:2, 3, sh=1\n"
-															   "j:1, 2, sh=1\n"
 															   "j:0, 1, sh=1\n"
+															   "j:1, 2, sh=1\n"
+															   "j:2, 3, sh=1\n"
 															   "j:0, 2, sh=1\n"},
 			{"S:EE{x=3.0}",                                    "p:sh=1\n"
 															   "p:4.0, sh=1, sx=3.0\n"
@@ -507,11 +510,19 @@ int main()
 															   "c:1, 0, 3.0\n"
 															   "c:2, 0, 4.0\n"
 															   "c:2, 1, 5.0\n"},
+			{"S:E[]E[G0]",                                      "p:sh=1\n"
+															   "p:2.0, sh=1\n"
+															   "j:0, 1, sh=1\n"
+															   "n:p=0\n"
+															   "n:j=0, d=G\n"
+															   "c:1, 0\n"},
 	};
+	srand(time(NULL));
 
-	const int size = 54;
+
+	const int size = 55;
 	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1};
+							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2};
 	auto start = chrono::steady_clock::now();
 
 	for (int i = 0; i < size; i++)
@@ -521,7 +532,8 @@ int main()
 
 	testRearrangeInputs();
 	validationTest();
-	evolutionTest();
+	int operationCount = 20;
+	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
 	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
