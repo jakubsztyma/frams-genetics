@@ -1088,7 +1088,7 @@ bool fS_Genotype::addNeuro()
 	else
 	{
 		const char *name = rndclass->getName().c_str();
-		newNeuron = new Fs_Neuron(name, sizeof(name) / sizeof(char));
+		newNeuron = new Fs_Neuron(name, strlen(name));
 		if (rndclass->prefinputs > 0)
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
