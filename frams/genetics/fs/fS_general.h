@@ -162,11 +162,9 @@ public:
 		len -= index;
 	}
 
-	void shortenBy(int signs)
+	void shortenBy(int charCount)
 	{
-		if (signs > len)
-			len = 0;
-		len -= signs;
+		len = std::max(len - charCount, 0);
 	}
 
 	char at(int index)
