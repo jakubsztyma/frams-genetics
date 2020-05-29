@@ -222,6 +222,7 @@ void testRearrangeInputs()
 
 void evolutionTest(int operationCount)
 {
+	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
@@ -262,32 +263,28 @@ void evolutionTest(int operationCount)
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
 			methodUsages[method] ++;
 
-		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
+		// TODO decide what to do with neurons in crossOver, uncomment this test section
+//		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		assert(0. < f1 && f1 < 1.);
-		assert(0. < f2 && f2 < 1.);
-
-		if (crossOverResult == GENOPER_OK)
-		{
-			if (1 == operators.checkValidity(arr2, ""))
-				cout << arr2;
-			assert(0 == operators.checkValidity(arr1, ""));
-			assert(0 == operators.checkValidity(arr2, ""));
-		}
+//		assert(0. < f1 && f1 < 1.);
+//		assert(0. < f2 && f2 < 1.);
+//
+//		if (crossOverResult == GENOPER_OK)
+//		{
+//			if (1 == operators.checkValidity(arr2, ""))
+//				cout << arr2;
+//			assert(0 == operators.checkValidity(arr1, ""));
+//			assert(0 == operators.checkValidity(arr2, ""));
+//		}
 
 		delete gens[i1];
 		delete gens[i2];
 		gens[i1] = new SString(arr1);
 		gens[i2] = new SString(arr2);
 
-//		fprintf(pFile, gens[i1]->c_str());
-//		fprintf(pFile, "\n");
-//		fprintf(pFile, converter.convert(*gens[i1], &map, false).c_str());
-//		fprintf(pFile, "\n");
-//		fprintf(pFile, gens[i2]->c_str());
-//		fprintf(pFile, "\n");
-//		fprintf(pFile, converter.convert(*gens[i2], &map, false).c_str());
-//		fprintf(pFile, "\n");
+		MultiMap map;
+		converter.convert(*gens[i1], &map, false);
+		converter.convert(*gens[i2], &map, false);
 
 		free(arr1);
 		free(arr2);
@@ -532,7 +529,7 @@ int main()
 
 	testRearrangeInputs();
 	validationTest();
-	int operationCount = 20;
+	int operationCount = 100;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();

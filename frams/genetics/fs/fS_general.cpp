@@ -522,6 +522,35 @@ Pt3D Node::getSize()
 	return Pt3D(sx, sy, sz);
 }
 
+Pt3D Node::getSize2()
+{
+	// TODO State does not exist if model is not build
+	double sx = getParam(SIZE_X);
+	double sy = getParam(SIZE_Y);
+	double sz = getParam(SIZE_Z);
+	return Pt3D(sx, sy, sz);
+}
+
+
+bool Node::isPartSizeValid()
+{
+	Pt3D size = getSize2();
+	Pt3D minPartScale = Model::getMinPart().scale;
+	Pt3D maxPartScale = Model::getMaxPart().scale;
+	if(size.x < minPartScale.x || size.y < minPartScale.y || size.z < minPartScale.z)
+		return false;
+	if(size.x > maxPartScale.x || size.y > maxPartScale.y || size.z > maxPartScale.z)
+		return false;
+
+	if(partType == ELLIPSOID && max3(size) != min3(size))
+		// When not all radii have different values
+		return false;
+	if(partType == CYLINDER && size.x != size.y && size.x != size.z && size.y != size.z)
+		// If all radii have different values
+		return false;
+	return true;
+}
+
 Pt3D Node::getVectorRotation()
 {
 	double rx = getParam(ROT_X);
@@ -932,12 +961,23 @@ bool fS_Genotype::changeParam()
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-			// TODO change parameters by more sensible values
+			double oldValue = it->second;
 
+			// TODO change parameters by more sensible values
 			it->second += RndGen.Gauss(0, 0.5);
 			if (it->second < 0)
 				it->second *= -1;
-			return true;
+
+			// Do not allow invalid changes in part size
+//			Model model;
+//			buildModel(model);
+			if(randomNode->isPartSizeValid())
+				return true;
+			else
+			{
+				it->second = oldValue;
+				return false;
+			}
 		}
 	}
 	return false;
@@ -971,7 +1011,7 @@ bool fS_Genotype::removePart()
 		if (childCount > 0)
 		{
 			chosenChild = randomNode->children[rndUint(childCount)];
-			if (chosenChild->childSize == 0)
+			if (chosenChild->childSize == 0 && chosenChild->neurons.size() == 0)
 			{
 				// Remove the chosen child
 				swap(chosenChild, randomNode->children.back());

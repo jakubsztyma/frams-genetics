@@ -93,6 +93,9 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+const char ELLIPSOID = 'E';
+const char CUBOID = 'P';
+const char CYLINDER = 'C';
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
@@ -268,10 +271,13 @@ private:
 	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
+	Pt3D getSize2();
 
 	Pt3D getRotation();
 
 	Pt3D getVectorRotation();
+
+	bool isPartSizeValid();
 
 	/**
 	 * Get the position of part type in genotype
