@@ -24,7 +24,6 @@
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
 
-
 /** @name Names of genotype modes */
 //@{
 #define MODIFIER_MODE 'M'
@@ -67,6 +66,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
  */
 const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 
+
 /** @name Names of node parameters and modifiers*/
 //@{
 #define INGESTION "i"
@@ -99,7 +99,7 @@ const char CYLINDER = 'C';
 const string PART_TYPES = "EPC";
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "ifxyz";
+const string MODIFIERS = "ifs";
 const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
@@ -199,7 +199,7 @@ public:
 	Pt3D v;         /// The normalised vector in which current branch develops
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
-	double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
+	double s = 1.0;      /// Size multipliers
 
 	State(State *_state); /// Derive the state from parent
 
@@ -271,13 +271,14 @@ private:
 	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
-	Pt3D getSize2();
 
 	Pt3D getRotation();
 
 	Pt3D getVectorRotation();
 
 	bool isPartSizeValid();
+
+	bool hasPartSizeParam();
 
 	/**
 	 * Get the position of part type in genotype
@@ -391,7 +392,6 @@ class fS_Genotype
 
 private:
 	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-
 	/**
 	 * Get all existing nodes
 	 * @return vector of all nodes
@@ -418,6 +418,9 @@ private:
 	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
+
+	static int precision;
+
 	/**
 	 * Get all existing neurons
 	 * @return vector of all neurons
@@ -429,6 +432,8 @@ public:
 	 * @return node count
 	 */
 	int getNodeCount();
+
+	bool allPartSizesValid();
 
 	/**
 	 * Build internal representation from fS format
@@ -482,7 +487,7 @@ public:
 	 * Performs change part type mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changePartType();
+	bool changePartType(bool ensureCircleSection);
 
 	/**
 	 * Performs remove part type mutation on genotype
@@ -494,7 +499,7 @@ public:
 	 * Performs add param mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addParam();
+	bool addParam(bool ensureCircleSection);
 
 	/**
 	 * Performs remove param mutation on genotype
@@ -506,7 +511,7 @@ public:
 	 * Performs change param mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changeParam();
+	bool changeParam(bool ensureCircleSection);
 
 	/**
 	 * Performs add modifier mutation on genotype

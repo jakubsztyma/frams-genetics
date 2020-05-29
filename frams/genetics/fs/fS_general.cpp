@@ -6,6 +6,9 @@
 #include "frams/model/geometry/geometryutils.h"
 
 
+int fS_Genotype::precision = 2;
+
+
 /** @name Default values of node parameters*/
 const std::map<string, double> defaultParamValues = {
 		{INGESTION,      0.25},
@@ -22,7 +25,6 @@ const std::map<string, double> defaultParamValues = {
 		{JOINT_DISTANCE, 1.0}
 };
 
-
 double round2(double var)
 {
 	double value = (int) (var * 100 + .5);
@@ -34,9 +36,7 @@ State::State(State *_state)
 	location = Pt3D(_state->location);
 	v = Pt3D(_state->v);
 	fr = _state->fr;
-	sx = _state->sx;
-	sy = _state->sy;
-	sz = _state->sz;
+	s = _state->s;
 }
 
 State::State(Pt3D _location, Pt3D _v)
@@ -454,11 +454,7 @@ void Node::getState(State *_state, Pt3D parentSize)
 		else if (modLower == MODIFIERS[1])
 			state->fr *= multiplier;
 		else if (modLower == MODIFIERS[2])
-			state->sx *= multiplier;
-		else if (modLower == MODIFIERS[3])
-			state->sy *= multiplier;
-		else if (modLower == MODIFIERS[4])
-			state->sz *= multiplier;
+			state->s *= multiplier;
 	}
 
 	if (!isStart)
@@ -516,27 +512,20 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 
 Pt3D Node::getSize()
 {
-	double sx = getParam(SIZE_X) * state->sx;
-	double sy = getParam(SIZE_Y) * state->sy;
-	double sz = getParam(SIZE_Z) * state->sz;
-	return Pt3D(sx, sy, sz);
-}
-
-Pt3D Node::getSize2()
-{
-	// TODO State does not exist if model is not build
-	double sx = getParam(SIZE_X);
-	double sy = getParam(SIZE_Y);
-	double sz = getParam(SIZE_Z);
+	double sx = getParam(SIZE_X) * state->s;
+	double sy = getParam(SIZE_Y) * state->s;
+	double sz = getParam(SIZE_Z) * state->s;
 	return Pt3D(sx, sy, sz);
 }
 
 
 bool Node::isPartSizeValid()
 {
-	Pt3D size = getSize2();
+	Pt3D size = getSize();
 	Pt3D minPartScale = Model::getMinPart().scale;
 	Pt3D maxPartScale = Model::getMaxPart().scale;
+	if(size.x <= 0.2 || size.y <= 0.2 || size.z <= 0.2)
+		return false;
 	if(size.x < minPartScale.x || size.y < minPartScale.y || size.z < minPartScale.z)
 		return false;
 	if(size.x > maxPartScale.x || size.y > maxPartScale.y || size.z > maxPartScale.z)
@@ -549,6 +538,11 @@ bool Node::isPartSizeValid()
 		// If all radii have different values
 		return false;
 	return true;
+}
+
+bool Node::hasPartSizeParam()
+{
+	return params.count(SIZE_X) > 0 || params.count(SIZE_Y) > 0 || params.count(SIZE_Z) > 0;
 }
 
 Pt3D Node::getVectorRotation()
@@ -707,7 +701,7 @@ void Node::getGeno(SString &result)
 			result += PARAM_KEY_VALUE_SEPARATOR;
 			string value_text = std::to_string(it->second);
 			// Round the value to two decimal places and add to string
-			result += value_text.substr(0, value_text.find(".") + 2).c_str();
+			result += value_text.substr(0, value_text.find(".") + fS_Genotype::precision).c_str();
 		}
 		result += PARAM_END;
 	}
@@ -891,6 +885,24 @@ int fS_Genotype::getNodeCount()
 	return startNode->getNodeCount();
 }
 
+bool fS_Genotype::allPartSizesValid()
+{
+	vector<Node*> nodes = getAllNodes();
+
+	// Build model to calculate the modifier states
+	Model model;
+	buildModel(model);
+	for(unsigned int i=0; i<nodes.size(); i++)
+	{
+		if(!nodes[i]->isPartSizeValid())
+		{
+			std::cout<<getGeno().c_str()<<std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 bool fS_Genotype::addJoint()
 {
 	if (startNode->childSize < 1)
@@ -951,8 +963,11 @@ bool fS_Genotype::removeParam()
 	return false;
 }
 
-bool fS_Genotype::changeParam()
+bool fS_Genotype::changeParam(bool ensureCircleSection)
 {
+	// Build model to calculate modifiers state
+	Model model;
+	buildModel(model);
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
@@ -969,21 +984,24 @@ bool fS_Genotype::changeParam()
 				it->second *= -1;
 
 			// Do not allow invalid changes in part size
-//			Model model;
-//			buildModel(model);
-			if(randomNode->isPartSizeValid())
+			if(it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
 				return true;
-			else
+			else if(ensureCircleSection)
 			{
-				it->second = oldValue;
-				return false;
+				if (randomNode->isPartSizeValid())
+					return true;
+				else
+				{
+					it->second = oldValue;
+					return false;
+				}
 			}
 		}
 	}
 	return false;
 }
 
-bool fS_Genotype::addParam()
+bool fS_Genotype::addParam(bool ensureCircleSection)
 {
 	Node *randomNode = chooseNode();
 	unsigned int paramCount = randomNode->params.size();
@@ -995,6 +1013,14 @@ bool fS_Genotype::addParam()
 		return false;
 	if (randomNode->params.count(chosenParam) > 0)
 		return false;
+	// Do not allow invalid changes in part size
+	if(ensureCircleSection && (chosenParam == SIZE_X || chosenParam == SIZE_Y || chosenParam == SIZE_Z))
+	{
+		if(randomNode->partType == ELLIPSOID)
+			return false;
+		if(randomNode->partType == CYLINDER && randomNode->hasPartSizeParam())
+			return false;
+	}
 	// Add modified default value for param
 	randomNode->params[chosenParam] = defaultParamValues.at(chosenParam);
 	return true;
@@ -1033,24 +1059,32 @@ bool fS_Genotype::addPart()
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
 	// Add random rotation
-	newNode->params[ROT_X] = rndUint(180) - 90;
-	newNode->params[ROT_Y] = rndUint(180) - 90;
-	newNode->params[ROT_Z] = rndUint(180) - 90;
+	newNode->params[ROT_X] = (int)rndUint(180) - 90;
+	newNode->params[ROT_Y] = (int)rndUint(180) - 90;
+	newNode->params[ROT_Z] = (int)rndUint(180) - 90;
 
 	randomNode->children.push_back(newNode);
 	randomNode->childSize++;
 	return true;
 }
 
-bool fS_Genotype::changePartType()
+bool fS_Genotype::changePartType(bool ensureCircleSection)
 {
-	Node *randomNode = chooseNode();
-	char newType = randomNode->partType;
-	while (newType == randomNode->partType)
-		newType = getRandomPartType();
+	for(int i=0; i<mutationTries; i++)
+	{
+		Node *randomNode = chooseNode();
+		// Do not change the type of part when it has size params
+		if(!ensureCircleSection || !randomNode->hasPartSizeParam())
+		{
+			char newType = randomNode->partType;
+			while (newType == randomNode->partType)
+				newType = getRandomPartType();
 
-	randomNode->partType = newType;
-	return true;
+			randomNode->partType = newType;
+			return true;
+		}
+	}
+	return false;
 }
 
 bool fS_Genotype::addModifier()

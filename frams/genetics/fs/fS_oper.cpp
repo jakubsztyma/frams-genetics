@@ -8,7 +8,7 @@
 #define FIELDSTRUCT fS_Operators
 static ParamEntry GENOfSparam_tab[] =
 		{
-				{"Genetics: fS",            1, FS_OPCOUNT,},
+				{"Genetics: fS",            1, FS_OPCOUNT + 1,},
 				{"fS_mut_add",              0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
 				{"fS_mut_rem",              0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
 				{"fS_mut_mod",              0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
@@ -25,6 +25,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",    "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
 				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection", "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
 				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",     "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
+				{"fS_circle_section",       0, 0, "Ensure circle section",    "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
 		};
 
 #undef FIELDSTRUCT
@@ -44,7 +45,6 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname)
 	}
 	catch (const char *msg)
 	{
-//		std::cout<<msg<<std::endl;
 		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, msg);
 		return 1;
 	}
@@ -67,7 +67,7 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 			result = genotype.removePart();
 			break;
 		case FS_MOD_PART:
-			result = genotype.changePartType();
+			result = genotype.changePartType(ensureCircleSection);
 			break;
 		case FS_ADD_JOINT:
 			result = genotype.addJoint();
@@ -76,13 +76,13 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 			result = genotype.removeJoint();
 			break;
 		case FS_ADD_PARAM:
-			result = genotype.addParam();
+			result = genotype.addParam(ensureCircleSection);
 			break;
 		case FS_REM_PARAM:
 			result = genotype.removeParam();
 			break;
 		case FS_MOD_PARAM:
-			result = genotype.changeParam();
+			result = genotype.changeParam(ensureCircleSection);
 			break;
 		case FS_ADD_MOD:
 			result = genotype.addModifier();
@@ -135,7 +135,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	int indexes[2];
 	for (int i = 0; i < parentCount; i++)
 	{
-		vector<Node *>allNodes = parents[i]->getAllNodes();
+		vector < Node * > allNodes = parents[i]->getAllNodes();
 		do
 		{
 			chosen[i] = allNodes[rndUint(allNodes.size())];

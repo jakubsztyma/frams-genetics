@@ -37,6 +37,7 @@ public:
 	fS_Operators();
 
 	double prob[FS_OPCOUNT];
+	int ensureCircleSection;
 
 	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
 
