@@ -35,7 +35,7 @@ int countParams(SString genotype)
 
 int countModifiers(SString genotype)
 {
-	return countSigns(genotype, "IiFfXxYyZz", 10);
+	return countSigns(genotype, "IiFfSs", 6);
 }
 
 int countNeuroConnections(fS_Genotype &geno)
@@ -46,6 +46,32 @@ int countNeuroConnections(fS_Genotype &geno)
 		result += neurons[i]->inputs.size();
 	return result;
 }
+
+void testAllPartSizesValid()
+{
+	int size = 12;
+	SString test_cases[] = {
+			"S:P{x=2000.0}",
+			"S:P{y=2000.0}",
+			"S:P{z=2000.0}",
+			"S:P{x=0.0005}",
+			"S:P{y=0.0005}",
+			"S:P{z=0.0005}",
+			"S:E{x=1.1}",
+			"S:E{y=1.1}",
+			"S:E{z=1.1}",
+			"S:C{x=1.1;y=1.2}",
+			"S:SC{x=999.0}",
+			"S:P(C,E{z=1.1})",
+	};
+
+	for (int i = 0; i < size; i++)
+	{
+		fS_Genotype geno(test_cases[i]);
+		assert(geno.allPartSizesValid() == false);
+	}
+}
+
 
 void testOneGenotype(SString *test, int expectedPartCount)
 {
@@ -77,7 +103,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test change part
 	tmp = geno.getNodeCount();
-	if (geno.changePartType())
+	if (geno.changePartType(true))
 		assert(tmp == geno.getNodeCount());
 
 	// Test remove part
@@ -97,13 +123,13 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test add param
 	tmp = countParams(geno.getGeno());
-	if (geno.addParam())
+	if (geno.addParam(true))
 		assert(tmp + 1 == countParams(geno.getGeno()));
 
 	// Test change param
 	tmpStr = geno.getGeno();
 	tmp = countParams(geno.getGeno());
-	if (geno.changeParam())
+	if (geno.changeParam(true))
 	{
 		SString resultGeno = geno.getGeno();
 		assert(tmp == countParams(resultGeno));
@@ -222,14 +248,15 @@ void testRearrangeInputs()
 
 void evolutionTest(int operationCount)
 {
+	fS_Genotype::precision = 6;
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cCbP[G0_2]bE[0_1_2]{x=3.0;y=3.0;z=3.0}");
+	gens[0] = new SString("SMJ:EbcE[1_2]cCbP[G0_2]bP[0_1_2]{x=3.0;y=3.0;z=3.0}");
 	gens[1] = new SString("SMJ:C{j=3.9}cC[0]bC[0_1]");
-	gens[2] = new SString("SMJ:C[0;0_1]{j=3.9;ty=2.1;tz=4.3;x=2.0;y=3.4;z=5.1}bCcC");
-	gens[3] = new SString("SMJ:C[1]{j=3.9;x=2.0;y=3.4;z=5.1}C[1]cCP[0;1]{x=4.3}");
+	gens[2] = new SString("SMJ:C[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=5.1}bCcC");
+	gens[3] = new SString("SMJ:C[1]{j=3.9;y=3.4}C[1]cCP[0;1]{x=4.3}");
 	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bP[0],cC),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
@@ -245,7 +272,7 @@ void evolutionTest(int operationCount)
 		if (i2 == i1)
 			i2 = (i1 + 1) % gen_size;
 
-		if(i % 1000 == 0)
+		if(i % 100 == 0)
 		{
 			cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
 			cout << gens[i1]->c_str() << endl;
@@ -282,9 +309,17 @@ void evolutionTest(int operationCount)
 		gens[i1] = new SString(arr1);
 		gens[i2] = new SString(arr2);
 
+		// Check if genotypes have correct part size
+		assert(fS_Genotype(*gens[i1]).allPartSizesValid());
+		assert(fS_Genotype(*gens[i2]).allPartSizesValid());
+
+		// Check if genotypes convert correctly
 		MultiMap map;
 		converter.convert(*gens[i1], &map, false);
 		converter.convert(*gens[i2], &map, false);
+
+		// Check if genotypes have proper part sizes
+
 
 		free(arr1);
 		free(arr2);
@@ -408,14 +443,14 @@ int main()
 			{"S:EE{x=3.0;y=3.0;z=3.0}",                        "p:sh=1\n"
 															   "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
 															   "j:0, 1, sh=1\n"},
-			{"M:XXE",                                          "p:sh=1, sx=1.21\n"},  // sx modifier
-			{"M:xxE",                                          "p:sh=1, sx=0.83\n"},  // sx modifier
-			{"M:XYYZZZE",                                      "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"},  // size modifiers
-			{"M:EXYYZZZE",                                     "p:sh=1\n"
-															   "p:2.08, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+			{"M:SSE",                                          "p:sh=1, sx=1.21, sy=1.21, sz=1.21\n"},  // sx modifier
+			{"M:ssE",                                          "p:sh=1, sx=0.83, sy=0.83, sz=0.83\n"},  // sx modifier
+			{"M:SSSE",                                         "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"},  // size modifiers
+			{"M:ESSSE",                                        "p:sh=1\n"
+															   "p:2.33, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
 															   "j:0, 1, sh=1\n"},  // size modifiers
-			{"M:XYYZZZEE",                                     "p:sh=1, sx=1.1, sy=1.21, sz=1.33\n"
-															   "p:2.18, sh=1, sx=1.1, sy=1.21, sz=1.33\n"
+			{"M:SSSEE",                                        "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"
+															   "p:2.66, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
 															   "j:0, 1, sh=1\n"},  // size modifiers
 			{"M:IE",                                           "p:sh=1, ing=0.28\n"},  // Ingestion modifier
 			{"M:iE",                                           "p:sh=1, ing=0.23\n"},  // Ingestion modifier
@@ -527,6 +562,7 @@ int main()
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
+	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
 	int operationCount = 100;
