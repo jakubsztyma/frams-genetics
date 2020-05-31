@@ -1154,7 +1154,7 @@ bool fS_Genotype::addNeuro()
 {
 	Node *randomNode = chooseNode();
 	Fs_Neuron *newNeuron;
-	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass();
+	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
 	if (rndclass == NULL)
 		newNeuron = new Fs_Neuron();
 	else
