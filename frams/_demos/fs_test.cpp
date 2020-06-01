@@ -207,13 +207,13 @@ void testRearrangeInputs()
 {
 	int size = 6;
 	SString before = "MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
-	int shift[size] = {
-			1,
-			1,
-			1,
-			-1,
-			-1,
-			-1,
+	SHIFT shift[size] = {
+			RIGHT,
+			RIGHT,
+			RIGHT,
+			LEFT,
+			LEFT,
+			LEFT,
 	};
 	int neuronNumber[size] = {
 			0,	// First
@@ -290,19 +290,23 @@ void evolutionTest(int operationCount)
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
 			methodUsages[method] ++;
 
-		// TODO decide what to do with neurons in crossOver, uncomment this test section
-//		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
+		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-//		assert(0. < f1 && f1 < 1.);
-//		assert(0. < f2 && f2 < 1.);
-//
-//		if (crossOverResult == GENOPER_OK)
-//		{
-//			if (1 == operators.checkValidity(arr2, ""))
-//				cout << arr2;
-//			assert(0 == operators.checkValidity(arr1, ""));
-//			assert(0 == operators.checkValidity(arr2, ""));
-//		}
+		if(crossOverResult == GENOPER_OK)
+		{
+			assert(*gens[i1] != SString(arr1));
+			assert(*gens[i2] != SString(arr2));
+		}
+		assert(0. < f1 && f1 < 1.);
+		assert(0. < f2 && f2 < 1.);
+
+		if (crossOverResult == GENOPER_OK)
+		{
+			if (1 == operators.checkValidity(arr2, ""))
+				cout << arr2;
+			assert(0 == operators.checkValidity(arr1, ""));
+			assert(0 == operators.checkValidity(arr2, ""));
+		}
 
 		delete gens[i1];
 		delete gens[i2];
@@ -565,7 +569,7 @@ int main()
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
-	int operationCount = 100;
+	int operationCount = 50000;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();

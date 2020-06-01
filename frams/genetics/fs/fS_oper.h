@@ -44,6 +44,22 @@ public:
 	int checkValidity(const char *geno, const char *genoname);
 
 	int mutate(char *&geno, float &chg, int &method);
+
+	/**
+	 * Remove connections to the subtree that will be removed from genotype
+	 * @param geno An fS_Genotype
+	 * @param sub A subtree that will be removed from genotype
+	 * @param subStart An index of the first neuron in the removed genotype
+	 */
+	void rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart);
+
+	/**
+	 *
+	 * @param geno An fS_Genotype
+	 * @param sub A subtree that was added to genotype
+	 * @param subOldStart An index of the first neuron in the subtree when it was in old genotype
+	 */
+	void rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart);
 };
 
 #endif

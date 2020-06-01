@@ -9,9 +9,9 @@
 static ParamEntry GENOfSparam_tab[] =
 		{
 				{"Genetics: fS",            1, FS_OPCOUNT + 1,},
-				{"fS_mut_add",              0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
-				{"fS_mut_rem",              0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
-				{"fS_mut_mod",              0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
+				{"fS_mut_add_part",              0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
+				{"fS_mut_rem_part",              0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
+				{"fS_mut_mod_part",              0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
 				{"fS_mut_add_joint",        0, 0, "Add joint",                "f 0 100 10", FIELD(prob[FS_ADD_JOINT]),            "mutation: probability of adding a joint",},
 				{"fS_mut_rem_joint",        0, 0, "Remove joint",             "f 0 100 10", FIELD(prob[FS_REM_JOINT]),            "mutation: probability of removing a joint",},
 				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
@@ -133,6 +133,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 
 	Node *chosen[parentCount];
 	int indexes[2];
+	// Choose random subtrees
 	for (int i = 0; i < parentCount; i++)
 	{
 		vector < Node * > allNodes = parents[i]->getAllNodes();
@@ -148,10 +149,25 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	double restSize1 = parents[0]->getNodeCount() - subtreeSize1;
 	double restSize2 = parents[1]->getNodeCount() - subtreeSize2;
 
+	// Rearrange neurons before crossover
+	Node *subtree1 = chosen[0]->children[indexes[0]];
+	Node *subtree2 = chosen[1]->children[indexes[1]];
+	int subOldStart1 = -1, subOldStart2 = -1;
+	rearrangeConnectionsBeforeCrossover(parents[0],  subtree1, subOldStart1);
+	rearrangeConnectionsBeforeCrossover(parents[1],  subtree2, subOldStart2);
+
+	// Compute gene percentages in children
 	chg1 = restSize1 / (restSize1 + subtreeSize2);
 	chg2 = restSize2 / (restSize2 + subtreeSize1);
-	swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
 
+	// Swap the subtress
+	std::swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+
+	// Rearrange neurons after crossover
+	rearrangeConnectionsAfterCrossover(parents[0],  subtree2, subOldStart1);
+	rearrangeConnectionsAfterCrossover(parents[1],  subtree1, subOldStart2);
+
+	// Clenup, assign children to result strings
 	free(g1);
 	free(g2);
 	g1 = strdup(parents[0]->getGeno().c_str());
@@ -160,4 +176,43 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	delete parents[0];
 	delete parents[1];
 	return GENOPER_OK;
+}
+
+void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
+{
+	vector < Fs_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector<Fs_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+
+	if (!subNeurons.empty())
+	{
+		subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
+		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subStart + subNeurons.size() - 1, LEFT);
+	}
+}
+
+void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
+{
+	vector < Fs_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector<Fs_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+
+	// Shift the inputs right
+	if (!subNeurons.empty())
+	{
+		int subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
+		unsigned int subCount = subNeurons.size();
+		int subEnd = subStart + subCount - 1;
+		for(unsigned int i=0; i<subCount; i++)
+		{
+			auto inputs = subNeurons[i]->inputs;
+			std::map<int, double> newInputs;
+			for (auto it = inputs.begin(); it != inputs.end(); ++it)
+			{
+				int newIndex = it->first - subOldStart + subStart;
+				if(subEnd > newIndex && newIndex > subStart)
+					newInputs[newIndex] = it->second;
+			}
+			subNeurons[i]->inputs = newInputs;
+		}
+		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, RIGHT);
+	}
 }

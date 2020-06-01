@@ -524,8 +524,6 @@ bool Node::isPartSizeValid()
 	Pt3D size = getSize();
 	Pt3D minPartScale = Model::getMinPart().scale;
 	Pt3D maxPartScale = Model::getMaxPart().scale;
-	if(size.x <= 0.2 || size.y <= 0.2 || size.z <= 0.2)
-		return false;
 	if(size.x < minPartScale.x || size.y < minPartScale.y || size.z < minPartScale.z)
 		return false;
 	if(size.x > maxPartScale.x || size.y > maxPartScale.y || size.z > maxPartScale.z)
@@ -802,7 +800,10 @@ void fS_Genotype::buildNeuroConnections(Model &model)
 		for (auto it = neuron->inputs.begin(); it != neuron->inputs.end(); ++it)
 		{
 			Neuro *inputNeuro = model.getNeuro(it->first);
+			if(inputNeuro == nullptr)
+				std::cout<<"Geno: "<<it->first<<" "<<getGeno().c_str()<<std::endl;
 			modelNeuro->addInput(inputNeuro, it->second);
+
 		}
 	}
 }
@@ -853,6 +854,62 @@ char getRandomPartType()
 	return PART_TYPES[randomIndex];
 }
 
+vector<Fs_Neuron *> fS_Genotype::extractNeurons(Node *node)
+{
+	vector<Node*> allNodes;
+	node->getAllNodes(allNodes);
+
+	vector<Fs_Neuron *>allNeurons;
+	for (unsigned int i = 0; i < allNodes.size(); i++)
+	{
+		for (unsigned int j = 0; j < allNodes[i]->neurons.size(); j++)
+		{
+			allNeurons.push_back(allNodes[i]->neurons[j]);
+		}
+	}
+	return allNeurons;
+}
+
+int fS_Genotype::getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron)
+{
+	int neuronIndex = -1;
+	for (unsigned int i = 0; i < neurons.size(); i++)
+	{
+		if (changedNeuron == neurons[i])
+		{
+			neuronIndex = i;
+			break;
+		}
+	}
+	return neuronIndex;
+}
+
+void fS_Genotype::shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift)
+{
+	for (unsigned int i = 0; i < neurons.size(); i++)
+	{
+		Fs_Neuron *n = neurons[i];
+		std::map<int, double> newInputs;
+		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
+		{
+			if (start > it->first)
+				newInputs[it->first] = it->second;
+			else if (it->first >= start)
+			{
+				if(end >= it->first )
+				{
+					if (shift == 1)
+						newInputs[it->first + shift] = it->second;
+					// If shift == -1, just delete the input
+				}
+				else if (it->first > end)
+					newInputs[it->first + shift] = it->second;
+			}
+		}
+		n->inputs = newInputs;
+	}
+}
+
 vector<Node *> fS_Genotype::getAllNodes()
 {
 	vector<Node *>allNodes;
@@ -862,16 +919,7 @@ vector<Node *> fS_Genotype::getAllNodes()
 
 vector<Fs_Neuron *> fS_Genotype::getAllNeurons()
 {
-	vector<Fs_Neuron *>allNeurons;
-	vector<Node *>allNodes = getAllNodes();
-	for (unsigned int i = 0; i < allNodes.size(); i++)
-	{
-		for (unsigned int j = 0; j < allNodes[i]->neurons.size(); j++)
-		{
-			allNeurons.push_back(allNodes[i]->neurons[j]);
-		}
-	}
-	return allNeurons;
+	return extractNeurons(startNode);
 }
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0)
@@ -1111,43 +1159,12 @@ bool fS_Genotype::removeModifier()
 	return false;
 }
 
-void fS_Genotype::rearrangeNeuronConnections(Fs_Neuron *changedNeuron, int shift = 1)
+
+void fS_Genotype::rearrangeNeuronConnections(Fs_Neuron *changedNeuron, SHIFT shift)
 {
-	if (shift != 1 && shift != -1)
-		throw "Wrong value of shift";
-
 	vector<Fs_Neuron *>neurons = getAllNeurons();
-	int changedNeuronIndex = -1;
-	for (unsigned int i = 0; i < neurons.size(); i++)
-	{
-		if (changedNeuron == neurons[i])
-		{
-			changedNeuronIndex = i;
-			break;
-		}
-	}
-	if (changedNeuronIndex == -1)
-		throw "Fs_Neuron not in all neurons";
-
-	for (unsigned int i = 0; i < neurons.size(); i++)
-	{
-		Fs_Neuron *n = neurons[i];
-		std::map<int, double> newInputs;
-		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
-		{
-			if (it->first < changedNeuronIndex)
-				newInputs[it->first] = it->second;
-			else if (it->first > changedNeuronIndex)
-				newInputs[it->first + shift] = it->second;
-			else if (it->first == changedNeuronIndex)
-			{
-				if (shift == 1)
-					newInputs[it->first + shift] = it->second;
-				// If shift == -1, just delete the input
-			}
-		}
-		n->inputs = newInputs;
-	}
+	int changedNeuronIndex = getNeuronIndex(neurons, changedNeuron);
+	shiftNeuroConnections(neurons, changedNeuronIndex, changedNeuronIndex, shift);
 }
 
 bool fS_Genotype::addNeuro()
@@ -1180,7 +1197,7 @@ bool fS_Genotype::addNeuro()
 
 	randomNode->neurons.push_back(newNeuron);
 
-	rearrangeNeuronConnections(newNeuron);
+	rearrangeNeuronConnections(newNeuron, RIGHT);
 	return true;
 }
 
@@ -1195,7 +1212,7 @@ bool fS_Genotype::removeNeuro()
 			// Remove the chosen neuron
 			int size = randomNode->neurons.size();
 			Fs_Neuron *it = randomNode->neurons[rndUint(size)];
-			rearrangeNeuronConnections(it, -1);        // Important to rearrange the neurons before deleting
+			rearrangeNeuronConnections(it, LEFT);        // Important to rearrange the neurons before deleting
 			swap(it, randomNode->neurons.back());
 			randomNode->neurons.pop_back();
 			randomNode->neurons.shrink_to_fit();

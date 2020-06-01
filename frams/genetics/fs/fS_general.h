@@ -47,6 +47,12 @@ const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
+enum SHIFT
+{
+	LEFT = -1,
+	RIGHT = 1
+};
+
 /** @name Every modifier changes the underlying value by this multiplier */
 const float MODIFIER_MULTIPLIER = 1.1;
 /**
@@ -355,6 +361,7 @@ private:
 	 */
 	void getAllNodes(vector<Node *> &allNodes);
 
+
 	/**
 	 * Build model from the subtree that starts in this node
 	 * @param pointer to model
@@ -422,6 +429,30 @@ public:
 	static int precision;
 
 	/**
+	 * Get all the neurons from the subtree that starts in given node
+	 * @param node The beginning of subtree
+	 * @return The vector of neurons
+	 */
+	static vector<Fs_Neuron *> extractNeurons(Node *node);
+
+	/**
+	 * Get the index of the neuron in vector of neurons
+	 * @param neurons
+	 * @param changedNeuron
+	 * @return
+	 */
+	static int getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron);
+
+	/**
+	 * Left or right shift the indexes of neuro connections by the given range
+	 * @param neurons
+	 * @param start The beginning of the range
+	 * @param end The end of the range
+	 * @param shift
+	 */
+	static void shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift);
+
+	/**
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
@@ -433,6 +464,10 @@ public:
 	 */
 	int getNodeCount();
 
+	/**
+	 * Check is sizes of all parts in genotype are valid
+	 * @return
+	 */
 	bool allPartSizesValid();
 
 	/**
@@ -463,7 +498,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, int shift);
+	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, SHIFT shift);
 
 	/**
 	 * Performs add joint mutation on genotype
@@ -537,6 +572,7 @@ public:
 
 	bool changeNeuroParam();
 };
+
 
 
 #endif
