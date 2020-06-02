@@ -448,7 +448,7 @@ public:
 	static int getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron);
 
 	/**
-	 * Left or right shift the indexes of neuro connections by the given range
+	 * Left- or right- shift the indexes of neuro connections by the given range
 	 * @param neurons
 	 * @param start The beginning of the range
 	 * @param end The end of the range
@@ -469,7 +469,7 @@ public:
 	int getNodeCount();
 
 	/**
-	 * Check is sizes of all parts in genotype are valid
+	 * Check if sizes of all parts in genotype are valid
 	 * @return
 	 */
 	bool allPartSizesValid();

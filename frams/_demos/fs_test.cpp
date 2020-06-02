@@ -331,7 +331,7 @@ void evolutionTest(int operationCount)
 	fclose(pFile);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	SString test_cases[][2] = {
 			{"S:E",                                            "p:sh=1\n"},
@@ -560,7 +560,11 @@ int main()
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
-	int operationCount = 100000;
+	int operationCount;
+	if(argc > 1)
+		operationCount = std::stod(argv[1]);
+	else
+		operationCount = 100000;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
