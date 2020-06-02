@@ -1098,9 +1098,9 @@ bool fS_Genotype::addPart()
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
 	// Add random rotation
-	newNode->params[ROT_X] = (int)rndUint(180) - 90;
-	newNode->params[ROT_Y] = (int)rndUint(180) - 90;
-	newNode->params[ROT_Z] = (int)rndUint(180) - 90;
+	newNode->params[ROT_X] = RndGen.Uni(-90, 90);
+	newNode->params[ROT_Y] = RndGen.Uni(-90, 90);
+	newNode->params[ROT_Z] = RndGen.Uni(-90, 90);
 
 	randomNode->children.push_back(newNode);
 	randomNode->childSize++;

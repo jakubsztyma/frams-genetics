@@ -103,9 +103,9 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
-const char CUBOID = 'P';
-const char CYLINDER = 'C';
-const string PART_TYPES = "EPC";
+const char CUBOID = 'C';
+const char CYLINDER = 'R';
+const string PART_TYPES = "ECR";
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();

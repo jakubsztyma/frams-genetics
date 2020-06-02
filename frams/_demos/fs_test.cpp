@@ -51,18 +51,18 @@ void testAllPartSizesValid()
 {
 	int size = 12;
 	SString test_cases[] = {
-			"S:P{x=2000.0}",
-			"S:P{y=2000.0}",
-			"S:P{z=2000.0}",
-			"S:P{x=0.0005}",
-			"S:P{y=0.0005}",
-			"S:P{z=0.0005}",
+			"S:C{x=2000.0}",
+			"S:C{y=2000.0}",
+			"S:C{z=2000.0}",
+			"S:C{x=0.0005}",
+			"S:C{y=0.0005}",
+			"S:C{z=0.0005}",
 			"S:E{x=1.1}",
 			"S:E{y=1.1}",
 			"S:E{z=1.1}",
-			"S:C{x=1.1;y=1.2}",
-			"S:SC{x=999.0}",
-			"S:P(C,E{z=1.1})",
+			"S:R{x=1.1;y=1.2}",
+			"S:SR{x=999.0}",
+			"S:C(R,E{z=1.1})",
 	};
 
 	for (int i = 0; i < size; i++)
@@ -206,7 +206,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
 			RIGHT,
 			RIGHT,
@@ -224,12 +224,12 @@ void testRearrangeInputs()
 			5,
 	};
 	SString after[size] = {
-			"MSJ:E[T]bE[3_4]cCbP[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[3_4]cCbP[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[1_2]cCbP[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2]cCbP[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"MSJ:E[T]bE[3_4]cRbC[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[3_4]cRbC[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[1_2]cRbC[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2]cRbC[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for(int i=0; i<size; i++)
@@ -252,11 +252,11 @@ void evolutionTest(int operationCount)
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cCbP[G0_2]bP[0_1_2]{x=3.0;y=3.0;z=3.0}");
-	gens[1] = new SString("SMJ:C{j=3.9}cC[0]bC[0_1]");
-	gens[2] = new SString("SMJ:C[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=5.1}bCcC");
-	gens[3] = new SString("SMJ:C[1]{j=3.9;y=3.4}C[1]cCP[0;1]{x=4.3}");
-	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bP[0],cC),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
+	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G0_2]bC[0_1_2]{x=3.0;y=3.0;z=3.0}");
+	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
+	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=5.1}bRcR");
+	gens[3] = new SString("SMJ:R[1]{j=3.9;y=3.4}R[1]cRC[0;1]{x=4.3}");
+	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -335,8 +335,8 @@ int main(int argc, char *argv[])
 {
 	SString test_cases[][2] = {
 			{"S:E",                                            "p:sh=1\n"},
-			{"S:P",                                            "p:sh=2\n"},
-			{"S:C",                                            "p:sh=3\n"},
+			{"S:C",                                            "p:sh=2\n"},
+			{"S:R",                                            "p:sh=3\n"},
 			{"S:EEE",                                          "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
 			{"S:E(E,E)",                                       "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
 			{"S:E(E(E,E),E,E(E,E),E)",                         "p:sh=1\n"
@@ -359,11 +359,11 @@ int main(int argc, char *argv[])
 			},
 			{"S:EbE",                                          "p:sh=1\n"
 															   "p:2.0, sh=1\n"
-															   "j:0, 1, sh=2\n"}, // Parametrized joints
-			{"S:PcP",                                         "p:sh=2\n"
+															   "j:0, 1, sh=2\n"}, // Carametrized joints
+			{"S:CcC",                                         "p:sh=2\n"
 															   "p:2.0, sh=2\n"
 															   "j:0, 1, sh=3\n"}, // Many parametrized joints
-			{"S:ECbCcPCbPbE",                                "p:sh=1\n"
+			{"S:ERbRcCRbCbE",                                "p:sh=1\n"
 															   "p:2.0, sh=3\n"
 															   "p:4.0, sh=3\n"
 															   "p:6.0, sh=2\n"
@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < size; i++)
 	{
-//		testOneGenotype(test_cases[i], expectedPartCount[i]);
+		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testAllPartSizesValid();
