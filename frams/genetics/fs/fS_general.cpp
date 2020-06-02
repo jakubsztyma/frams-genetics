@@ -486,7 +486,6 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 		children.push_back(restOfGenotype);  // Only one child
 		return children;
 	}
-	// TODO raise and error in case of wrong syntax
 
 	int depth = 0;
 	int start = 1;
@@ -494,6 +493,8 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 	const char *str = restOfGenotype.c_str();
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
+		if(depth < 0)
+			throw "The number of branch start signs does not equal the number of branch end signs";
 		c = str[i];
 		if (c == BRANCH_START)
 			depth++;
@@ -507,6 +508,8 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 		} else if (c == BRANCH_END)
 			depth -= 1;
 	}
+	if(depth != 1)	// T
+		throw "The number of branch start signs does not equal the number of branch end signs";
 	return children;
 }
 
