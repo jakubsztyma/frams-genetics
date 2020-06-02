@@ -49,20 +49,22 @@ int countNeuroConnections(fS_Genotype &geno)
 
 void testAllPartSizesValid()
 {
-	int size = 12;
+	int size = 14;
 	SString test_cases[] = {
-			"S:C{x=2000.0}",
+			"S:C{x=2000.0}",	// Too big dimension
 			"S:C{y=2000.0}",
 			"S:C{z=2000.0}",
-			"S:C{x=0.0005}",
+			"S:C{x=0.0005}",	// Too small dimension
 			"S:C{y=0.0005}",
 			"S:C{z=0.0005}",
-			"S:E{x=1.1}",
+			"S:E{x=1.1}",		// Invalid size params
 			"S:E{y=1.1}",
 			"S:E{z=1.1}",
 			"S:R{x=1.1;y=1.2}",
 			"S:SR{x=999.0}",
 			"S:C(R,E{z=1.1})",
+			"S:C{x=1.5;y=1.5;z=1.5}",	// Test volume
+			"S:C{x=1.8;y=1.8}",
 	};
 
 	for (int i = 0; i < size; i++)
@@ -564,7 +566,7 @@ int main(int argc, char *argv[])
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);
 	else
-		operationCount = 100000;
+		operationCount = 100;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();

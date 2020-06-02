@@ -269,7 +269,7 @@ private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
-	char partType; /// The type of the part (E, P, C)
+	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
 	unsigned int childSize = 0; /// The number of direct children
 	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
@@ -281,6 +281,18 @@ private:
 	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
+
+	double getVolume()
+	{
+		Pt3D size = getSize();
+		double radiiProduct = size.x * size.y * size.z;
+		if(partType == CUBOID)
+			return 8 * radiiProduct;
+		else if(partType == CYLINDER)
+			return 2 * M_PI * (size.x * size.y * size.z);
+		else // if(partType == ELLIPSOID)
+			return (4. / 3.) * M_PI * radiiProduct;
+	}
 
 	Pt3D getRotation();
 

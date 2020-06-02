@@ -525,11 +525,15 @@ Pt3D Node::getSize()
 bool Node::isPartSizeValid()
 {
 	Pt3D size = getSize();
-	Pt3D minPartScale = Model::getMinPart().scale;
-	Pt3D maxPartScale = Model::getMaxPart().scale;
-	if(size.x < minPartScale.x || size.y < minPartScale.y || size.z < minPartScale.z)
+	double volume = getVolume();
+	Part_MinMaxDef minP = Model::getMinPart();
+	Part_MinMaxDef maxP = Model::getMaxPart();
+
+	if(volume > maxP.volume || minP.volume > volume)
 		return false;
-	if(size.x > maxPartScale.x || size.y > maxPartScale.y || size.z > maxPartScale.z)
+	if(size.x < minP.scale.x || size.y < minP.scale.y || size.z < minP.scale.z)
+		return false;
+	if(size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
 		return false;
 
 	if(partType == ELLIPSOID && max3(size) != min3(size))
@@ -1171,7 +1175,8 @@ bool fS_Genotype::addNeuro()
 	{
 		const char *name = rndclass->getName().c_str();
 		newNeuron = new Fs_Neuron(name, strlen(name));
-		if (rndclass->prefinputs > 0)
+		int numberOfInputs = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
+		if (numberOfInputs > 0)
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
 			vector<Fs_Neuron *>allNeurons = getAllNeurons();
@@ -1184,7 +1189,7 @@ bool fS_Genotype::addNeuro()
 			int size = neuronsWithOutput.size();
 			if(size > 0)
 			{
-				for (int i = 0; i < rndclass->prefinputs; i++)
+				for (int i = 0; i < numberOfInputs; i++)
 				{
 					int chosenNeuron = neuronsWithOutput[rndUint(size)];
 					newNeuron->inputs[chosenNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
