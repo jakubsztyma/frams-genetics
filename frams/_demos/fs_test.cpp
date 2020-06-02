@@ -9,7 +9,7 @@
 using namespace std;
 
 
-int countSigns(SString genotype, string chars, int count)
+int countChars(SString genotype, string chars, int count)
 {
 	int result = 0;
 	for (int i = 0; i < genotype.len(); i++)
@@ -25,17 +25,17 @@ int countSigns(SString genotype, string chars, int count)
 
 int countJoints(SString genotype)
 {
-	return countSigns(genotype, JOINTS, 2);
+	return countChars(genotype, JOINTS, 2);
 }
 
 int countParams(SString genotype)
 {
-	return countSigns(genotype, "=", 1);
+	return countChars(genotype, "=", 1);
 }
 
 int countModifiers(SString genotype)
 {
-	return countSigns(genotype, "IiFfSs", 6);
+	return countChars(genotype, "IiFfSs", 6);
 }
 
 int countNeuroConnections(fS_Genotype &geno)

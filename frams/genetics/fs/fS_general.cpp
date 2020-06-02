@@ -1181,10 +1181,15 @@ bool fS_Genotype::addNeuro()
 				if(allNeurons[i]->ncls->getPreferredOutput() > 0)
 					neuronsWithOutput.push_back(i);
 			}
-			int connectionsToCreate = std::min((int) neuronsWithOutput.size(), rndclass->prefinputs);
-			std::sort(neuronsWithOutput.begin(), neuronsWithOutput.end());
-			for (int i = 0; i < connectionsToCreate; i++)
-				newNeuron->inputs[neuronsWithOutput[i]] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+			int size = neuronsWithOutput.size();
+			if(size > 0)
+			{
+				for (int i = 0; i < rndclass->prefinputs; i++)
+				{
+					int chosenNeuron = neuronsWithOutput[rndUint(size)];
+					newNeuron->inputs[chosenNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+				}
+			}
 		}
 	}
 
