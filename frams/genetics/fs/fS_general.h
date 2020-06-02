@@ -24,7 +24,6 @@
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
 
-
 /** @name Names of genotype modes */
 //@{
 #define MODIFIER_MODE 'M'
@@ -48,8 +47,17 @@ const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
+enum SHIFT
+{
+	LEFT = -1,
+	RIGHT = 1
+};
+
 /** @name Every modifier changes the underlying value by this multiplier */
-const float MODIFIER_MULTIPLIER = 1.1;
+const double  MODIFIER_MULTIPLIER = 1.1;
+/** @name In mutation parameters will be multiplied by at most this value */
+const double PARAM_MULTIPLIER = 1.5;
+
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -66,6 +74,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
  * The tolerance of the value of distance between parts
  */
 const double SPHERE_DISTANCE_TOLERANCE = 0.99;
+
 
 /** @name Names of node parameters and modifiers*/
 //@{
@@ -93,10 +102,14 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+const char ELLIPSOID = 'E';
+const char CUBOID = 'P';
+const char CYLINDER = 'C';
 const string PART_TYPES = "EPC";
+const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "ifxyz";
+const string MODIFIERS = "ifs";
 const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
@@ -162,11 +175,9 @@ public:
 		len -= index;
 	}
 
-	void shortenBy(int signs)
+	void shortenBy(int charCount)
 	{
-		if (signs > len)
-			len = 0;
-		len -= signs;
+		len = std::max(len - charCount, 0);
 	}
 
 	char at(int index)
@@ -198,7 +209,7 @@ public:
 	Pt3D v;         /// The normalised vector in which current branch develops
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
-	double sx = 1.0, sy = 1.0, sz = 1.0;      /// Size multipliers
+	double s = 1.0;      /// Size multipliers
 
 	State(State *_state); /// Derive the state from parent
 
@@ -222,18 +233,25 @@ public:
 /**
  * Represent a neuron and its inputs
  */
-class Neuron
+class Fs_Neuron
 {
 public:
-	SString cls;
+	SString clss;
+	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 
-	Neuron(const char *str, int length);
+	Fs_Neuron(const char *str, int length);
 
-	Neuron(char neuronType);
+	Fs_Neuron(char neuronType);
 
-	Neuron()
-	{};
+	Fs_Neuron(){};
+
+	bool acceptsInputs()
+	{
+		if(ncls == nullptr)
+			return true;
+		return ncls->prefinputs < (int)inputs.size();
+	}
 };
 
 /**
@@ -248,7 +266,7 @@ class Node
 	friend class fS_Operators;
 
 private:
-	Substring *partDescription;
+	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
 	char partType; /// The type of the part (E, P, C)
@@ -259,14 +277,18 @@ private:
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
-	std::set<char> joints;           /// Set of all joints
-	vector<Neuron *> neurons;    /// Vector of all the neurons
+	char joint = DEFAULT_JOINT;           /// Set of all joints
+	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
 	Pt3D getRotation();
 
 	Pt3D getVectorRotation();
+
+	bool isPartSizeValid();
+
+	bool hasPartSizeParam();
 
 	/**
 	 * Get the position of part type in genotype
@@ -343,6 +365,7 @@ private:
 	 */
 	void getAllNodes(vector<Node *> &allNodes);
 
+
 	/**
 	 * Build model from the subtree that starts in this node
 	 * @param pointer to model
@@ -380,7 +403,6 @@ class fS_Genotype
 
 private:
 	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-
 	/**
 	 * Get all existing nodes
 	 * @return vector of all nodes
@@ -407,17 +429,50 @@ private:
 	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
+
+	static int precision;
+
+	/**
+	 * Get all the neurons from the subtree that starts in given node
+	 * @param node The beginning of subtree
+	 * @return The vector of neurons
+	 */
+	static vector<Fs_Neuron *> extractNeurons(Node *node);
+
+	/**
+	 * Get the index of the neuron in vector of neurons
+	 * @param neurons
+	 * @param changedNeuron
+	 * @return
+	 */
+	static int getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron);
+
+	/**
+	 * Left or right shift the indexes of neuro connections by the given range
+	 * @param neurons
+	 * @param start The beginning of the range
+	 * @param end The end of the range
+	 * @param shift
+	 */
+	static void shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift);
+
 	/**
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
-	vector<Neuron *> getAllNeurons();
+	vector<Fs_Neuron *> getAllNeurons();
 
 	/**
 	 * Counts all the nodes in genotype
 	 * @return node count
 	 */
 	int getNodeCount();
+
+	/**
+	 * Check is sizes of all parts in genotype are valid
+	 * @return
+	 */
+	bool allPartSizesValid();
 
 	/**
 	 * Build internal representation from fS format
@@ -447,7 +502,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeuronConnections(Neuron *newNeuron, int shift);
+	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, SHIFT shift);
 
 	/**
 	 * Performs add joint mutation on genotype
@@ -471,7 +526,7 @@ public:
 	 * Performs change part type mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changePartType();
+	bool changePartType(bool ensureCircleSection);
 
 	/**
 	 * Performs remove part type mutation on genotype
@@ -483,7 +538,7 @@ public:
 	 * Performs add param mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addParam();
+	bool addParam(bool ensureCircleSection);
 
 	/**
 	 * Performs remove param mutation on genotype
@@ -495,7 +550,7 @@ public:
 	 * Performs change param mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changeParam();
+	bool changeParam(bool ensureCircleSection);
 
 	/**
 	 * Performs add modifier mutation on genotype
@@ -521,6 +576,7 @@ public:
 
 	bool changeNeuroParam();
 };
+
 
 
 #endif
