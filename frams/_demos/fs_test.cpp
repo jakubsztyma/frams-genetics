@@ -206,7 +206,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	SString before = "MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
 			RIGHT,
 			RIGHT,
@@ -224,12 +224,12 @@ void testRearrangeInputs()
 			5,
 	};
 	SString after[size] = {
-			"MSJ:E[T]bcE[3_4]cCbP[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bcE[3_4]cCbP[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bcE[1_2]cCbP[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bcE[2]cCbP[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bcE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"MSJ:E[T]bE[3_4]cCbP[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[3_4]cCbP[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[1_2]cCbP[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2]cCbP[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for(int i=0; i<size; i++)
@@ -366,11 +366,10 @@ int main()
 			{"S:EbE",                                          "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "j:0, 1, sh=2\n"}, // Parametrized joints
-			{"S:PbcP",                                         "p:sh=2\n"
+			{"S:PcP",                                         "p:sh=2\n"
 															   "p:2.0, sh=2\n"
-															   "j:0, 1, sh=2\n"
 															   "j:0, 1, sh=3\n"}, // Many parametrized joints
-			{"S:ECbCcPCbcPbcE",                                "p:sh=1\n"
+			{"S:ECbCcPCbPbE",                                "p:sh=1\n"
 															   "p:2.0, sh=3\n"
 															   "p:4.0, sh=3\n"
 															   "p:6.0, sh=2\n"
@@ -382,9 +381,7 @@ int main()
 															   "j:2, 3, sh=3\n"
 															   "j:3, 4, sh=1\n"
 															   "j:4, 5, sh=2\n"
-															   "j:4, 5, sh=3\n"
 															   "j:5, 6, sh=2\n"
-															   "j:5, 6, sh=3\n"
 			},
 // Modifier mode
 			{"M:E",                                            "p:sh=1\n"},  // Basic modifier mode

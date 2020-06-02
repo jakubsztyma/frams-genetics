@@ -103,6 +103,7 @@ const char ELLIPSOID = 'E';
 const char CUBOID = 'P';
 const char CYLINDER = 'C';
 const string PART_TYPES = "EPC";
+const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
@@ -273,7 +274,7 @@ private:
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
-	std::set<char> joints;           /// Set of all joints
+	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();

@@ -134,7 +134,7 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	}
 	catch (const char *msg)
 	{
-		delete partDescription;
+//		delete partDescription;
 		throw msg;
 	}
 
@@ -173,10 +173,10 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 	for (int i = 0; i < partTypePosition; i++)
 	{
-		// Extract modifiers and joints
+		// Extract modifiers and joint
 		char mType = restOfGenotype.at(i);
 		if (JOINTS.find(mType) != string::npos)
-			joints.insert(mType);
+			joint = mType;
 		else if (MODIFIERS.find(tolower(mType)) != string::npos)
 			modifiers.push_back(mType);
 		else
@@ -622,39 +622,28 @@ void Node::createPart()
 
 void Node::addJointsToModel(Model &model, Node *parent)
 {
-	if (joints.empty())
+	Joint *j = new Joint();
+	j->attachToParts(parent->part, part);
+	switch (joint)
 	{
-		Joint *joint = new Joint();
-		joint->shape = Joint::Shape::SHAPE_FIXED;
-		joint->attachToParts(parent->part, part);
-		model.addJoint(joint);
-
-		joint->addMapping(partDescription->toMultiRange());
-	} else
-	{
-		for (auto it = joints.begin(); it != joints.end(); ++it)
-		{
-			Joint *joint = new Joint();
-			joint->attachToParts(parent->part, part);
-			switch (*it)
-			{
-				case HINGE_X:
-					joint->shape = Joint::Shape::SHAPE_HINGE_X;
-					break;
-				case HINGE_XY:
-					joint->shape = Joint::Shape::SHAPE_HINGE_XY;
-					break;
-			}
-			model.addJoint(joint);
-		}
+		case HINGE_X:
+			j->shape = Joint::Shape::SHAPE_HINGE_X;
+			break;
+		case HINGE_XY:
+			j->shape = Joint::Shape::SHAPE_HINGE_XY;
+			break;
+		default:
+			j->shape = Joint::Shape::SHAPE_FIXED;
 	}
+	model.addJoint(j);
+	j->addMapping(partDescription->toMultiRange());
 }
 
 
 void Node::getGeno(SString &result)
 {
-	for (auto it = joints.begin(); it != joints.end(); ++it)
-		result += *it;
+	if(joint != DEFAULT_JOINT)
+		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
 	result += partType;
@@ -956,14 +945,14 @@ bool fS_Genotype::addJoint()
 	if (startNode->childSize < 1)
 		return false;
 
-	Node *randomNode;    // First part does not have joints
+	Node *randomNode;
 	for (int i = 0; i < mutationTries; i++)
 	{
 		char randomJoint = JOINTS[rndUint(JOINT_COUNT)];
-		randomNode = chooseNode(1);
-		if (randomNode->joints.count(randomJoint) == 0)
+		randomNode = chooseNode(1);		// First part does not have joints
+		if (randomNode->joint == DEFAULT_JOINT)
 		{
-			randomNode->joints.insert(randomJoint);
+			randomNode->joint = randomJoint;
 			return true;
 		}
 	}
@@ -981,11 +970,9 @@ bool fS_Genotype::removeJoint()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = chooseNode(1);    // First part does not have joints
-		int jointsCount = randomNode->joints.size();
-		if (jointsCount >= 1)
+		if (randomNode->joint != DEFAULT_JOINT)
 		{
-			int index = *(randomNode->joints.begin()) + rndUint(jointsCount);
-			randomNode->joints.erase(index);
+			randomNode->joint = DEFAULT_JOINT;
 			return true;
 		}
 	}
