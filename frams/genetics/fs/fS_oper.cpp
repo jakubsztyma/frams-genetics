@@ -181,8 +181,8 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 
 void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
-	vector < Fs_Neuron * > genoNeurons1 = geno->getAllNeurons();
-	vector<Fs_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	if (!subNeurons.empty())
 	{
@@ -193,8 +193,8 @@ void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *
 
 void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
-	vector < Fs_Neuron * > genoNeurons1 = geno->getAllNeurons();
-	vector<Fs_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	// Shift the inputs right
 	if (!subNeurons.empty())

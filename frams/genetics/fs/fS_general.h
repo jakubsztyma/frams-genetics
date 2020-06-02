@@ -233,18 +233,18 @@ public:
 /**
  * Represent a neuron and its inputs
  */
-class Fs_Neuron
+class fS_Neuron
 {
 public:
 	SString clss;
 	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 
-	Fs_Neuron(const char *str, int length);
+	fS_Neuron(const char *str, int length);
 
-	Fs_Neuron(char neuronType);
+	fS_Neuron(char neuronType);
 
-	Fs_Neuron(){};
+	fS_Neuron(){};
 
 	bool acceptsInputs()
 	{
@@ -278,7 +278,7 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	char joint = DEFAULT_JOINT;           /// Set of all joints
-	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
+	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
 
@@ -449,7 +449,7 @@ public:
 	 * @param node The beginning of subtree
 	 * @return The vector of neurons
 	 */
-	static vector<Fs_Neuron *> extractNeurons(Node *node);
+	static vector<fS_Neuron *> extractNeurons(Node *node);
 
 	/**
 	 * Get the index of the neuron in vector of neurons
@@ -457,7 +457,7 @@ public:
 	 * @param changedNeuron
 	 * @return
 	 */
-	static int getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron);
+	static int getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNeuron);
 
 	/**
 	 * Left- or right- shift the indexes of neuro connections by the given range
@@ -466,13 +466,13 @@ public:
 	 * @param end The end of the range
 	 * @param shift
 	 */
-	static void shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift);
+	static void shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, int end, SHIFT shift);
 
 	/**
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
-	vector<Fs_Neuron *> getAllNeurons();
+	vector<fS_Neuron *> getAllNeurons();
 
 	/**
 	 * Counts all the nodes in genotype
@@ -514,7 +514,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, SHIFT shift);
+	void rearrangeNeuronConnections(fS_Neuron *newNeuron, SHIFT shift);
 
 	/**
 	 * Performs add joint mutation on genotype

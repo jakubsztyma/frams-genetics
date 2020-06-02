@@ -40,7 +40,7 @@ int countModifiers(SString genotype)
 
 int countNeuroConnections(fS_Genotype &geno)
 {
-	vector<Fs_Neuron*> neurons = geno.getAllNeurons();
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
 	int result = 0;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 		result += neurons[i]->inputs.size();
@@ -49,7 +49,7 @@ int countNeuroConnections(fS_Genotype &geno)
 
 void testAllPartSizesValid()
 {
-	int size = 14;
+	int size = 16;
 	SString test_cases[] = {
 			"S:C{x=2000.0}",	// Too big dimension
 			"S:C{y=2000.0}",
@@ -61,6 +61,8 @@ void testAllPartSizesValid()
 			"S:E{y=1.1}",
 			"S:E{z=1.1}",
 			"S:R{x=1.1;y=1.2}",
+			"S:R{x=1.1}",
+			"S:R{y=1.1}",
 			"S:SR{x=999.0}",
 			"S:C(R,E{z=1.1})",
 			"S:C{x=1.5;y=1.5;z=1.5}",	// Test volume
@@ -237,8 +239,8 @@ void testRearrangeInputs()
 	for(int i=0; i<size; i++)
 	{
 		fS_Genotype geno(before);
-		vector<Fs_Neuron*> allNeurons = geno.getAllNeurons();
-		Fs_Neuron *neuron = allNeurons[neuronNumber[i]];
+		vector<fS_Neuron*> allNeurons = geno.getAllNeurons();
+		fS_Neuron *neuron = allNeurons[neuronNumber[i]];
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
@@ -567,7 +569,7 @@ int main(int argc, char *argv[])
 		operationCount = std::stod(argv[1]);
 	else
 		operationCount = 100;
-	evolutionTest(operationCount);
+//	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
 	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
