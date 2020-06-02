@@ -792,8 +792,6 @@ void fS_Genotype::buildNeuroConnections(Model &model)
 		for (auto it = neuron->inputs.begin(); it != neuron->inputs.end(); ++it)
 		{
 			Neuro *inputNeuro = model.getNeuro(it->first);
-			if(inputNeuro == nullptr)
-				std::cout<<"Geno: "<<it->first<<" "<<getGeno().c_str()<<std::endl;
 			modelNeuro->addInput(inputNeuro, it->second);
 
 		}
@@ -878,6 +876,10 @@ int fS_Genotype::getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNe
 
 void fS_Genotype::shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift)
 {
+	if(start == -1 || end == -1)
+		return;
+	int shiftValue = shift * (end - start + 1);
+
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
 		Fs_Neuron *n = neurons[i];
@@ -890,12 +892,12 @@ void fS_Genotype::shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, 
 			{
 				if(end >= it->first )
 				{
-					if (shift == 1)
-						newInputs[it->first + shift] = it->second;
+					if (shift == RIGHT)
+						newInputs[it->first + shiftValue] = it->second;
 					// If shift == -1, just delete the input
 				}
 				else if (it->first > end)
-					newInputs[it->first + shift] = it->second;
+					newInputs[it->first + shiftValue] = it->second;
 			}
 		}
 		n->inputs = newInputs;
@@ -936,7 +938,6 @@ bool fS_Genotype::allPartSizesValid()
 	{
 		if(!nodes[i]->isPartSizeValid())
 		{
-			std::cout<<getGeno().c_str()<<std::endl;
 			return false;
 		}
 	}

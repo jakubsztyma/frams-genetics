@@ -153,6 +153,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	Node *subtree1 = chosen[0]->children[indexes[0]];
 	Node *subtree2 = chosen[1]->children[indexes[1]];
 	int subOldStart1 = -1, subOldStart2 = -1;
+
 	rearrangeConnectionsBeforeCrossover(parents[0],  subtree1, subOldStart1);
 	rearrangeConnectionsBeforeCrossover(parents[1],  subtree2, subOldStart2);
 
@@ -205,12 +206,13 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 		{
 			auto inputs = subNeurons[i]->inputs;
 			std::map<int, double> newInputs;
-			for (auto it = inputs.begin(); it != inputs.end(); ++it)
-			{
-				int newIndex = it->first - subOldStart + subStart;
-				if(subEnd > newIndex && newIndex > subStart)
-					newInputs[newIndex] = it->second;
-			}
+			// TODO figure out how to keep internal connections in subtree
+//			for (auto it = inputs.begin(); it != inputs.end(); ++it)
+//			{
+//				int newIndex = it->first + subStart;
+//				if(subEnd > newIndex && newIndex > subStart)
+//					newInputs[newIndex] = it->second;
+//			}
 			subNeurons[i]->inputs = newInputs;
 		}
 		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, RIGHT);

@@ -240,7 +240,6 @@ void testRearrangeInputs()
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
-//		cout<<geno.getGeno().c_str()<<endl;
 		assert(geno.getGeno() == after[i]);
 	}
 
@@ -292,11 +291,6 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		if(crossOverResult == GENOPER_OK)
-		{
-			assert(*gens[i1] != SString(arr1));
-			assert(*gens[i2] != SString(arr2));
-		}
 		assert(0. < f1 && f1 < 1.);
 		assert(0. < f2 && f2 < 1.);
 
@@ -560,13 +554,13 @@ int main()
 
 	for (int i = 0; i < size; i++)
 	{
-		testOneGenotype(test_cases[i], expectedPartCount[i]);
+//		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
-	int operationCount = 50000;
+	int operationCount = 100000;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
