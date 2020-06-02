@@ -47,7 +47,7 @@ const SString NEURON_INPUT_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
-enum SHIFT
+enum class SHIFT
 {
 	LEFT = -1,
 	RIGHT = 1

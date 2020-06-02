@@ -187,7 +187,7 @@ void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *
 	if (!subNeurons.empty())
 	{
 		subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subStart + subNeurons.size() - 1, LEFT);
+		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subStart + subNeurons.size() - 1, SHIFT::LEFT);
 	}
 }
 
@@ -215,6 +215,6 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 //			}
 			subNeurons[i]->inputs = newInputs;
 		}
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, RIGHT);
+		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, SHIFT::RIGHT);
 	}
 }

@@ -208,12 +208,12 @@ void testRearrangeInputs()
 	int size = 6;
 	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
-			RIGHT,
-			RIGHT,
-			RIGHT,
-			LEFT,
-			LEFT,
-			LEFT,
+			SHIFT::RIGHT,
+			SHIFT::RIGHT,
+			SHIFT::RIGHT,
+			SHIFT::LEFT,
+			SHIFT::LEFT,
+			SHIFT::LEFT,
 	};
 	int neuronNumber[size] = {
 			0,	// First

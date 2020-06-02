@@ -878,7 +878,9 @@ void fS_Genotype::shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, 
 {
 	if(start == -1 || end == -1)
 		return;
-	int shiftValue = shift * (end - start + 1);
+	int shiftValue = end - start + 1;
+	if(shift == SHIFT::LEFT)
+		shiftValue *= -1;
 
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
@@ -892,7 +894,7 @@ void fS_Genotype::shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, 
 			{
 				if(end >= it->first )
 				{
-					if (shift == RIGHT)
+					if (shift == SHIFT::RIGHT)
 						newInputs[it->first + shiftValue] = it->second;
 					// If shift == -1, just delete the input
 				}
@@ -1188,7 +1190,7 @@ bool fS_Genotype::addNeuro()
 
 	randomNode->neurons.push_back(newNeuron);
 
-	rearrangeNeuronConnections(newNeuron, RIGHT);
+	rearrangeNeuronConnections(newNeuron, SHIFT::RIGHT);
 	return true;
 }
 
@@ -1203,7 +1205,7 @@ bool fS_Genotype::removeNeuro()
 			// Remove the chosen neuron
 			int size = randomNode->neurons.size();
 			Fs_Neuron *it = randomNode->neurons[rndUint(size)];
-			rearrangeNeuronConnections(it, LEFT);        // Important to rearrange the neurons before deleting
+			rearrangeNeuronConnections(it, SHIFT::LEFT);        // Important to rearrange the neurons before deleting
 			swap(it, randomNode->neurons.back());
 			randomNode->neurons.pop_back();
 			randomNode->neurons.shrink_to_fit();
