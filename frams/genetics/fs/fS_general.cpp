@@ -134,7 +134,7 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	}
 	catch (const char *msg)
 	{
-//		delete partDescription;
+		delete partDescription;
 		throw msg;
 	}
 
@@ -1013,10 +1013,10 @@ bool fS_Genotype::changeParam(bool ensureCircleSection)
 			advance(it, rndUint(paramCount));
 			double oldValue = it->second;
 
-			// TODO change parameters by more sensible values
-			it->second += RndGen.Gauss(0, 0.5);
-			if (it->second < 0)
-				it->second *= -1;
+			if(rndUint(2) == 0)
+				it->second *= PARAM_MULTIPLIER;
+			else
+				it->second /= PARAM_MULTIPLIER;
 
 			// Do not allow invalid changes in part size
 			if(it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)

@@ -54,7 +54,10 @@ enum SHIFT
 };
 
 /** @name Every modifier changes the underlying value by this multiplier */
-const float MODIFIER_MULTIPLIER = 1.1;
+const double  MODIFIER_MULTIPLIER = 1.1;
+/** @name In mutation parameters will be multiplied by at most this value */
+const double PARAM_MULTIPLIER = 1.5;
+
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -263,7 +266,7 @@ class Node
 	friend class fS_Operators;
 
 private:
-	Substring *partDescription;
+	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
 	char partType; /// The type of the part (E, P, C)
