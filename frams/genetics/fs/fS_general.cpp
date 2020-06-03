@@ -72,21 +72,19 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 	if (length == 0)
 		return;
 
-	int index = 0;
-	SString cls;
-	cls += str[0];
-	if (NeuroLibrary::staticlibrary.findClassIndex(cls, true) != -1)
+	vector <SString> inputStrings;
+	strSplit(SString(str, length), NEURON_INTERNAL_SEPARATOR, false, inputStrings);
+	if(inputStrings.empty())
+		return;
+
+	int inputStart = 0;
+	if (NeuroLibrary::staticlibrary.findClassIndex(inputStrings[0], true) != -1)
 	{
-		ncls = NeuroLibrary::staticlibrary.findClass(cls, true);
-		index = 1;
-		if (length == 1)
-			return;
+		inputStart = 1;
+		ncls = NeuroLibrary::staticlibrary.findClass(inputStrings[0], true);
 	}
 
-	vector <SString> inputStrings;
-	strSplit(SString(str + index, length), NEURON_INPUT_SEPARATOR, false, inputStrings);
-
-	for (unsigned int i = 0; i < inputStrings.size(); i++)
+	for (unsigned int i = inputStart; i < inputStrings.size(); i++)
 	{
 		SString keyValue = inputStrings[i];
 		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);
@@ -658,11 +656,15 @@ void Node::getGeno(SString &result)
 			if (i != 0)
 				result += NEURON_SEPARATOR;
 			if (n->ncls != nullptr)
+			{
 				result += n->ncls->getName().c_str();
+				if(n->inputs.size() > 0)
+					result += NEURON_INTERNAL_SEPARATOR;
+			}
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{
 				if (it != n->inputs.begin())
-					result += NEURON_INPUT_SEPARATOR;
+					result += NEURON_INTERNAL_SEPARATOR;
 				result += SString::valueOf(it->first);
 				if (it->second != DEFAULT_NEURO_CONNECTION_WEIGHT)
 				{

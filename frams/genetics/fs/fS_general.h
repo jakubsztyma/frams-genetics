@@ -43,7 +43,7 @@ const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
 const char NEURON_END = ']';
 const char NEURON_SEPARATOR = ';';
-const SString NEURON_INPUT_SEPARATOR("_");
+const SString NEURON_INTERNAL_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 

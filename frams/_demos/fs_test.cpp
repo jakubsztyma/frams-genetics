@@ -210,7 +210,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -228,12 +228,12 @@ void testRearrangeInputs()
 			5,
 	};
 	SString after[size] = {
-			"MSJ:E[T]bE[3_4]cRbC[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[3_4]cRbC[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[1_2]cRbC[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2]cRbC[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cRbC[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[1_2]cRbC[T;G_0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2]cRbC[T;G_1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for(int i=0; i<size; i++)
@@ -256,11 +256,11 @@ void evolutionTest(int operationCount)
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
 	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
 	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=1.1}bRcR");
 	gens[3] = new SString("SMJ:R[1]{j=3.9;z=1.04}R[1]cRC[0;1]{x=1.03}");
-	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
+	gens[4] = new SString("SMJ:E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -503,11 +503,11 @@ int main(int argc, char *argv[])
 															   "n:p=0\n"
 															   "n:p=1\n"
 															   "c:1, 0\n"},
-			{"S:E[G;T0]",                                      "p:sh=1\n"
+			{"S:E[G;T_0]",                                      "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "c:1, 0\n"},
-			{"S:E[G2;T0;T0_1]",                                "p:sh=1\n"
+			{"S:E[G_2;T_0;T_0_1]",                                "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "n:p=0, d=T\n"
@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
-			{"S:E[G2;T0;T0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
+			{"S:E[G_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
 															   "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 															   "j:0, 1, sh=1\n"
 															   "n:p=0, d=G\n"
@@ -525,7 +525,7 @@ int main(int argc, char *argv[])
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
-			{"S:E[G2:2.0;T0:3.0;T0:4.0_1:5.0]",                "p:sh=1\n"
+			{"S:E[G_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "n:p=0, d=T\n"
@@ -533,19 +533,35 @@ int main(int argc, char *argv[])
 															   "c:1, 0, 3.0\n"
 															   "c:2, 0, 4.0\n"
 															   "c:2, 1, 5.0\n"},
-			{"S:E[]E[G0]",                                      "p:sh=1\n"
+			{"S:E[]E[G_0]",                                      "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "j:0, 1, sh=1\n"
 															   "n:p=0\n"
 															   "n:j=0, d=G\n"
 															   "c:1, 0\n"},
+			{"S:E[]E[Rnd_0]",                                      "p:sh=1\n"
+																 "p:2.0, sh=1\n"
+																 "j:0, 1, sh=1\n"
+																 "n:p=0\n"
+																 "n:p=1, d=Rnd\n"
+																 "c:1, 0\n"},
+			{"S:E[Rnd]E[Rnd_0_1;Sin_0]",                                      "p:sh=1\n"
+																   "p:2.0, sh=1\n"
+																   "j:0, 1, sh=1\n"
+																   "n:p=0, d=Rnd\n"
+																   "n:p=1, d=Rnd\n"
+																   "n:p=1, d=Sin\n"
+																   "c:1, 0\n"
+																   "c:1, 1\n"
+																   "c:2, 0\n"
+																 	},
 	};
 	srand(time(NULL));
 
 
-	const int size = 55;
+	const int size = 57;
 	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2};
+							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2};
 	auto start = chrono::steady_clock::now();
 
 	for (int i = 0; i < size; i++)
