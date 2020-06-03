@@ -110,6 +110,7 @@ const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
+const char SIZE_MODIFIER= 's';
 const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
@@ -241,8 +242,6 @@ public:
 	std::map<int, double> inputs;
 
 	fS_Neuron(const char *str, int length);
-
-	fS_Neuron(char neuronType);
 
 	fS_Neuron(){};
 

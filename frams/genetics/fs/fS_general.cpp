@@ -67,15 +67,6 @@ void State::rotate(const Pt3D &rotation)
 	v.normalize();
 }
 
-fS_Neuron::fS_Neuron(char neuronType)
-{
-	SString cls;
-	cls += neuronType;
-	if (NeuroLibrary::staticlibrary.findClassIndex(cls, true) == -1)
-		throw "Invalid neuron type";
-	ncls = NeuroLibrary::staticlibrary.findClass(cls, true);
-}
-
 fS_Neuron::fS_Neuron(const char *str, int length)
 {
 	if (length == 0)
@@ -437,7 +428,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 
 void Node::getState(State *_state, Pt3D parentSize)
 {
-	if(state == nullptr)
+	if(state != nullptr)
 		delete state;
 	if (isStart)
 		state = _state;
@@ -1129,7 +1120,7 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 
 		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
 		if(!ensureCircleSection
-		|| newType == CUBOID)
+		|| newType == CUBOID
 		|| newType == CYLINDER && (randomNode->partType == ELLIPSOID || hasNoBaseParams))
 		{
 			randomNode->partType = newType;
@@ -1146,6 +1137,13 @@ bool fS_Genotype::addModifier()
 	if (rndUint(2) == 1)
 		randomModifier = toupper(randomModifier);
 	randomNode->modifiers.push_back(randomModifier);
+
+	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
+	if(isSizeMod && !allPartSizesValid())
+	{
+		randomNode->modifiers.pop_back();
+		return false;
+	}
 	return true;
 }
 
@@ -1156,7 +1154,15 @@ bool fS_Genotype::removeModifier()
 		Node *randomNode = chooseNode();
 		if (!(randomNode->modifiers.empty()))
 		{
+			char oldMod = randomNode->modifiers.back();
 			randomNode->modifiers.pop_back();
+
+			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
+			if(isSizeMod && !allPartSizesValid())
+			{
+				randomNode->modifiers.push_back(oldMod);
+				return false;
+			}
 			return true;
 		}
 	}

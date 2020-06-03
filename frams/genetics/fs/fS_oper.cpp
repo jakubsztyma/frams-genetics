@@ -42,6 +42,8 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname)
 	try
 	{
 		fS_Genotype genotype = fS_Genotype(geno);
+		if(!genotype.allPartSizesValid())
+			return 1;
 	}
 	catch (const char *msg)
 	{
@@ -85,10 +87,10 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 			result = genotype.changeParam(ensureCircleSection);
 			break;
 		case FS_ADD_MOD:
-//			result = genotype.addModifier();
+			result = genotype.addModifier();
 			break;
 		case FS_REM_MOD:
-//			result = genotype.removeModifier();
+			result = genotype.removeModifier();
 			break;
 		case FS_ADD_NEURO:
 			result = genotype.addNeuro();
