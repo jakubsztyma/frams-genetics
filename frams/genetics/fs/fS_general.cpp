@@ -875,6 +875,7 @@ int fS_Genotype::getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNe
 
 void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, int end, SHIFT shift)
 {
+	// TODO write unit tests
 	if(start == -1 || end == -1)
 		return;
 	int shiftValue = end - start + 1;

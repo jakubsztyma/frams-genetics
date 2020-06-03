@@ -135,15 +135,34 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 
 	Node *chosen[parentCount];
 	int indexes[2];
-	// Choose random subtrees
-	for (int i = 0; i < parentCount; i++)
+	// Choose random subtrees that have similar size
+	bool success = false;
+	for(int i=0; i<crossOverTries; i++)
 	{
-		vector < Node * > allNodes = parents[i]->getAllNodes();
-		do
+		for (int i = 0; i < parentCount; i++)
 		{
-			chosen[i] = allNodes[rndUint(allNodes.size())];
-		} while (chosen[i]->childSize == 0);
-		indexes[i] = rndUint(chosen[i]->childSize);
+			vector < Node * > allNodes = parents[i]->getAllNodes();
+			do
+			{
+				chosen[i] = allNodes[rndUint(allNodes.size())];
+			} while (chosen[i]->childSize == 0);
+			indexes[i] = rndUint(chosen[i]->childSize);
+		}
+		// Check if subtrees have similar sizes
+		double count1 = chosen[0]->children[indexes[0]]->getNodeCount();
+		double count2 = chosen[1]->children[indexes[1]]->getNodeCount();
+		double quotient = count1 / count2;
+		if(1. / crossOverThreshold < quotient && quotient < crossOverThreshold)
+		{
+			success = true;
+			break;
+		}
+	}
+	if(!success)
+	{
+		delete parents[0];
+		delete parents[1];
+		return GENOPER_OPFAIL;
 	}
 
 	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
