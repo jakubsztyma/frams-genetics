@@ -256,10 +256,10 @@ void evolutionTest(int operationCount)
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G0_2]bC[0_1_2]{x=3.0;y=3.0;z=3.0}");
+	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
 	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
-	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=5.1}bRcR");
-	gens[3] = new SString("SMJ:R[1]{j=3.9;y=3.4}R[1]cRC[0;1]{x=4.3}");
+	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("SMJ:R[1]{j=3.9;z=1.04}R[1]cRC[0;1]{x=1.03}");
 	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
@@ -293,18 +293,18 @@ void evolutionTest(int operationCount)
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
 			methodUsages[method] ++;
 
-		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
+//		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		assert(0. < f1 && f1 < 1.);
-		assert(0. < f2 && f2 < 1.);
+//		assert(0. < f1 && f1 < 1.);
+//		assert(0. < f2 && f2 < 1.);
 
-		if (crossOverResult == GENOPER_OK)
-		{
+//		if (crossOverResult == GENOPER_OK)
+//		{
 			if (1 == operators.checkValidity(arr2, ""))
 				cout << arr2;
 			assert(0 == operators.checkValidity(arr1, ""));
 			assert(0 == operators.checkValidity(arr2, ""));
-		}
+//		}
 
 		delete gens[i1];
 		delete gens[i2];
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
 		operationCount = std::stod(argv[1]);
 	else
 		operationCount = 100;
-//	evolutionTest(operationCount);
+	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
 	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;

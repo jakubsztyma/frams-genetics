@@ -437,6 +437,8 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 
 void Node::getState(State *_state, Pt3D parentSize)
 {
+	if(state == nullptr)
+		delete state;
 	if (isStart)
 		state = _state;
 	else
@@ -1125,9 +1127,9 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 		while (newType == randomNode->partType)
 			newType = getRandomPartType();
 
-		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) > 0;
+		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
 		if(!ensureCircleSection
-		|| newType == CUBOID
+		|| newType == CUBOID)
 		|| newType == CYLINDER && (randomNode->partType == ELLIPSOID || hasNoBaseParams))
 		{
 			randomNode->partType = newType;
