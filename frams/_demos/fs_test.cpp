@@ -50,7 +50,6 @@ int countNeuroConnections(fS_Genotype &geno)
 void testRearrangeBeforeCrossover()
 {
 	fS_Operators operators;
-	int size = 9;
 	SString test_cases[][2] = {
 			{"S:EE[]", "S:EE[]"},
 			{"S:E[;;]E[;;]", "S:E[;;]E[;;]"},
@@ -65,7 +64,7 @@ void testRearrangeBeforeCrossover()
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
 	};
-	for(int i=0; i<size; i++)
+	for(int i=0; i<(int)sizeof(test_cases) / sizeof(test_cases[0]); i++)
 	{
 		fS_Genotype geno(test_cases[i][0]);
 		Node *subtree = geno.getAllNodes()[1];
@@ -85,7 +84,6 @@ void testRearrangeBeforeCrossover()
 void testCrossoverSimilarTrees()
 {
 	fS_Operators operators;
-	int size = 8;
 	SString test_cases[] = {
 			"S:EE",
 			"S:E(E,E)",
@@ -101,7 +99,7 @@ void testCrossoverSimilarTrees()
 	// Repeat the test several times as crossover is not deterministic
 	for(int z=0; z < 10; z++)
 	{
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < (int)sizeof(test_cases) / sizeof(test_cases[0]); i++)
 		{
 			char *arr1 = strdup(test_cases[i].c_str());
 			char *arr2 = strdup(arr1);
@@ -117,7 +115,6 @@ void testCrossoverSimilarTrees()
 
 void testAllPartSizesValid()
 {
-	int size = 16;
 	SString test_cases[] = {
 			"S:C{x=2000.0}",	// Too big dimension
 			"S:C{y=2000.0}",
@@ -137,7 +134,7 @@ void testAllPartSizesValid()
 			"S:C{x=1.8;y=1.8}",
 	};
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < (int)sizeof(test_cases) / sizeof(test_cases[0]); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
 		assert(geno.allPartSizesValid() == false);
@@ -626,12 +623,11 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 
 
-	const int size = 57;
 	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
 							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2};
 	auto start = chrono::steady_clock::now();
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < (int)sizeof(test_cases) / sizeof(test_cases[0]); i++)
 	{
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
