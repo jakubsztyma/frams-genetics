@@ -47,6 +47,43 @@ int countNeuroConnections(fS_Genotype &geno)
 	return result;
 }
 
+/**
+ * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
+ * Test cases work when crossOverThreshold < 1.4
+ */
+void testCrossoverSimilarTrees()
+{
+	fS_Operators operators;
+	int size = 8;
+	SString test_cases[] = {
+			"S:EE",
+			"S:E(E,E)",
+			"S:EEEE",
+			"S:ECRE",
+			"S:E(EE,CRE)",
+			"S:E(EEE,EEE,EEE)",
+			"S:E(CRE,CRE,CRE)",
+			 "S:EEEEEECRE(CRE,CRE,CRE)",
+	};
+
+	float f1, f2;
+	// Repeat the test several times as crossover is not deterministic
+	for(int z=0; z < 10; z++)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			char *arr1 = strdup(test_cases[i].c_str());
+			char *arr2 = strdup(arr1);
+
+			operators.crossOver(arr1, arr2, f1, f2);
+
+			assert(strcmp(arr1, test_cases[i].c_str()) == 0);
+			free(arr1);
+			free(arr2);
+		}
+	}
+}
+
 void testAllPartSizesValid()
 {
 	int size = 16;
@@ -295,12 +332,11 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		assert(0. < f1 && f1 < 1.);
-		assert(0. < f2 && f2 < 1.);
-
 		// TODO remove checkValidity condition
 		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
+			assert(0. < f1 && f1 < 1.);
+			assert(0. < f2 && f2 < 1.);
 			assert(0 == operators.checkValidity(arr1, ""));
 			assert(0 == operators.checkValidity(arr2, ""));
 
@@ -572,6 +608,7 @@ int main(int argc, char *argv[])
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
+	testCrossoverSimilarTrees();
 	int operationCount;
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);

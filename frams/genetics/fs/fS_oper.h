@@ -32,7 +32,7 @@
 //@}
 
 const int crossOverTries = 10;
-const int crossOverThreshold = 2.0;
+const int crossOverThreshold = 1.4;
 
 class fS_Operators : public GenoOperators
 {
