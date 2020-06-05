@@ -31,13 +31,16 @@
 #define FS_MOD_NEURO_PARAMS 15
 //@}
 
+const int crossOverTries = 10;
+const int crossOverThreshold = 2.0;
+
 class fS_Operators : public GenoOperators
 {
 public:
 	fS_Operators();
 
 	double prob[FS_OPCOUNT];
-	int ensureCircleSection;
+	paInt ensureCircleSection;
 
 	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
 

@@ -43,11 +43,11 @@ const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
 const char NEURON_END = ']';
 const char NEURON_SEPARATOR = ';';
-const SString NEURON_INPUT_SEPARATOR("_");
+const SString NEURON_INTERNAL_SEPARATOR("_");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
-enum SHIFT
+enum class SHIFT
 {
 	LEFT = -1,
 	RIGHT = 1
@@ -103,13 +103,14 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
-const char CUBOID = 'P';
-const char CYLINDER = 'C';
-const string PART_TYPES = "EPC";
+const char CUBOID = 'C';
+const char CYLINDER = 'R';
+const string PART_TYPES = "ECR";
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
+const char SIZE_MODIFIER= 's';
 const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
@@ -233,18 +234,16 @@ public:
 /**
  * Represent a neuron and its inputs
  */
-class Fs_Neuron
+class fS_Neuron
 {
 public:
 	SString clss;
 	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 
-	Fs_Neuron(const char *str, int length);
+	fS_Neuron(const char *str, int length);
 
-	Fs_Neuron(char neuronType);
-
-	Fs_Neuron(){};
+	fS_Neuron(){};
 
 	bool acceptsInputs()
 	{
@@ -269,7 +268,7 @@ private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
-	char partType; /// The type of the part (E, P, C)
+	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
 	unsigned int childSize = 0; /// The number of direct children
 	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
@@ -278,9 +277,21 @@ private:
 	vector<Node *> children;    /// Vector of all direct children
 	vector<char> modifiers;     /// Vector of all modifiers
 	char joint = DEFAULT_JOINT;           /// Set of all joints
-	vector<Fs_Neuron *> neurons;    /// Vector of all the neurons
+	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	Pt3D getSize();
+
+	double getVolume()
+	{
+		Pt3D size = getSize();
+		double radiiProduct = size.x * size.y * size.z;
+		if(partType == CUBOID)
+			return 8 * radiiProduct;
+		else if(partType == CYLINDER)
+			return 2 * M_PI * (size.x * size.y * size.z);
+		else // if(partType == ELLIPSOID)
+			return (4. / 3.) * M_PI * radiiProduct;
+	}
 
 	Pt3D getRotation();
 
@@ -437,7 +448,7 @@ public:
 	 * @param node The beginning of subtree
 	 * @return The vector of neurons
 	 */
-	static vector<Fs_Neuron *> extractNeurons(Node *node);
+	static vector<fS_Neuron *> extractNeurons(Node *node);
 
 	/**
 	 * Get the index of the neuron in vector of neurons
@@ -445,22 +456,22 @@ public:
 	 * @param changedNeuron
 	 * @return
 	 */
-	static int getNeuronIndex(vector<Fs_Neuron*> neurons, Fs_Neuron *changedNeuron);
+	static int getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNeuron);
 
 	/**
-	 * Left or right shift the indexes of neuro connections by the given range
+	 * Left- or right- shift the indexes of neuro connections by the given range
 	 * @param neurons
 	 * @param start The beginning of the range
 	 * @param end The end of the range
 	 * @param shift
 	 */
-	static void shiftNeuroConnections(vector<Fs_Neuron*> &neurons, int start, int end, SHIFT shift);
+	static void shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, int end, SHIFT shift);
 
 	/**
 	 * Get all existing neurons
 	 * @return vector of all neurons
 	 */
-	vector<Fs_Neuron *> getAllNeurons();
+	vector<fS_Neuron *> getAllNeurons();
 
 	/**
 	 * Counts all the nodes in genotype
@@ -469,7 +480,7 @@ public:
 	int getNodeCount();
 
 	/**
-	 * Check is sizes of all parts in genotype are valid
+	 * Check if sizes of all parts in genotype are valid
 	 * @return
 	 */
 	bool allPartSizesValid();
@@ -502,7 +513,7 @@ public:
 	/**
 	 * After creating or deleting a new neuron, rearrange other neurons so that the inputs match
 	 */
-	void rearrangeNeuronConnections(Fs_Neuron *newNeuron, SHIFT shift);
+	void rearrangeNeuronConnections(fS_Neuron *newNeuron, SHIFT shift);
 
 	/**
 	 * Performs add joint mutation on genotype

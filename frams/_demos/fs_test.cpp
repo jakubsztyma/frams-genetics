@@ -9,7 +9,7 @@
 using namespace std;
 
 
-int countSigns(SString genotype, string chars, int count)
+int countChars(SString genotype, string chars, int count)
 {
 	int result = 0;
 	for (int i = 0; i < genotype.len(); i++)
@@ -25,22 +25,22 @@ int countSigns(SString genotype, string chars, int count)
 
 int countJoints(SString genotype)
 {
-	return countSigns(genotype, JOINTS, 2);
+	return countChars(genotype, JOINTS, 2);
 }
 
 int countParams(SString genotype)
 {
-	return countSigns(genotype, "=", 1);
+	return countChars(genotype, "=", 1);
 }
 
 int countModifiers(SString genotype)
 {
-	return countSigns(genotype, "IiFfSs", 6);
+	return countChars(genotype, "IiFfSs", 6);
 }
 
 int countNeuroConnections(fS_Genotype &geno)
 {
-	vector<Fs_Neuron*> neurons = geno.getAllNeurons();
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
 	int result = 0;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 		result += neurons[i]->inputs.size();
@@ -49,20 +49,24 @@ int countNeuroConnections(fS_Genotype &geno)
 
 void testAllPartSizesValid()
 {
-	int size = 12;
+	int size = 16;
 	SString test_cases[] = {
-			"S:P{x=2000.0}",
-			"S:P{y=2000.0}",
-			"S:P{z=2000.0}",
-			"S:P{x=0.0005}",
-			"S:P{y=0.0005}",
-			"S:P{z=0.0005}",
-			"S:E{x=1.1}",
+			"S:C{x=2000.0}",	// Too big dimension
+			"S:C{y=2000.0}",
+			"S:C{z=2000.0}",
+			"S:C{x=0.0005}",	// Too small dimension
+			"S:C{y=0.0005}",
+			"S:C{z=0.0005}",
+			"S:E{x=1.1}",		// Invalid size params
 			"S:E{y=1.1}",
 			"S:E{z=1.1}",
-			"S:C{x=1.1;y=1.2}",
-			"S:SC{x=999.0}",
-			"S:P(C,E{z=1.1})",
+			"S:R{x=1.1;y=1.2}",
+			"S:R{x=1.1}",
+			"S:R{y=1.1}",
+			"S:SR{x=999.0}",
+			"S:C(R,E{z=1.1})",
+			"S:C{x=1.5;y=1.5;z=1.5}",	// Test volume
+			"S:C{x=1.8;y=1.8}",
 	};
 
 	for (int i = 0; i < size; i++)
@@ -206,14 +210,14 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
-			RIGHT,
-			RIGHT,
-			RIGHT,
-			LEFT,
-			LEFT,
-			LEFT,
+			SHIFT::RIGHT,
+			SHIFT::RIGHT,
+			SHIFT::RIGHT,
+			SHIFT::LEFT,
+			SHIFT::LEFT,
+			SHIFT::LEFT,
 	};
 	int neuronNumber[size] = {
 			0,	// First
@@ -224,19 +228,19 @@ void testRearrangeInputs()
 			5,
 	};
 	SString after[size] = {
-			"MSJ:E[T]bE[3_4]cCbP[T;G2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[3_4]cCbP[T;G1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[1_2]cCbP[T;G0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2]cCbP[T;G1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cCbP[T;G1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[1_2]cRbC[T;G_0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2]cRbC[T;G_1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for(int i=0; i<size; i++)
 	{
 		fS_Genotype geno(before);
-		vector<Fs_Neuron*> allNeurons = geno.getAllNeurons();
-		Fs_Neuron *neuron = allNeurons[neuronNumber[i]];
+		vector<fS_Neuron*> allNeurons = geno.getAllNeurons();
+		fS_Neuron *neuron = allNeurons[neuronNumber[i]];
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
@@ -252,11 +256,11 @@ void evolutionTest(int operationCount)
 	int gen_size = 5;
 	fS_Operators operators;
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cCbP[G0_2]bP[0_1_2]{x=3.0;y=3.0;z=3.0}");
-	gens[1] = new SString("SMJ:C{j=3.9}cC[0]bC[0_1]");
-	gens[2] = new SString("SMJ:C[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=5.1}bCcC");
-	gens[3] = new SString("SMJ:C[1]{j=3.9;y=3.4}C[1]cCP[0;1]{x=4.3}");
-	gens[4] = new SString("SMJ:E(cE(bE[T;T1_2],cE,bP[0],cC),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
+	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
+	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("SMJ:R[1]{j=3.9;z=1.04}R[1]cRC[0;1]{x=1.03}");
+	gens[4] = new SString("SMJ:E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -294,30 +298,22 @@ void evolutionTest(int operationCount)
 		assert(0. < f1 && f1 < 1.);
 		assert(0. < f2 && f2 < 1.);
 
-		if (crossOverResult == GENOPER_OK)
+		// TODO remove checkValidity condition
+		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
-			if (1 == operators.checkValidity(arr2, ""))
-				cout << arr2;
 			assert(0 == operators.checkValidity(arr1, ""));
 			assert(0 == operators.checkValidity(arr2, ""));
+
+			delete gens[i1];
+			delete gens[i2];
+			gens[i1] = new SString(arr1);
+			gens[i2] = new SString(arr2);
+
+			// Check if genotypes convert correctly
+			MultiMap map;
+			converter.convert(*gens[i1], &map, false);
+			converter.convert(*gens[i2], &map, false);
 		}
-
-		delete gens[i1];
-		delete gens[i2];
-		gens[i1] = new SString(arr1);
-		gens[i2] = new SString(arr2);
-
-		// Check if genotypes have correct part size
-		assert(fS_Genotype(*gens[i1]).allPartSizesValid());
-		assert(fS_Genotype(*gens[i2]).allPartSizesValid());
-
-		// Check if genotypes convert correctly
-		MultiMap map;
-		converter.convert(*gens[i1], &map, false);
-		converter.convert(*gens[i2], &map, false);
-
-		// Check if genotypes have proper part sizes
-
 
 		free(arr1);
 		free(arr2);
@@ -331,12 +327,12 @@ void evolutionTest(int operationCount)
 	fclose(pFile);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	SString test_cases[][2] = {
 			{"S:E",                                            "p:sh=1\n"},
-			{"S:P",                                            "p:sh=2\n"},
-			{"S:C",                                            "p:sh=3\n"},
+			{"S:C",                                            "p:sh=2\n"},
+			{"S:R",                                            "p:sh=3\n"},
 			{"S:EEE",                                          "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
 			{"S:E(E,E)",                                       "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
 			{"S:E(E(E,E),E,E(E,E),E)",                         "p:sh=1\n"
@@ -359,11 +355,11 @@ int main()
 			},
 			{"S:EbE",                                          "p:sh=1\n"
 															   "p:2.0, sh=1\n"
-															   "j:0, 1, sh=2\n"}, // Parametrized joints
-			{"S:PcP",                                         "p:sh=2\n"
+															   "j:0, 1, sh=2\n"}, // Carametrized joints
+			{"S:CcC",                                         "p:sh=2\n"
 															   "p:2.0, sh=2\n"
 															   "j:0, 1, sh=3\n"}, // Many parametrized joints
-			{"S:ECbCcPCbPbE",                                "p:sh=1\n"
+			{"S:ERbRcCRbCbE",                                "p:sh=1\n"
 															   "p:2.0, sh=3\n"
 															   "p:4.0, sh=3\n"
 															   "p:6.0, sh=2\n"
@@ -507,11 +503,11 @@ int main()
 															   "n:p=0\n"
 															   "n:p=1\n"
 															   "c:1, 0\n"},
-			{"S:E[G;T0]",                                      "p:sh=1\n"
+			{"S:E[G;T_0]",                                      "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "c:1, 0\n"},
-			{"S:E[G2;T0;T0_1]",                                "p:sh=1\n"
+			{"S:E[G_2;T_0;T_0_1]",                                "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "n:p=0, d=T\n"
@@ -519,7 +515,7 @@ int main()
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
-			{"S:E[G2;T0;T0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
+			{"S:E[G_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
 															   "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 															   "j:0, 1, sh=1\n"
 															   "n:p=0, d=G\n"
@@ -529,7 +525,7 @@ int main()
 															   "c:1, 0\n"
 															   "c:2, 0\n"
 															   "c:2, 1\n"},
-			{"S:E[G2:2.0;T0:3.0;T0:4.0_1:5.0]",                "p:sh=1\n"
+			{"S:E[G_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
 															   "n:p=0, d=G\n"
 															   "n:p=0, d=T\n"
 															   "n:p=0, d=T\n"
@@ -537,30 +533,50 @@ int main()
 															   "c:1, 0, 3.0\n"
 															   "c:2, 0, 4.0\n"
 															   "c:2, 1, 5.0\n"},
-			{"S:E[]E[G0]",                                      "p:sh=1\n"
+			{"S:E[]E[G_0]",                                      "p:sh=1\n"
 															   "p:2.0, sh=1\n"
 															   "j:0, 1, sh=1\n"
 															   "n:p=0\n"
 															   "n:j=0, d=G\n"
 															   "c:1, 0\n"},
+			{"S:E[]E[Rnd_0]",                                      "p:sh=1\n"
+																 "p:2.0, sh=1\n"
+																 "j:0, 1, sh=1\n"
+																 "n:p=0\n"
+																 "n:p=1, d=Rnd\n"
+																 "c:1, 0\n"},
+			{"S:E[Rnd]E[Rnd_0_1;Sin_0]",                                      "p:sh=1\n"
+																   "p:2.0, sh=1\n"
+																   "j:0, 1, sh=1\n"
+																   "n:p=0, d=Rnd\n"
+																   "n:p=1, d=Rnd\n"
+																   "n:p=1, d=Sin\n"
+																   "c:1, 0\n"
+																   "c:1, 1\n"
+																   "c:2, 0\n"
+																 	},
 	};
 	srand(time(NULL));
 
 
-	const int size = 55;
+	const int size = 57;
 	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2};
+							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2};
 	auto start = chrono::steady_clock::now();
 
 	for (int i = 0; i < size; i++)
 	{
-//		testOneGenotype(test_cases[i], expectedPartCount[i]);
+		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
-	int operationCount = 100000;
+	int operationCount;
+	if(argc > 1)
+		operationCount = std::stod(argv[1]);
+	else
+		operationCount = 100;
 	evolutionTest(operationCount);
 
 	auto end = chrono::steady_clock::now();
