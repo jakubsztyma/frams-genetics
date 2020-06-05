@@ -133,7 +133,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 		return GENOPER_OPFAIL;
 	}
 
-	Node *chosen[parentCount];
+	Node *selected[parentCount];
 	int indexes[2];
 	// Choose random subtrees that have similar size
 	bool success = false;
@@ -144,13 +144,13 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 			vector < Node * > allNodes = parents[i]->getAllNodes();
 			do
 			{
-				chosen[i] = allNodes[rndUint(allNodes.size())];
-			} while (chosen[i]->childSize == 0);
-			indexes[i] = rndUint(chosen[i]->childSize);
+				selected[i] = allNodes[rndUint(allNodes.size())];
+			} while (selected[i]->childSize == 0);
+			indexes[i] = rndUint(selected[i]->childSize);
 		}
 		// Check if subtrees have similar sizes
-		double count1 = chosen[0]->children[indexes[0]]->getNodeCount();
-		double count2 = chosen[1]->children[indexes[1]]->getNodeCount();
+		double count1 = selected[0]->children[indexes[0]]->getNodeCount();
+		double count2 = selected[1]->children[indexes[1]]->getNodeCount();
 		double quotient = count1 / count2;
 		if(1. / crossOverThreshold < quotient && quotient < crossOverThreshold)
 		{
@@ -165,14 +165,14 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 		return GENOPER_OPFAIL;
 	}
 
-	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
-	double subtreeSize2 = chosen[1]->children[indexes[1]]->getNodeCount();
+	double subtreeSize1 = selected[0]->children[indexes[0]]->getNodeCount();
+	double subtreeSize2 = selected[1]->children[indexes[1]]->getNodeCount();
 	double restSize1 = parents[0]->getNodeCount() - subtreeSize1;
 	double restSize2 = parents[1]->getNodeCount() - subtreeSize2;
 
 	// Rearrange neurons before crossover
-	Node *subtree1 = chosen[0]->children[indexes[0]];
-	Node *subtree2 = chosen[1]->children[indexes[1]];
+	Node *subtree1 = selected[0]->children[indexes[0]];
+	Node *subtree2 = selected[1]->children[indexes[1]];
 	int subOldStart1 = -1, subOldStart2 = -1;
 
 	rearrangeConnectionsBeforeCrossover(parents[0],  subtree1, subOldStart1);
@@ -183,7 +183,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	chg2 = restSize2 / (restSize2 + subtreeSize1);
 
 	// Swap the subtress
-	std::swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+	std::swap(selected[0]->children[indexes[0]], selected[1]->children[indexes[1]]);
 
 	// Rearrange neurons after crossover
 	rearrangeConnectionsAfterCrossover(parents[0],  subtree2, subOldStart1);

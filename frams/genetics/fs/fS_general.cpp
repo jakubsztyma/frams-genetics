@@ -451,7 +451,7 @@ void Node::getState(State *_state, Pt3D parentSize)
 	if (!isStart)
 	{
 		// Rotate
-		Pt3D size = getSize();
+		Pt3D size = calculateSize();
 		state->rotate(getVectorRotation());
 
 		double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
@@ -504,7 +504,7 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 	return children;
 }
 
-Pt3D Node::getSize()
+Pt3D Node::calculateSize()
 {
 	double sx = getParam(SIZE_X) * state->s;
 	double sy = getParam(SIZE_Y) * state->s;
@@ -515,8 +515,8 @@ Pt3D Node::getSize()
 
 bool Node::isPartSizeValid()
 {
-	Pt3D size = getSize();
-	double volume = getVolume();
+	Pt3D size = calculateSize();
+	double volume = calculateVolume();
 	Part_MinMaxDef minP = Model::getMinPart();
 	Part_MinMaxDef maxP = Model::getMaxPart();
 
@@ -587,7 +587,7 @@ void Node::buildModel(Model &model, Node *parent)
 	for (unsigned int i = 0; i < childSize; i++)
 	{
 		Node *child = children[i];
-		child->getState(state, getSize());
+		child->getState(state, calculateSize());
 		child->buildModel(model, this);
 	}
 }
@@ -611,7 +611,7 @@ void Node::createPart()
 
 	part->friction = round2(getParam(FRICTION) * state->fr);
 	part->ingest = round2(getParam(INGESTION) * state->ing);
-	Pt3D size = getSize();
+	Pt3D size = calculateSize();
 	part->scale.x = round2(size.x);
 	part->scale.y = round2(size.y);
 	part->scale.z = round2(size.z);
@@ -882,7 +882,6 @@ void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, 
 	if(shift == SHIFT::LEFT)
 		shiftValue *= -1;
 
-	std::cout<<start<<" "<<end<<std::endl;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
 		fS_Neuron *n = neurons[i];
@@ -1049,30 +1048,30 @@ bool fS_Genotype::addParam(bool ensureCircleSection)
 	unsigned int paramCount = randomNode->params.size();
 	if (paramCount == PARAMS.size())
 		return false;
-	string chosenParam = PARAMS[rndUint(PARAMS.size())];
+	string selectedParam = PARAMS[rndUint(PARAMS.size())];
 	// Not allow 'j' parameter when the cycle mode is not on
-	if (chosenParam == JOINT_DISTANCE && !startNode->cycleMode)
+	if (selectedParam == JOINT_DISTANCE && !startNode->cycleMode)
 		return false;
-	if (randomNode->params.count(chosenParam) > 0)
+	if (randomNode->params.count(selectedParam) > 0)
 		return false;
 	// Do not allow invalid changes in part size
-	bool isBaseRadius = chosenParam == SIZE_X || chosenParam == SIZE_Y;
-	bool isRadius = isBaseRadius || chosenParam == SIZE_Z;
+	bool isRadiusOfBase = selectedParam == SIZE_X || selectedParam == SIZE_Y;
+	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
 	if(ensureCircleSection && isRadius)
 	{
 		if(randomNode->partType == ELLIPSOID)
 			return false;
-		if(randomNode->partType == CYLINDER && isBaseRadius)
+		if(randomNode->partType == CYLINDER && isRadiusOfBase)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[chosenParam] = defaultParamValues.at(chosenParam);
+	randomNode->params[selectedParam] = defaultParamValues.at(selectedParam);
 	return true;
 }
 
 bool fS_Genotype::removePart()
 {
-	Node *randomNode, *chosenChild;
+	Node *randomNode, *selectedChild;
 	// Choose a parent with children
 	for (int i = 0; i < mutationTries; i++)
 	{
@@ -1080,14 +1079,14 @@ bool fS_Genotype::removePart()
 		int childCount = randomNode->childSize;
 		if (childCount > 0)
 		{
-			chosenChild = randomNode->children[rndUint(childCount)];
-			if (chosenChild->childSize == 0 && chosenChild->neurons.size() == 0)
+			selectedChild = randomNode->children[rndUint(childCount)];
+			if (selectedChild->childSize == 0 && selectedChild->neurons.size() == 0)
 			{
-				// Remove the chosen child
-				swap(chosenChild, randomNode->children.back());
+				// Remove the selected child
+				swap(selectedChild, randomNode->children.back());
 				randomNode->children.pop_back();
 				randomNode->children.shrink_to_fit();
-				delete chosenChild;
+				delete selectedChild;
 				randomNode->childSize -= 1;
 				return true;
 			}
@@ -1123,9 +1122,9 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 			newType = getRandomPartType();
 
 		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
-		if(!ensureCircleSection
+		if((!ensureCircleSection)
 		|| newType == CUBOID
-		|| newType == CYLINDER && (randomNode->partType == ELLIPSOID || hasNoBaseParams))
+		|| (newType == CYLINDER && (randomNode->partType == ELLIPSOID || hasNoBaseParams)))
 		{
 			randomNode->partType = newType;
 			return true;
@@ -1192,8 +1191,8 @@ bool fS_Genotype::addNeuro()
 	{
 		const char *name = rndclass->getName().c_str();
 		newNeuron = new fS_Neuron(name, strlen(name));
-		int numberOfInputs = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
-		if (numberOfInputs > 0)
+		int effectiveInputCount = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
+		if (effectiveInputCount > 0)
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
 			vector<fS_Neuron *>allNeurons = getAllNeurons();
@@ -1206,10 +1205,10 @@ bool fS_Genotype::addNeuro()
 			int size = neuronsWithOutput.size();
 			if(size > 0)
 			{
-				for (int i = 0; i < numberOfInputs; i++)
+				for (int i = 0; i < effectiveInputCount; i++)
 				{
-					int chosenNeuron = neuronsWithOutput[rndUint(size)];
-					newNeuron->inputs[chosenNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+					int selectedNeuron = neuronsWithOutput[rndUint(size)];
+					newNeuron->inputs[selectedNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 				}
 			}
 		}
@@ -1229,7 +1228,7 @@ bool fS_Genotype::removeNeuro()
 		randomNode = chooseNode();
 		if (!randomNode->neurons.empty())
 		{
-			// Remove the chosen neuron
+			// Remove the selected neuron
 			int size = randomNode->neurons.size();
 			fS_Neuron *it = randomNode->neurons[rndUint(size)];
 			rearrangeNeuronConnections(it, SHIFT::LEFT);        // Important to rearrange the neurons before deleting
@@ -1252,16 +1251,16 @@ bool fS_Genotype::changeNeuroConnection()
 	int size = neurons.size();
 	for (int i = 0; i < mutationTries; i++)
 	{
-		fS_Neuron *chosenNeuron = neurons[rndUint(size)];
-		if (!chosenNeuron->inputs.empty())
+		fS_Neuron *selectedNeuron = neurons[rndUint(size)];
+		if (!selectedNeuron->inputs.empty())
 		{
-			int inputCount = chosenNeuron->inputs.size();
-			auto it = chosenNeuron->inputs.begin();
+			int inputCount = selectedNeuron->inputs.size();
+			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
 			Neuro *neuro = new Neuro();
-			if(chosenNeuron->ncls != nullptr)
-				neuro->setClass(chosenNeuron->ncls);
+			if(selectedNeuron->ncls != nullptr)
+				neuro->setClass(selectedNeuron->ncls);
 			it->second *= GenoOperators::mutateNeuProperty(it->second, neuro, -1);
 			delete neuro;
 			return true;
@@ -1277,23 +1276,23 @@ bool fS_Genotype::addNeuroConnection()
 		return false;
 
 	int size = neurons.size();
-	fS_Neuron *chosenNeuron;
+	fS_Neuron *selectedNeuron;
 	for (int i = 0; i < mutationTries; i++)
 	{
-		chosenNeuron = neurons[rndUint(size)];
-		if(chosenNeuron->acceptsInputs())
+		selectedNeuron = neurons[rndUint(size)];
+		if(selectedNeuron->acceptsInputs())
 			break;
 	}
-	if(!chosenNeuron->acceptsInputs())
+	if(!selectedNeuron->acceptsInputs())
 		return false;
 
 	for (int i = 0; i < mutationTries; i++)
 	{
 		int index = rndUint(size);
 		NeuroClass *nc = neurons[index]->ncls;
-		if (chosenNeuron->inputs.count(index) == 0 && nc != nullptr && nc->getPreferredOutput() > 0)
+		if (selectedNeuron->inputs.count(index) == 0 && nc != nullptr && nc->getPreferredOutput() > 0)
 		{
-			chosenNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+			selectedNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 			return true;
 		}
 	}
@@ -1309,13 +1308,13 @@ bool fS_Genotype::removeNeuroConnection()
 	int size = neurons.size();
 	for (int i = 0; i < mutationTries; i++)
 	{
-		fS_Neuron *chosenNeuron = neurons[rndUint(size)];
-		if (!chosenNeuron->inputs.empty())
+		fS_Neuron *selectedNeuron = neurons[rndUint(size)];
+		if (!selectedNeuron->inputs.empty())
 		{
-			int inputCount = chosenNeuron->inputs.size();
-			auto it = chosenNeuron->inputs.begin();
+			int inputCount = selectedNeuron->inputs.size();
+			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
-			chosenNeuron->inputs.erase(it->first);
+			selectedNeuron->inputs.erase(it->first);
 			return true;
 		}
 	}

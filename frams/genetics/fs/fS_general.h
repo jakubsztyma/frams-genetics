@@ -279,18 +279,26 @@ private:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
-	Pt3D getSize();
+	Pt3D calculateSize();
 
-	double getVolume()
+	double calculateVolume()
 	{
-		Pt3D size = getSize();
+		double result;
+		Pt3D size = calculateSize();
 		double radiiProduct = size.x * size.y * size.z;
-		if(partType == CUBOID)
-			return 8 * radiiProduct;
-		else if(partType == CYLINDER)
-			return 2 * M_PI * (size.x * size.y * size.z);
-		else // if(partType == ELLIPSOID)
-			return (4. / 3.) * M_PI * radiiProduct;
+		switch (partType)
+		{
+			case CUBOID:
+				result = 8.0 * radiiProduct;
+				break;
+			case CYLINDER:
+				result = 2.0 * M_PI * (size.x * size.y * size.z);
+				break;
+			case ELLIPSOID:
+				result = (4.0 / 3.0) * M_PI * radiiProduct;
+				break;
+		}
+		return result;
 	}
 
 	Pt3D getRotation();
