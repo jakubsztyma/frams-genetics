@@ -414,11 +414,6 @@ class fS_Genotype
 
 private:
 	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-	/**
-	 * Get all existing nodes
-	 * @return vector of all nodes
-	 */
-	vector<Node *> getAllNodes();
 
 	/**
 	 * Draws a node that has an index greater that specified
@@ -442,6 +437,12 @@ private:
 public:
 
 	static int precision;
+
+	/**
+	 * Get all existing nodes
+	 * @return vector of all nodes
+	 */
+	vector<Node *> getAllNodes();
 
 	/**
 	 * Get all the neurons from the subtree that starts in given node

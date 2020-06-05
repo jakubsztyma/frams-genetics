@@ -47,6 +47,37 @@ int countNeuroConnections(fS_Genotype &geno)
 	return result;
 }
 
+void testRearrangeBeforeCrossover()
+{
+	fS_Operators operators;
+	int size = 9;
+	SString test_cases[][2] = {
+			{"S:EE[]", "S:EE[]"},
+			{"S:E[;;]E[;;]", "S:E[;;]E[;;]"},
+			{"S:E[;;]E[3;4_5;3]", "S:E[;;]E[;;]"},
+			{"S:E[3;4;]E[3;4_5;3]", "S:E[;;]E[;;]"},
+			{"S:E[1;2;0]E[;;]", "S:E[1;2;0]E[;;]"},
+			{"S:E[1_3;2_4;]E[3;4_5;3]", "S:E[1;2;]E[;;]"},
+			{"S:E[Sin;;G]E[Rnd;;T]", "S:E[Sin;;G]E[Rnd;;T]"},
+			{"S:E[1_3;2_4;](E[3;4_5;3],E[3;4_6_7])", "S:E[1;2;](E[;;],E[;3_4])"},
+			{"S:E[1_3;2_4;](E[0_3;4_5;3_6],E[3;4_6_7])", "S:E[1;2;](E[0;;3],E[;3_4])"},
+	};
+	int expectedSubStart[] = {
+			0, 3, 3, 3, 3, 3, 3, 3, 3
+	};
+	for(int i=0; i<size; i++)
+	{
+		fS_Genotype geno(test_cases[i][0]);
+		Node *subtree = geno.getAllNodes()[1];
+		int subStart;
+
+		operators.rearrangeConnectionsBeforeCrossover(&geno, subtree, subStart);
+
+		assert(geno.getGeno() == test_cases[i][1]);
+		assert(subStart == expectedSubStart[i]);
+	}
+}
+
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases work when crossOverThreshold < 1.4
@@ -609,6 +640,7 @@ int main(int argc, char *argv[])
 	testRearrangeInputs();
 	validationTest();
 	testCrossoverSimilarTrees();
+	testRearrangeBeforeCrossover();
 	int operationCount;
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);

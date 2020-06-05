@@ -882,6 +882,7 @@ void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, 
 	if(shift == SHIFT::LEFT)
 		shiftValue *= -1;
 
+	std::cout<<start<<" "<<end<<std::endl;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 	{
 		fS_Neuron *n = neurons[i];
