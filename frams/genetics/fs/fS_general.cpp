@@ -140,7 +140,7 @@ Node::~Node()
 		delete state;
 	for (unsigned int i = 0; i < neurons.size(); i++)
 		delete neurons[i];
-	for (unsigned int i = 0; i < childSize; i++)
+	for (unsigned int i = 0; i < children.size(); i++)
 		delete children[i];
 }
 
@@ -462,8 +462,7 @@ void Node::getState(State *_state, Pt3D parentSize)
 void Node::getChildren(Substring &restOfGenotype)
 {
 	vector <Substring> branches = getBranches(restOfGenotype);
-	childSize = branches.size();
-	for (unsigned int i = 0; i < childSize; i++)
+	for (unsigned int i = 0; i < branches.size(); i++)
 	{
 		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
 	}
@@ -584,7 +583,7 @@ void Node::buildModel(Model &model, Node *parent)
 	model.checkpoint();
 	part->addMapping(partDescription->toMultiRange());
 
-	for (unsigned int i = 0; i < childSize; i++)
+	for (unsigned int i = 0; i < children.size(); i++)
 	{
 		Node *child = children[i];
 		child->getState(state, calculateSize());
@@ -695,17 +694,17 @@ void Node::getGeno(SString &result)
 		result += PARAM_END;
 	}
 
-	if (childSize == 1)
+	if (children.size() == 1)
 		children[0]->getGeno(result);
-	else if (childSize > 1)
+	else if (children.size() > 1)
 	{
 		result += BRANCH_START;
-		for (unsigned int i = 0; i < childSize - 1; i++)
+		for (unsigned int i = 0; i < children.size() - 1; i++)
 		{
 			children[i]->getGeno(result);
 			result += BRANCH_SEPARATOR;
 		}
-		children[childSize - 1]->getGeno(result);
+		children.back()->getGeno(result);
 		result += BRANCH_END;
 	}
 }
@@ -713,7 +712,7 @@ void Node::getGeno(SString &result)
 void Node::getAllNodes(vector<Node *> &allNodes)
 {
 	allNodes.push_back(this);
-	for (unsigned int i = 0; i < childSize; i++)
+	for (unsigned int i = 0; i < children.size(); i++)
 		children[i]->getAllNodes(allNodes);
 }
 
@@ -948,7 +947,7 @@ bool fS_Genotype::allPartSizesValid()
 
 bool fS_Genotype::addJoint()
 {
-	if (startNode->childSize < 1)
+	if (startNode->children.size() < 1)
 		return false;
 
 	Node *randomNode;
@@ -969,7 +968,7 @@ bool fS_Genotype::addJoint()
 bool fS_Genotype::removeJoint()
 {
 	// This operator may can lower success rate that others, as it does not work when there is only one node
-	if (startNode->childSize < 1) // Only one node; there are no joints
+	if (startNode->children.size() < 1) // Only one node; there are no joints
 		return false;
 
 	// Choose a node with joints
@@ -1076,18 +1075,18 @@ bool fS_Genotype::removePart()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		randomNode = chooseNode();
-		int childCount = randomNode->childSize;
+		int childCount = randomNode->children.size();
 		if (childCount > 0)
 		{
-			selectedChild = randomNode->children[rndUint(childCount)];
-			if (selectedChild->childSize == 0 && selectedChild->neurons.size() == 0)
+			int selectedIndex = rndUint(childCount);
+			selectedChild = randomNode->children[selectedIndex];
+			if (selectedChild->children.empty() && selectedChild->neurons.empty())
 			{
 				// Remove the selected child
-				swap(selectedChild, randomNode->children.back());
+				swap(randomNode->children[selectedIndex], randomNode->children[childCount - 1]);
 				randomNode->children.pop_back();
 				randomNode->children.shrink_to_fit();
 				delete selectedChild;
-				randomNode->childSize -= 1;
 				return true;
 			}
 		}
@@ -1107,7 +1106,6 @@ bool fS_Genotype::addPart()
 	newNode->params[ROT_Z] = RndGen.Uni(-90, 90);
 
 	randomNode->children.push_back(newNode);
-	randomNode->childSize++;
 	return true;
 }
 
@@ -1116,11 +1114,14 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		// Do not change the type of part when it has size params
-		char newType = randomNode->partType;
-		while (newType == randomNode->partType)
-			newType = getRandomPartType();
+		int index = rndUint(PART_TYPES.size());
+		if(PART_TYPES[index] == randomNode->partType)
+			index = (index + 1 + rndUint(2)) % PART_TYPES.size();
+		char newType = PART_TYPES[index];
+		if(newType == randomNode->partType)
+			throw "Internal error: invalid part type chosen in mutation.";
 
+		// Do not change the type of part when it has size params
 		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
 		if((!ensureCircleSection)
 		|| newType == CUBOID

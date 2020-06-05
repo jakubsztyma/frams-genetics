@@ -126,7 +126,7 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 	int parentCount = 2;
 	fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
 
-	if (parents[0]->startNode->childSize == 0 || parents[1]->startNode->childSize == 0)
+	if (parents[0]->startNode->children.empty() || parents[1]->startNode->children.empty())
 	{
 		delete parents[0];
 		delete parents[1];
@@ -145,8 +145,8 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 			do
 			{
 				selected[i] = allNodes[rndUint(allNodes.size())];
-			} while (selected[i]->childSize == 0);
-			indexes[i] = rndUint(selected[i]->childSize);
+			} while (selected[i]->children.empty());
+			indexes[i] = rndUint(selected[i]->children.size());
 		}
 		// Check if subtrees have similar sizes
 		double count1 = selected[0]->children[indexes[0]]->getNodeCount();

@@ -270,7 +270,6 @@ private:
 	bool isStart;   /// Is a starting node of whole genotype
 	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
-	unsigned int childSize = 0; /// The number of direct children
 	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
 
 	std::map<string, double> params; /// The map of all the node params
