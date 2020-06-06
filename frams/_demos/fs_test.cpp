@@ -79,7 +79,7 @@ void testRearrangeBeforeCrossover()
 
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
- * Test cases work when crossOverThreshold < 1.4
+ * Test cases will almost always work when crossoverTries is big enough
  */
 void testCrossoverSimilarTrees()
 {
@@ -89,7 +89,7 @@ void testCrossoverSimilarTrees()
 			"S:E(E,E)",
 			"S:EEEE",
 			"S:ECRE",
-			"S:E(EE,CRE)",
+			"S:E(RE,CRE)",
 			"S:E(EEE,EEE,EEE)",
 			"S:E(CRE,CRE,CRE)",
 			 "S:EEEEEECRE(CRE,CRE,CRE)",

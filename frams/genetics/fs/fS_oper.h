@@ -31,8 +31,7 @@
 #define FS_MOD_NEURO_PARAMS 15
 //@}
 
-const int crossOverTries = 10;
-const int crossOverThreshold = 1.4;
+const int crossOverTries = 100;
 
 class fS_Operators : public GenoOperators
 {
