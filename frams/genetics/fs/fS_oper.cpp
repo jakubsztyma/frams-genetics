@@ -211,25 +211,25 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 
 void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
-	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	if (!subNeurons.empty())
 	{
-		subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subStart + subNeurons.size() - 1, SHIFT::LEFT);
+		subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
+		fS_Genotype::shiftNeuroConnections(genoNeurons, subStart, subStart + subNeurons.size() - 1, SHIFT::LEFT);
 	}
 }
 
 void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
-	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	// Shift the inputs right
 	if (!subNeurons.empty())
 	{
-		int subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
+		int subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
 		unsigned int subCount = subNeurons.size();
 		int subEnd = subStart + subCount - 1;
 		for(unsigned int i=0; i<subCount; i++)
@@ -245,6 +245,6 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 //			}
 			subNeurons[i]->inputs = newInputs;
 		}
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, SHIFT::RIGHT);
+		fS_Genotype::shiftNeuroConnections(genoNeurons, subStart, subEnd, SHIFT::RIGHT);
 	}
 }

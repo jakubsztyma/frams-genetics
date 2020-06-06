@@ -77,6 +77,31 @@ void testRearrangeBeforeCrossover()
 	}
 }
 
+void testRearrangeAfterCrossover()
+{
+	fS_Operators operators;
+	SString test_cases[][2] = {
+			{"S:E[0_1;0]E[]", "S:E[0_1;0]E[]"},
+			{"S:E[0_1;0]E[Rnd;;]", "S:E[0_1;0]E[Rnd;;]"},
+			{"S:E[0_1;0]E[Rnd;;]E[;]", "S:E[0_1;0]E[Rnd;;]E[;]"},
+			{"S:E[0_1;0](E[Rnd;;],E[2_3;2])", "S:E[0_1;0](E[Rnd;;],E[5_6;5])"},
+			{"S:E[0_1;0](E[Rnd;;],E[2_3;2]C[2_4])", "S:E[0_1;0](E[Rnd;;],E[5_6;5]C[5_7])"},
+	};
+	int subStart[]{
+		 	0, 0, 0, 0, 0,
+	};
+	for(int i=0; i<(int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		fS_Genotype geno(test_cases[i][0]);
+		Node *subtree = geno.getAllNodes()[1];
+
+		operators.rearrangeConnectionsAfterCrossover(&geno, subtree, subStart[i]);
+
+		cout<<geno.getGeno().c_str()<<endl;
+		assert(geno.getGeno() == test_cases[i][1]);
+	}
+}
+
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases will almost always work when crossoverTries is big enough
@@ -647,6 +672,7 @@ int main(int argc, char *argv[])
 	validationTest();
 	testCrossoverSimilarTrees();
 	testRearrangeBeforeCrossover();
+	testRearrangeAfterCrossover();
 	int operationCount;
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);
