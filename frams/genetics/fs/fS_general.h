@@ -292,11 +292,13 @@ private:
 				result = 8.0 * radiiProduct;
 				break;
 			case CYLINDER:
-				result = 2.0 * M_PI * (size.x * size.y * size.z);
+				result = 2.0 * M_PI * radiiProduct;
 				break;
 			case ELLIPSOID:
 				result = (4.0 / 3.0) * M_PI * radiiProduct;
 				break;
+			default:
+				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
 		}
 		return result;
 	}

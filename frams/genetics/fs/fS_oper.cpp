@@ -183,11 +183,11 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	chg1 = restSizes[1] / (restSizes[1] + subtreeSizes[0]);
 
 	// Rearrange neurons before crossover
-	Node *subtrees[2]{
-		selected[0]->children[childIndexes[0]],
-		selected[1]->children[childIndexes[1]]
-	};
-	int subOldStart[parentCount]{-1, -1};
+	Node *subtrees[2];
+	subtrees[0] = selected[0]->children[childIndexes[0]];
+	subtrees[1] = selected[1]->children[childIndexes[1]];
+
+		int subOldStart[parentCount]{-1, -1};
 	rearrangeConnectionsBeforeCrossover(parents[0],  subtrees[0], subOldStart[0]);
 	rearrangeConnectionsBeforeCrossover(parents[1],  subtrees[1], subOldStart[0]);
 

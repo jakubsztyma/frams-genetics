@@ -6,8 +6,8 @@
 #include "frams/genetics/fs/fS_conv.h"
 #include "frams/genetics/fs/fS_oper.h"
 
-using namespace std;
-
+using std::cout;
+using std::endl;
 
 int countChars(SString genotype, string chars, int count)
 {
@@ -64,7 +64,7 @@ void testRearrangeBeforeCrossover()
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
 	};
-	for(int i=0; i<(int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i][0]);
 		Node *subtree = geno.getAllNodes()[1];
@@ -90,7 +90,7 @@ void testRearrangeAfterCrossover()
 	int subStart[]{
 		 	0, 0, 0, 0, 0,
 	};
-	for(int i=0; i<(int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i][0]);
 		Node *subtree = geno.getAllNodes()[1];
@@ -124,7 +124,7 @@ void testCrossoverSimilarTrees()
 	// Repeat the test several times as crossover is not deterministic
 	for(int z=0; z < 10; z++)
 	{
-		for (int i = 0; i < (int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+		for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 		{
 			char *arr1 = strdup(test_cases[i].c_str());
 			char *arr2 = strdup(arr1);
@@ -159,7 +159,7 @@ void testAllPartSizesValid()
 			"S:C{x=1.8;y=1.8}",
 	};
 
-	for (int i = 0; i < (int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
 		assert(geno.allPartSizesValid() == false);
@@ -249,7 +249,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test add neuro
 	tmp = geno.getAllNeurons().size();
 	if (geno.addNeuro())
-		assert(tmp + 1 == (int) geno.getAllNeurons().size());
+		assert(tmp + 1 == int(geno.getAllNeurons().size()));
 
 	// Test add neuro connections
 	tmp = countNeuroConnections(geno);
@@ -269,7 +269,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test remove neuro
 	tmp = geno.getAllNeurons().size();
 	if (geno.removeNeuro())
-		assert(tmp - 1 == (int) geno.getAllNeurons().size());
+		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 }
 
 void validationTest()
@@ -660,9 +660,9 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
-	auto start = chrono::steady_clock::now();
+	auto start = std::chrono::steady_clock::now();
 
-	for (int i = 0; i < (int)(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
@@ -680,8 +680,8 @@ int main(int argc, char *argv[])
 		operationCount = 100;
 	evolutionTest(operationCount);
 
-	auto end = chrono::steady_clock::now();
-	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
+	auto end = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
 	cout << "FINISHED" << endl;
 	return 0;
 }

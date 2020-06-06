@@ -1114,12 +1114,16 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int index = rndUint(PART_TYPES.size());
+		int ptSize = PART_TYPES.size();
+		int index = rndUint(ptSize);
 		if(PART_TYPES[index] == randomNode->partType)
-			index = (index + 1 + rndUint(2)) % PART_TYPES.size();
+			index = (index + 1 + rndUint(ptSize - 1)) % ptSize;
 		char newType = PART_TYPES[index];
+
+		#ifdef _DEBUG
 		if(newType == randomNode->partType)
 			throw "Internal error: invalid part type chosen in mutation.";
+		#endif
 
 		// Do not change the type of part when it has size params
 		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
