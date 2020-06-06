@@ -19,6 +19,7 @@ const std::map<string, double> defaultParamValues = {
 		{RX,             0.0},
 		{RY,             0.0},
 		{RZ,             0.0},
+		{SIZE,			 1.0},
 		{SIZE_X,         1.0},
 		{SIZE_Y,         1.0},
 		{SIZE_Z,         1.0},
@@ -505,9 +506,9 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 
 Pt3D Node::calculateSize()
 {
-	double sx = getParam(SIZE_X) * state->s;
-	double sy = getParam(SIZE_Y) * state->s;
-	double sz = getParam(SIZE_Z) * state->s;
+	double sx = getParam(SIZE_X) * getParam(SIZE) * state->s;
+	double sy = getParam(SIZE_Y) * getParam(SIZE) * state->s;
+	double sz = getParam(SIZE_Z) * getParam(SIZE) * state->s;
 	return Pt3D(sx, sy, sz);
 }
 

@@ -80,6 +80,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 //@{
 #define INGESTION "i"
 #define FRICTION "f"
+#define SIZE "s"
 #define SIZE_X "x"
 #define SIZE_Y "y"
 #define SIZE_Z "z"
@@ -111,7 +112,7 @@ const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
 const char SIZE_MODIFIER= 's';
-const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
