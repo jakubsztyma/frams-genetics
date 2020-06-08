@@ -121,79 +121,88 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 	return GENOPER_OPFAIL;
 }
 
-int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
+int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
 	int parentCount = 2;
-	fS_Genotype *parents[parentCount] = {new fS_Genotype(g1), new fS_Genotype(g2)};
+	fS_Genotype *parents[parentCount] = {new fS_Genotype(g0), new fS_Genotype(g1)};
 
-	if (parents[0]->startNode->childSize == 0 || parents[1]->startNode->childSize == 0)
+	if (parents[0]->startNode->children.empty() || parents[1]->startNode->children.empty())
 	{
 		delete parents[0];
 		delete parents[1];
 		return GENOPER_OPFAIL;
 	}
 
-	Node *chosen[parentCount];
-	int indexes[2];
+	Node *selected[parentCount];
+	int childIndexes[parentCount];
 	// Choose random subtrees that have similar size
-	bool success = false;
+	vector<Node*> allNodes[parentCount]
+	{
+		parents[0]->getAllNodes(),
+		parents[1]->getAllNodes()
+	};
+	double bestQuotient = DBL_MAX;
 	for(int i=0; i<crossOverTries; i++)
 	{
+		Node *selectedTmp[parentCount];
+		int childIndexesTmp[parentCount];
+		double childNodeCount[parentCount];
 		for (int i = 0; i < parentCount; i++)
 		{
-			vector < Node * > allNodes = parents[i]->getAllNodes();
 			do
 			{
-				chosen[i] = allNodes[rndUint(allNodes.size())];
-			} while (chosen[i]->childSize == 0);
-			indexes[i] = rndUint(chosen[i]->childSize);
+				selectedTmp[i] = allNodes[i][rndUint(allNodes[i].size())];
+			} while (selectedTmp[i]->children.empty());
+			childIndexesTmp[i] = rndUint(selectedTmp[i]->children.size());
+			childNodeCount[i] = selectedTmp[i]->children[childIndexesTmp[i]]->getNodeCount();
 		}
-		// Check if subtrees have similar sizes
-		double count1 = chosen[0]->children[indexes[0]]->getNodeCount();
-		double count2 = chosen[1]->children[indexes[1]]->getNodeCount();
-		double quotient = count1 / count2;
-		if(1. / crossOverThreshold < quotient && quotient < crossOverThreshold)
+		// Choose the most similar subtrees
+		double quotient = std::max(childNodeCount[0], childNodeCount[1]) / std::min(childNodeCount[0], childNodeCount[1]);
+		if(quotient < bestQuotient)
 		{
-			success = true;
-			break;
+			bestQuotient = quotient;
+			for(int i=0; i<parentCount;i++)
+			{
+				selected[i] = selectedTmp[i];
+				childIndexes[i] = childIndexesTmp[i];
+			}
 		}
+		if(quotient == 1.0)
+			break;
 	}
-	if(!success)
-	{
-		delete parents[0];
-		delete parents[1];
-		return GENOPER_OPFAIL;
-	}
-
-	double subtreeSize1 = chosen[0]->children[indexes[0]]->getNodeCount();
-	double subtreeSize2 = chosen[1]->children[indexes[1]]->getNodeCount();
-	double restSize1 = parents[0]->getNodeCount() - subtreeSize1;
-	double restSize2 = parents[1]->getNodeCount() - subtreeSize2;
-
-	// Rearrange neurons before crossover
-	Node *subtree1 = chosen[0]->children[indexes[0]];
-	Node *subtree2 = chosen[1]->children[indexes[1]];
-	int subOldStart1 = -1, subOldStart2 = -1;
-
-	rearrangeConnectionsBeforeCrossover(parents[0],  subtree1, subOldStart1);
-	rearrangeConnectionsBeforeCrossover(parents[1],  subtree2, subOldStart2);
 
 	// Compute gene percentages in children
-	chg1 = restSize1 / (restSize1 + subtreeSize2);
-	chg2 = restSize2 / (restSize2 + subtreeSize1);
+	double subtreeSizes[parentCount], restSizes[parentCount];
+	for(int i=0; i<parentCount; i++)
+	{
+
+		subtreeSizes[i] = selected[i]->children[childIndexes[i]]->getNodeCount();
+		restSizes[i] = parents[i]->getNodeCount() - subtreeSizes[i];
+	}
+	chg0 = restSizes[0] / (restSizes[0] + subtreeSizes[1]);
+	chg1 = restSizes[1] / (restSizes[1] + subtreeSizes[0]);
+
+	// Rearrange neurons before crossover
+	Node *subtrees[2];
+	subtrees[0] = selected[0]->children[childIndexes[0]];
+	subtrees[1] = selected[1]->children[childIndexes[1]];
+
+		int subOldStart[parentCount]{-1, -1};
+	rearrangeConnectionsBeforeCrossover(parents[0],  subtrees[0], subOldStart[0]);
+	rearrangeConnectionsBeforeCrossover(parents[1],  subtrees[1], subOldStart[0]);
 
 	// Swap the subtress
-	std::swap(chosen[0]->children[indexes[0]], chosen[1]->children[indexes[1]]);
+	std::swap(selected[0]->children[childIndexes[0]], selected[1]->children[childIndexes[1]]);
 
 	// Rearrange neurons after crossover
-	rearrangeConnectionsAfterCrossover(parents[0],  subtree2, subOldStart1);
-	rearrangeConnectionsAfterCrossover(parents[1],  subtree1, subOldStart2);
+	rearrangeConnectionsAfterCrossover(parents[0],  subtrees[1], subOldStart[0]);
+	rearrangeConnectionsAfterCrossover(parents[1],  subtrees[0], subOldStart[1]);
 
 	// Clenup, assign children to result strings
+	free(g0);
 	free(g1);
-	free(g2);
-	g1 = strdup(parents[0]->getGeno().c_str());
-	g2 = strdup(parents[1]->getGeno().c_str());
+	g0 = strdup(parents[0]->getGeno().c_str());
+	g1 = strdup(parents[1]->getGeno().c_str());
 
 	delete parents[0];
 	delete parents[1];
@@ -202,28 +211,28 @@ int fS_Operators::crossOver(char *&g1, char *&g2, float &chg1, float &chg2)
 
 void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
-	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	if (!subNeurons.empty())
 	{
-		subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subStart + subNeurons.size() - 1, SHIFT::LEFT);
+		subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
+		fS_Genotype::shiftNeuroConnections(genoNeurons, subStart, subStart + subNeurons.size() - 1, SHIFT::LEFT);
 	}
 }
 
 void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
-	vector < fS_Neuron * > genoNeurons1 = geno->getAllNeurons();
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	// Shift the inputs right
 	if (!subNeurons.empty())
 	{
-		int subStart = fS_Genotype::getNeuronIndex(genoNeurons1, subNeurons[0]);
-		unsigned int subCount = subNeurons.size();
+		int subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
+		int subCount = subNeurons.size();
 		int subEnd = subStart + subCount - 1;
-		for(unsigned int i=0; i<subCount; i++)
+		for(int i=0; i<subCount; i++)
 		{
 			auto inputs = subNeurons[i]->inputs;
 			std::map<int, double> newInputs;
@@ -236,6 +245,6 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 //			}
 			subNeurons[i]->inputs = newInputs;
 		}
-		fS_Genotype::shiftNeuroConnections(genoNeurons1, subStart, subEnd, SHIFT::RIGHT);
+		fS_Genotype::shiftNeuroConnections(genoNeurons, subStart, subEnd, SHIFT::RIGHT);
 	}
 }

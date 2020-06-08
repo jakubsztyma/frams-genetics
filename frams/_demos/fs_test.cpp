@@ -6,8 +6,8 @@
 #include "frams/genetics/fs/fS_conv.h"
 #include "frams/genetics/fs/fS_oper.h"
 
-using namespace std;
-
+using std::cout;
+using std::endl;
 
 int countChars(SString genotype, string chars, int count)
 {
@@ -42,15 +42,104 @@ int countNeuroConnections(fS_Genotype &geno)
 {
 	vector<fS_Neuron*> neurons = geno.getAllNeurons();
 	int result = 0;
-	for (unsigned int i = 0; i < neurons.size(); i++)
+	for (int i = 0; i < int(neurons.size()); i++)
 		result += neurons[i]->inputs.size();
 	return result;
 }
 
+void testRearrangeBeforeCrossover()
+{
+	fS_Operators operators;
+	string test_cases[][2] = {
+			{"S:EE[]", "S:EE[]"},
+			{"S:E[;;]E[;;]", "S:E[;;]E[;;]"},
+			{"S:E[;;]E[3;4_5;3]", "S:E[;;]E[;;]"},
+			{"S:E[3;4;]E[3;4_5;3]", "S:E[;;]E[;;]"},
+			{"S:E[1;2;0]E[;;]", "S:E[1;2;0]E[;;]"},
+			{"S:E[1_3;2_4;]E[3;4_5;3]", "S:E[1;2;]E[;;]"},
+			{"S:E[Sin;;G]E[Rnd;;T]", "S:E[Sin;;G]E[Rnd;;T]"},
+			{"S:E[1_3;2_4;](E[3;4_5;3],E[3;4_6_7])", "S:E[1;2;](E[;;],E[;3_4])"},
+			{"S:E[1_3;2_4;](E[0_3;4_5;3_6],E[3;4_6_7])", "S:E[1;2;](E[0;;3],E[;3_4])"},
+	};
+	int expectedSubStart[] = {
+			0, 3, 3, 3, 3, 3, 3, 3, 3
+	};
+	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		fS_Genotype geno(test_cases[i][0]);
+		Node *subtree = geno.getAllNodes()[1];
+		int subStart;
+
+		operators.rearrangeConnectionsBeforeCrossover(&geno, subtree, subStart);
+
+		assert(geno.getGeno().c_str() == test_cases[i][1]);
+		assert(subStart == expectedSubStart[i]);
+	}
+}
+
+void testRearrangeAfterCrossover()
+{
+	fS_Operators operators;
+	string test_cases[][2] = {
+			{"S:E[0_1;0]E[]", "S:E[0_1;0]E[]"},
+			{"S:E[0_1;0]E[Rnd;;]", "S:E[0_1;0]E[Rnd;;]"},
+			{"S:E[0_1;0]E[Rnd;;]E[;]", "S:E[0_1;0]E[Rnd;;]E[;]"},
+			{"S:E[0_1;0](E[Rnd;;],E[2_3;2])", "S:E[0_1;0](E[Rnd;;],E[5_6;5])"},
+			{"S:E[0_1;0](E[Rnd;;],E[2_3;2]C[2_4])", "S:E[0_1;0](E[Rnd;;],E[5_6;5]C[5_7])"},
+	};
+	int subStart[]{
+		 	0, 0, 0, 0, 0,
+	};
+	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		fS_Genotype geno(test_cases[i][0]);
+		Node *subtree = geno.getAllNodes()[1];
+
+		operators.rearrangeConnectionsAfterCrossover(&geno, subtree, subStart[i]);
+
+		assert(geno.getGeno().c_str() == test_cases[i][1]);
+	}
+}
+
+/**
+ * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
+ * Test cases will almost always work when crossoverTries is big enough
+ */
+void testCrossoverSimilarTrees()
+{
+	fS_Operators operators;
+	string test_cases[] = {
+			"S:EE",
+			"S:E(E,E)",
+			"S:EEEE",
+			"S:ECRE",
+			"S:E(RE,CRE)",
+			"S:E(EEE,EEE,EEE)",
+			"S:E(CRE,CRE,CRE)",
+			 "S:EEEEEECRE(CRE,CRE,CRE)",
+	};
+
+	float f1, f2;
+	// Repeat the test several times as crossover is not deterministic
+	for(int z=0; z < 10; z++)
+	{
+		for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+		{
+			char *arr1 = strdup(test_cases[i].c_str());
+			char *arr2 = strdup(arr1);
+
+			operators.crossOver(arr1, arr2, f1, f2);
+
+			assert(strcmp(arr1, test_cases[i].c_str()) == 0);
+			free(arr1);
+			free(arr2);
+		}
+	}
+}
+
 void testAllPartSizesValid()
 {
-	int size = 16;
-	SString test_cases[] = {
+	string test_cases[] = {
 			"S:C{x=2000.0}",	// Too big dimension
 			"S:C{y=2000.0}",
 			"S:C{z=2000.0}",
@@ -69,7 +158,7 @@ void testAllPartSizesValid()
 			"S:C{x=1.8;y=1.8}",
 	};
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
 		assert(geno.allPartSizesValid() == false);
@@ -86,13 +175,13 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	SString genotype_str = test[0];
 
 	/// Test translate
-	cout << "Geno: " << test[0].c_str() << endl;
-	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+//	cout << "Geno: " << test[0].c_str() << endl;
+//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
-	fS_Genotype geno(test[0]);
+	fS_Genotype geno(test[0].c_str());
 	cout << geno.getGeno().c_str() << endl;
 	assert(geno.getGeno() == test[0]);
 
@@ -159,7 +248,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test add neuro
 	tmp = geno.getAllNeurons().size();
 	if (geno.addNeuro())
-		assert(tmp + 1 == (int) geno.getAllNeurons().size());
+		assert(tmp + 1 == int(geno.getAllNeurons().size()));
 
 	// Test add neuro connections
 	tmp = countNeuroConnections(geno);
@@ -179,7 +268,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test remove neuro
 	tmp = geno.getAllNeurons().size();
 	if (geno.removeNeuro())
-		assert(tmp - 1 == (int) geno.getAllNeurons().size());
+		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 }
 
 void validationTest()
@@ -200,7 +289,6 @@ void validationTest()
 	for (int i = 0; i < invalidCount; i++)
 	{
 		MultiMap map;
-		cout << invalidGenotypes[i].c_str() << endl;
 		assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -210,7 +298,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -227,7 +315,7 @@ void testRearrangeInputs()
 			2,
 			5,
 	};
-	SString after[size] = {
+	string after[size] = {
 			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
@@ -244,7 +332,7 @@ void testRearrangeInputs()
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
-		assert(geno.getGeno() == after[i]);
+		assert(geno.getGeno().c_str() == after[i]);
 	}
 
 }
@@ -295,12 +383,11 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		assert(0. < f1 && f1 < 1.);
-		assert(0. < f2 && f2 < 1.);
-
 		// TODO remove checkValidity condition
 		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
+			assert(0. < f1 && f1 < 1.);
+			assert(0. < f2 && f2 < 1.);
 			assert(0 == operators.checkValidity(arr1, ""));
 			assert(0 == operators.checkValidity(arr2, ""));
 
@@ -555,16 +642,25 @@ int main(int argc, char *argv[])
 																   "c:1, 1\n"
 																   "c:2, 0\n"
 																 	},
+			{"S:E{s=1.5}", 											"p:sh=1, sx=1.5, sy=1.5, sz=1.5\n"},
+			{"MS:SE{s=1.1;x=1.2;z=1.3}", 							"p:sh=1, sx=1.45, sy=1.21, sz=1.57\n"},
+			{"MS:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}", 					"p:sh=1, sx=0.99, sy=0.99, sz=0.99\n"
+																	"p:2.42, sh=1, sx=1.45, sy=1.21, sz=1.57\n"
+		  																"j:0, 1, sh=1\n"},
 	};
 	srand(time(NULL));
 
 
-	const int size = 57;
-	int expectedPartCount[] = {1, 1, 1, 3, 3, 9, 2, 2, 7, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 3, 3, 4, 2, 2, 1, 1, 1, 2,
-							   2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2};
-	auto start = chrono::steady_clock::now();
+	int expectedPartCount[] = {
+			1, 1, 1, 3, 3, 9, 2, 2, 7, 1,
+			1, 1, 1, 2, 2, 2, 4, 4, 4, 3,
+			3, 4, 2, 2, 1, 1, 1, 2, 2, 1,
+			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
+			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
+			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
+	auto start = std::chrono::steady_clock::now();
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
@@ -572,6 +668,9 @@ int main(int argc, char *argv[])
 	testAllPartSizesValid();
 	testRearrangeInputs();
 	validationTest();
+	testCrossoverSimilarTrees();
+	testRearrangeBeforeCrossover();
+	testRearrangeAfterCrossover();
 	int operationCount;
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);
@@ -579,8 +678,8 @@ int main(int argc, char *argv[])
 		operationCount = 100;
 	evolutionTest(operationCount);
 
-	auto end = chrono::steady_clock::now();
-	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
+	auto end = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
 	cout << "FINISHED" << endl;
 	return 0;
 }

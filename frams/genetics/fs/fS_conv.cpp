@@ -9,7 +9,7 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints)
 	fS_Genotype *genotype;
 	try
 	{
-		genotype = new fS_Genotype(i);
+		genotype = new fS_Genotype(i.c_str());
 	}
 	catch (const char *msg)
 	{

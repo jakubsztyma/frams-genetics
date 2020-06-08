@@ -80,6 +80,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 //@{
 #define INGESTION "i"
 #define FRICTION "f"
+#define SIZE "s"
 #define SIZE_X "x"
 #define SIZE_Y "y"
 #define SIZE_Z "z"
@@ -111,7 +112,7 @@ const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
 const char SIZE_MODIFIER= 's';
-const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE_X, SIZE_Y, SIZE_Z,
+const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -249,7 +250,7 @@ public:
 	{
 		if(ncls == nullptr)
 			return true;
-		return ncls->prefinputs < (int)inputs.size();
+		return ncls->prefinputs < int(inputs.size());
 	}
 };
 
@@ -270,8 +271,7 @@ private:
 	bool isStart;   /// Is a starting node of whole genotype
 	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
-	unsigned int childSize = 0; /// The number of direct children
-	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
+	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
@@ -279,18 +279,28 @@ private:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
-	Pt3D getSize();
+	Pt3D calculateSize();
 
-	double getVolume()
+	double calculateVolume()
 	{
-		Pt3D size = getSize();
+		double result;
+		Pt3D size = calculateSize();
 		double radiiProduct = size.x * size.y * size.z;
-		if(partType == CUBOID)
-			return 8 * radiiProduct;
-		else if(partType == CYLINDER)
-			return 2 * M_PI * (size.x * size.y * size.z);
-		else // if(partType == ELLIPSOID)
-			return (4. / 3.) * M_PI * radiiProduct;
+		switch (partType)
+		{
+			case CUBOID:
+				result = 8.0 * radiiProduct;
+				break;
+			case CYLINDER:
+				result = 2.0 * M_PI * radiiProduct;
+				break;
+			case ELLIPSOID:
+				result = (4.0 / 3.0) * M_PI * radiiProduct;
+				break;
+			default:
+				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
+		}
+		return result;
 	}
 
 	Pt3D getRotation();
@@ -349,7 +359,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state, Pt3D parentSize);
+	void getState(State *_state, const Pt3D &parentSize);
 
 	/**
 	 * Build children internal representations from fS genotype
@@ -414,11 +424,6 @@ class fS_Genotype
 
 private:
 	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-	/**
-	 * Get all existing nodes
-	 * @return vector of all nodes
-	 */
-	vector<Node *> getAllNodes();
 
 	/**
 	 * Draws a node that has an index greater that specified
@@ -442,6 +447,22 @@ private:
 public:
 
 	static int precision;
+
+	/**
+	 * Build internal representation from fS format
+	 * @param genotype in fS format
+	 */
+	fS_Genotype(const string &genotype);
+
+	~fS_Genotype();
+
+	void getState();
+
+	/**
+	 * Get all existing nodes
+	 * @return vector of all nodes
+	 */
+	vector<Node *> getAllNodes();
 
 	/**
 	 * Get all the neurons from the subtree that starts in given node
@@ -484,14 +505,6 @@ public:
 	 * @return
 	 */
 	bool allPartSizesValid();
-
-	/**
-	 * Build internal representation from fS format
-	 * @param genotype in fS format
-	 */
-	fS_Genotype(const SString &genotype);
-
-	~fS_Genotype();
 
 	/**
 	 * Builds Model object from internal representation
