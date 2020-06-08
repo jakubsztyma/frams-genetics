@@ -724,20 +724,21 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const SString &genotype)
+fS_Genotype::fS_Genotype(const string &genotype)
 {
+	string geno = genotype.c_str();
 	// M - modifier mode, S - standard mode
-	int modeSeparatorIndex = genotype.indexOf(':');
-	if (modeSeparatorIndex == -1)
+	size_t modeSeparatorIndex = geno.find(':');
+	if (modeSeparatorIndex == string::npos)
 		throw "No mode separator";
 
-	SString modeStr = genotype.substr(0, modeSeparatorIndex);
-	bool modifierMode = modeStr.indexOf(MODIFIER_MODE) != -1;
-	bool paramMode = modeStr.indexOf(PARAM_MODE) != -1;
-	bool cycleMode = modeStr.indexOf(CYCLE_MODE) != -1;
+	string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
+	bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
+	bool paramMode = modeStr.find(PARAM_MODE) != string::npos;
+	bool cycleMode = modeStr.find(CYCLE_MODE) != string::npos;
 
 	int actualGenoStart = modeSeparatorIndex + 1;
-	Substring substring(genotype.c_str(), actualGenoStart, genotype.len() - actualGenoStart);
+	Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
 	startNode = new Node(substring, modifierMode, paramMode, cycleMode, true);
 }
 

@@ -50,7 +50,7 @@ int countNeuroConnections(fS_Genotype &geno)
 void testRearrangeBeforeCrossover()
 {
 	fS_Operators operators;
-	SString test_cases[][2] = {
+	string test_cases[][2] = {
 			{"S:EE[]", "S:EE[]"},
 			{"S:E[;;]E[;;]", "S:E[;;]E[;;]"},
 			{"S:E[;;]E[3;4_5;3]", "S:E[;;]E[;;]"},
@@ -72,7 +72,7 @@ void testRearrangeBeforeCrossover()
 
 		operators.rearrangeConnectionsBeforeCrossover(&geno, subtree, subStart);
 
-		assert(geno.getGeno() == test_cases[i][1]);
+		assert(geno.getGeno().c_str() == test_cases[i][1]);
 		assert(subStart == expectedSubStart[i]);
 	}
 }
@@ -80,7 +80,7 @@ void testRearrangeBeforeCrossover()
 void testRearrangeAfterCrossover()
 {
 	fS_Operators operators;
-	SString test_cases[][2] = {
+	string test_cases[][2] = {
 			{"S:E[0_1;0]E[]", "S:E[0_1;0]E[]"},
 			{"S:E[0_1;0]E[Rnd;;]", "S:E[0_1;0]E[Rnd;;]"},
 			{"S:E[0_1;0]E[Rnd;;]E[;]", "S:E[0_1;0]E[Rnd;;]E[;]"},
@@ -97,8 +97,7 @@ void testRearrangeAfterCrossover()
 
 		operators.rearrangeConnectionsAfterCrossover(&geno, subtree, subStart[i]);
 
-		cout<<geno.getGeno().c_str()<<endl;
-		assert(geno.getGeno() == test_cases[i][1]);
+		assert(geno.getGeno().c_str() == test_cases[i][1]);
 	}
 }
 
@@ -109,7 +108,7 @@ void testRearrangeAfterCrossover()
 void testCrossoverSimilarTrees()
 {
 	fS_Operators operators;
-	SString test_cases[] = {
+	string test_cases[] = {
 			"S:EE",
 			"S:E(E,E)",
 			"S:EEEE",
@@ -140,7 +139,7 @@ void testCrossoverSimilarTrees()
 
 void testAllPartSizesValid()
 {
-	SString test_cases[] = {
+	string test_cases[] = {
 			"S:C{x=2000.0}",	// Too big dimension
 			"S:C{y=2000.0}",
 			"S:C{z=2000.0}",
@@ -176,13 +175,13 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	SString genotype_str = test[0];
 
 	/// Test translate
-	cout << "Geno: " << test[0].c_str() << endl;
-	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+//	cout << "Geno: " << test[0].c_str() << endl;
+//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
-	fS_Genotype geno(test[0]);
+	fS_Genotype geno(test[0].c_str());
 	cout << geno.getGeno().c_str() << endl;
 	assert(geno.getGeno() == test[0]);
 
@@ -290,7 +289,6 @@ void validationTest()
 	for (int i = 0; i < invalidCount; i++)
 	{
 		MultiMap map;
-		cout << invalidGenotypes[i].c_str() << endl;
 		assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -300,7 +298,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	int size = 6;
-	SString before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size] = {
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -317,7 +315,7 @@ void testRearrangeInputs()
 			2,
 			5,
 	};
-	SString after[size] = {
+	string after[size] = {
 			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
@@ -334,7 +332,7 @@ void testRearrangeInputs()
 
 		geno.rearrangeNeuronConnections(neuron, shift[i]);
 
-		assert(geno.getGeno() == after[i]);
+		assert(geno.getGeno().c_str() == after[i]);
 	}
 
 }

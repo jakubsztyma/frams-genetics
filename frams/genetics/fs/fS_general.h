@@ -449,6 +449,14 @@ public:
 	static int precision;
 
 	/**
+	 * Build internal representation from fS format
+	 * @param genotype in fS format
+	 */
+	fS_Genotype(const string &genotype);
+
+	~fS_Genotype();
+
+	/**
 	 * Get all existing nodes
 	 * @return vector of all nodes
 	 */
@@ -495,14 +503,6 @@ public:
 	 * @return
 	 */
 	bool allPartSizesValid();
-
-	/**
-	 * Build internal representation from fS format
-	 * @param genotype in fS format
-	 */
-	fS_Genotype(const SString &genotype);
-
-	~fS_Genotype();
 
 	/**
 	 * Builds Model object from internal representation
