@@ -250,7 +250,7 @@ public:
 	{
 		if(ncls == nullptr)
 			return true;
-		return ncls->prefinputs < (int)inputs.size();
+		return ncls->prefinputs < int(inputs.size());
 	}
 };
 
@@ -271,7 +271,7 @@ private:
 	bool isStart;   /// Is a starting node of whole genotype
 	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
-	unsigned int partCodeLen; /// The length of substring that directly describes the corresponding part
+	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children

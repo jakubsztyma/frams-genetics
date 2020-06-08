@@ -42,7 +42,7 @@ int countNeuroConnections(fS_Genotype &geno)
 {
 	vector<fS_Neuron*> neurons = geno.getAllNeurons();
 	int result = 0;
-	for (unsigned int i = 0; i < neurons.size(); i++)
+	for (int i = 0; i < int(neurons.size()); i++)
 		result += neurons[i]->inputs.size();
 	return result;
 }

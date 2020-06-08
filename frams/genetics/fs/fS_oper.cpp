@@ -230,9 +230,9 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 	if (!subNeurons.empty())
 	{
 		int subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
-		unsigned int subCount = subNeurons.size();
+		int subCount = subNeurons.size();
 		int subEnd = subStart + subCount - 1;
-		for(unsigned int i=0; i<subCount; i++)
+		for(int i=0; i<subCount; i++)
 		{
 			auto inputs = subNeurons[i]->inputs;
 			std::map<int, double> newInputs;
