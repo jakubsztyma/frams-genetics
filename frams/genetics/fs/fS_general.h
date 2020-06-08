@@ -269,7 +269,6 @@ private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
-	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
@@ -279,23 +278,19 @@ private:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
-	Pt3D calculateSize();
-
-	double calculateVolume()
+	static double calculateRadiusFromVolume(char partType, double volume)
 	{
 		double result;
-		Pt3D size = calculateSize();
-		double radiiProduct = size.x * size.y * size.z;
 		switch (partType)
 		{
 			case CUBOID:
-				result = 8.0 * radiiProduct;
+				result = std::cbrt(volume / 8.0);
 				break;
 			case CYLINDER:
-				result = 2.0 * M_PI * radiiProduct;
+				result = std::cbrt(volume / (2.0 * M_PI));
 				break;
 			case ELLIPSOID:
-				result = (4.0 / 3.0) * M_PI * radiiProduct;
+				result = std::cbrt(volume /  ((4.0 / 3.0) * M_PI));
 				break;
 			default:
 				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
@@ -317,12 +312,6 @@ private:
 	 * @return the position of part type
 	 */
 	int getPartPosition(Substring &restOfGenotype);
-
-	/**
-	 * Extract the value of parameter or return default if parameter not exists
-	 * @return the param value
-	 */
-	double getParam(string key);
 
 	/**
 	 * Extract modifiers from the rest of genotype
@@ -394,11 +383,37 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
+	char partType; /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
 	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
 
 	~Node();
+
+
+	Pt3D calculateSize();
+
+	double calculateVolume()
+	{
+		double result;
+		Pt3D size = calculateSize();
+		double radiiProduct = size.x * size.y * size.z;
+		switch (partType)
+		{
+			case CUBOID:
+				result = 8.0 * radiiProduct;
+				break;
+			case CYLINDER:
+				result = 2.0 * M_PI * radiiProduct;
+				break;
+			case ELLIPSOID:
+				result = (4.0 / 3.0) * M_PI * radiiProduct;
+				break;
+			default:
+				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
+		}
+		return result;
+	}
 
 	/**
 	 * Get fS representation of the subtree that starts from this node
@@ -411,6 +426,12 @@ public:
 	 * @return node count
 	 */
 	int getNodeCount();
+
+	/**
+	 * Extract the value of parameter or return default if parameter not exists
+	 * @return the param value
+	 */
+	double getParam(string key);
 };
 
 /**
@@ -423,8 +444,6 @@ class fS_Genotype
 	friend class fS_Operators;
 
 private:
-	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-
 	/**
 	 * Draws a node that has an index greater that specified
 	 * @param fromIndex minimal index of the node
@@ -445,6 +464,8 @@ private:
 	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
+	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
+
 
 	static int precision;
 
@@ -544,7 +565,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart();
+	bool addPart(bool ensureCircleSection);
 
 	/**
 	 * Performs change part type mutation on genotype
