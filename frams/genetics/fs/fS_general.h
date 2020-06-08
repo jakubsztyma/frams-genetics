@@ -359,7 +359,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state, Pt3D parentSize);
+	void getState(State *_state, const Pt3D &parentSize);
 
 	/**
 	 * Build children internal representations from fS genotype
@@ -455,6 +455,8 @@ public:
 	fS_Genotype(const string &genotype);
 
 	~fS_Genotype();
+
+	void getState();
 
 	/**
 	 * Get all existing nodes

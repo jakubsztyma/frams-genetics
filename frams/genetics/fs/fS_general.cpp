@@ -425,7 +425,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	return round2(currentDistance);
 }
 
-void Node::getState(State *_state, Pt3D parentSize)
+void Node::getState(State *_state, const Pt3D &parentSize)
 {
 	if(state != nullptr)
 		delete state;
@@ -449,15 +449,17 @@ void Node::getState(State *_state, Pt3D parentSize)
 			state->s *= multiplier;
 	}
 
+	Pt3D size = calculateSize();
 	if (!isStart)
 	{
 		// Rotate
-		Pt3D size = calculateSize();
 		state->rotate(getVectorRotation());
 
 		double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
 		state->addVector(distance);
 	}
+	for(int i=0; i<int(children.size()); i++)
+		children[i]->getState(state, size);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
@@ -587,7 +589,6 @@ void Node::buildModel(Model &model, Node *parent)
 	for (unsigned int i = 0; i < children.size(); i++)
 	{
 		Node *child = children[i];
-		child->getState(state, calculateSize());
 		child->buildModel(model, this);
 	}
 }
@@ -747,10 +748,15 @@ fS_Genotype::~fS_Genotype()
 	delete startNode;
 }
 
-void fS_Genotype::buildModel(Model &model)
+void fS_Genotype::getState()
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
 	startNode->getState(initialState, Pt3D(1.0));
+}
+
+void fS_Genotype::buildModel(Model &model)
+{
+	getState();
 	startNode->buildModel(model, nullptr);
 
 	buildNeuroConnections(model);
@@ -931,11 +937,8 @@ int fS_Genotype::getNodeCount()
 
 bool fS_Genotype::allPartSizesValid()
 {
+	getState();
 	vector<Node*> nodes = getAllNodes();
-
-	// Build model to calculate the modifier states
-	Model model;
-	buildModel(model);
 	for(unsigned int i=0; i<nodes.size(); i++)
 	{
 		if(!nodes[i]->isPartSizeValid())
@@ -1006,9 +1009,7 @@ bool fS_Genotype::removeParam()
 
 bool fS_Genotype::changeParam(bool ensureCircleSection)
 {
-	// Build model to calculate modifiers state
-	Model model;
-	buildModel(model);
+	getState();
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
