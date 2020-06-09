@@ -106,7 +106,8 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const char SHAPES[4]{'X', 'E', 'C', 'R'};
+const char SHAPES[4]{'X', 'E', 'C', 'R'};	// Value X should be forbidden in solid encoding
+const int SHAPES_COUNT = 4;
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";

@@ -151,7 +151,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (std::find(SHAPES, SHAPES + 4, restOfGenotype.at(i)) != std::end(SHAPES))
+		if (std::find(SHAPES, SHAPES + SHAPES_COUNT, restOfGenotype.at(i)) != std::end(SHAPES))
 			return i;
 	}
 	return -1;
@@ -180,7 +180,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 void Node::extractPartType(Substring &restOfGenotype)
 {
 	char partTypeC = restOfGenotype.at(0);
-	auto itr = std::find(SHAPES, SHAPES + 4, partTypeC);
+	auto itr = std::find(SHAPES, SHAPES + SHAPES_COUNT, partTypeC);
 	if (partTypeC == 'X' || itr == std::end(SHAPES))
 		throw "Invalid part type";
 
@@ -842,7 +842,7 @@ SString fS_Genotype::getGeno()
 
 char getRandomPartType()
 {
-	int randomIndex = 1 + rndUint(sizeof(SHAPES) / sizeof(SHAPES[0]) - 1);
+	int randomIndex = 1 + rndUint(SHAPES_COUNT - 1);
 	return SHAPES[randomIndex];
 }
 
@@ -1133,13 +1133,13 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int ptSize = sizeof(SHAPES) / sizeof(SHAPES[0]) - 1;
+		int ptSize = SHAPES_COUNT - 1;
 		int index = rndUint(ptSize);
 		if(index + 1 == randomNode->partType)
 			index = (index + 1 + rndUint(ptSize - 1)) % ptSize;
 		char newType = SHAPES[index + 1];
 
-		auto itr = std::find(SHAPES, SHAPES + 4, newType);
+		auto itr = std::find(SHAPES, SHAPES + SHAPES_COUNT, newType);
 		Part::Shape newTypeInt = (Part::Shape)std::distance(SHAPES, itr);
 
 		#ifdef _DEBUG
