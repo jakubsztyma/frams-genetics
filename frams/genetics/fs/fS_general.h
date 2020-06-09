@@ -106,7 +106,8 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const string PART_TYPES = "ECR";
+const char SHAPES[4]{'X', 'E', 'C', 'R'};
+
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
@@ -278,18 +279,18 @@ private:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
-	static double calculateRadiusFromVolume(char partType, double volume)
+	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
 	{
 		double result;
 		switch (partType)
 		{
-			case CUBOID:
+			case Part::Shape::SHAPE_CUBOID:
 				result = std::cbrt(volume / 8.0);
 				break;
-			case CYLINDER:
+			case Part::Shape::SHAPE_CYLINDER:
 				result = std::cbrt(volume / (2.0 * M_PI));
 				break;
-			case ELLIPSOID:
+			case Part::Shape::SHAPE_ELLIPSOID:
 				result = std::cbrt(volume /  ((4.0 / 3.0) * M_PI));
 				break;
 			default:
@@ -383,7 +384,7 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
-	char partType; /// The type of the part
+	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
 	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
@@ -400,13 +401,13 @@ public:
 		double radiiProduct = size.x * size.y * size.z;
 		switch (partType)
 		{
-			case CUBOID:
+			case Part::Shape::SHAPE_CUBOID:
 				result = 8.0 * radiiProduct;
 				break;
-			case CYLINDER:
+			case Part::Shape::SHAPE_CYLINDER:
 				result = 2.0 * M_PI * radiiProduct;
 				break;
-			case ELLIPSOID:
+			case Part::Shape::SHAPE_ELLIPSOID:
 				result = (4.0 / 3.0) * M_PI * radiiProduct;
 				break;
 			default:
