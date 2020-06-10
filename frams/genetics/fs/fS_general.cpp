@@ -151,7 +151,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (std::find(SHAPES, SHAPES + SHAPES_COUNT, restOfGenotype.at(i)) != std::end(SHAPES))
+		if (SHAPES_INV.find(restOfGenotype.at(i)) != SHAPES_INV.end())
 			return i;
 	}
 	return -1;
@@ -179,12 +179,11 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	char partTypeC = restOfGenotype.at(0);
-	auto itr = std::find(SHAPES, SHAPES + SHAPES_COUNT, partTypeC);
-	if (partTypeC == 'X' || itr == std::end(SHAPES))
+	auto itr = SHAPES_INV.find(restOfGenotype.at(0));
+	if (itr == SHAPES_INV.end())
 		throw "Invalid part type";
 
-	partType = (Part::Shape)std::distance(SHAPES, itr);
+	partType = itr->second;
 	restOfGenotype.startFrom(1);
 }
 
@@ -641,7 +640,7 @@ void Node::getGeno(SString &result)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
-	result += SHAPES[partType];
+	result += SHAPES.at(partType);
 
 	if (!neurons.empty())
 	{
@@ -842,8 +841,8 @@ SString fS_Genotype::getGeno()
 
 char getRandomPartType()
 {
-	int randomIndex = 1 + rndUint(SHAPES_COUNT - 1);
-	return SHAPES[randomIndex];
+	int randomIndex = 1 + rndUint(SHAPES_COUNT);	// Solid shapes are 1-based
+	return SHAPES.at(Part::Shape(randomIndex));
 }
 
 vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
@@ -1133,14 +1132,13 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int ptSize = SHAPES_COUNT - 1;
-		int index = rndUint(ptSize);
+		int index = rndUint(SHAPES_COUNT);
 		if(index + 1 == randomNode->partType)
-			index = (index + 1 + rndUint(ptSize - 1)) % ptSize;
-		char newType = SHAPES[index + 1];
+			index = (index + 1 + rndUint(SHAPES_COUNT - 1)) % SHAPES_COUNT;
+		char newType = SHAPES.at(Part::Shape(index + 1));
 
-		auto itr = std::find(SHAPES, SHAPES + SHAPES_COUNT, newType);
-		Part::Shape newTypeInt = (Part::Shape)std::distance(SHAPES, itr);
+		auto itr = SHAPES_INV.find(newType);
+		Part::Shape newTypeInt = itr->second;
 
 		#ifdef _DEBUG
 		if(newTypeInt == randomNode->partTypeInt)

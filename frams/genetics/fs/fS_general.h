@@ -23,6 +23,7 @@
 #include "frams/util/sstringutils.h"
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
+#include <unordered_map>
 
 /** @name Names of genotype modes */
 //@{
@@ -106,8 +107,17 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const char SHAPES[4]{'X', 'E', 'C', 'R'};	// Value X should be forbidden in solid encoding
-const int SHAPES_COUNT = 4;
+const std::unordered_map<Part::Shape, char> SHAPES = {
+		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
+		{Part::Shape::SHAPE_CUBOID, CUBOID},
+		{Part::Shape::SHAPE_CYLINDER, CYLINDER},
+};
+const std::unordered_map<char, Part::Shape> SHAPES_INV = {
+		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
+		{CUBOID, Part::Shape::SHAPE_CUBOID},
+		{CYLINDER, Part::Shape::SHAPE_CYLINDER},
+};
+const int SHAPES_COUNT = 3;
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
