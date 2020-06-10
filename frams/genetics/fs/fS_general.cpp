@@ -19,7 +19,7 @@ const std::map<string, double> defaultParamValues = {
 		{RX,             0.0},
 		{RY,             0.0},
 		{RZ,             0.0},
-		{SIZE,			 1.0},
+		{SIZE,           1.0},
 		{SIZE_X,         1.0},
 		{SIZE_Y,         1.0},
 		{SIZE_Z,         1.0},
@@ -75,9 +75,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 	if (length == 0)
 		return;
 
-	vector <SString> inputStrings;
+	vector<SString> inputStrings;
 	strSplit(SString(str, length), NEURON_INTERNAL_SEPARATOR, false, inputStrings);
-	if(inputStrings.empty())
+	if (inputStrings.empty())
 		return;
 
 	int inputStart = 0;
@@ -124,7 +124,7 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 		extractNeurons(restOfGeno);
 		extractParams(restOfGeno);
 	}
-	catch (fS_Exception& e)
+	catch (fS_Exception &e)
 	{
 		delete partDescription;
 		throw e;
@@ -431,7 +431,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 
 void Node::getState(State *_state, const Pt3D &parentSize)
 {
-	if(state != nullptr)
+	if (state != nullptr)
 		delete state;
 	if (isStart)
 		state = _state;
@@ -462,22 +462,22 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 		double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
 		state->addVector(distance);
 	}
-	for(int i=0; i<int(children.size()); i++)
+	for (int i = 0; i < int(children.size()); i++)
 		children[i]->getState(state, size);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
 {
-	vector <Substring> branches = getBranches(restOfGenotype);
+	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
 		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
 	}
 }
 
-vector <Substring> Node::getBranches(Substring &restOfGenotype)
+vector<Substring> Node::getBranches(Substring &restOfGenotype)
 {
-	vector <Substring> children;
+	vector<Substring> children;
 	if (restOfGenotype.at(0) != BRANCH_START)
 	{
 		children.push_back(restOfGenotype);  // Only one child
@@ -490,7 +490,7 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 	const char *str = restOfGenotype.c_str();
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if(depth < 0)
+		if (depth < 0)
 			throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
 		c = str[i];
 		if (c == BRANCH_START)
@@ -505,7 +505,7 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 		} else if (c == BRANCH_END)
 			depth -= 1;
 	}
-	if(depth != 1)	// T
+	if (depth != 1)    // T
 		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
 	return children;
 }
@@ -548,17 +548,17 @@ bool Node::isPartSizeValid()
 	Part_MinMaxDef minP = Model::getMinPart();
 	Part_MinMaxDef maxP = Model::getMaxPart();
 
-	if(volume > maxP.volume || minP.volume > volume)
+	if (volume > maxP.volume || minP.volume > volume)
 		return false;
-	if(size.x < minP.scale.x || size.y < minP.scale.y || size.z < minP.scale.z)
+	if (size.x < minP.scale.x || size.y < minP.scale.y || size.z < minP.scale.z)
 		return false;
-	if(size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
+	if (size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
 		return false;
 
-	if(partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
+	if (partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
 		// When not all radii have different values
 		return false;
-	if(partType == Part::Shape::SHAPE_CYLINDER && size.x != size.y)
+	if (partType == Part::Shape::SHAPE_CYLINDER && size.x != size.y)
 		// If base radii have different values
 		return false;
 	return true;
@@ -657,7 +657,7 @@ void Node::addJointsToModel(Model &model, Node *parent)
 
 void Node::getGeno(SString &result)
 {
-	if(joint != DEFAULT_JOINT)
+	if (joint != DEFAULT_JOINT)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
@@ -675,7 +675,7 @@ void Node::getGeno(SString &result)
 			if (n->ncls != nullptr)
 			{
 				result += n->ncls->getName().c_str();
-				if(!n->inputs.empty())
+				if (!n->inputs.empty())
 					result += NEURON_INTERNAL_SEPARATOR;
 			}
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
@@ -750,7 +750,7 @@ void Node::getAllNodes(vector<Node *> &allNodes)
 
 int Node::getNodeCount()
 {
-	vector<Node *>allNodes;
+	vector<Node*> allNodes;
 	getAllNodes(allNodes);
 	return allNodes.size();
 }
@@ -787,9 +787,9 @@ void fS_Genotype::getState()
 double fS_Genotype::randomParamMultiplier()
 {
 	double multiplier = 1 + fabs(RndGen.GaussStd());
-	if(multiplier > PARAM_MAX_MULTIPLIER)
+	if (multiplier > PARAM_MAX_MULTIPLIER)
 		multiplier = PARAM_MAX_MULTIPLIER;
-	if(rndUint(2) == 0)
+	if (rndUint(2) == 0)
 		multiplier = 1.0 / multiplier;
 	return multiplier;
 }
@@ -802,7 +802,7 @@ void fS_Genotype::buildModel(Model &model)
 	buildNeuroConnections(model);
 
 	// Additional joints
-	vector<Node *>allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	for (int i = 0; i < int(allNodes.size()); i++)
 	{
 		Node *node = allNodes[i];
@@ -830,7 +830,7 @@ void fS_Genotype::buildModel(Model &model)
 void fS_Genotype::buildNeuroConnections(Model &model)
 {
 	// All the neurons are already created in the model
-	vector<fS_Neuron *>allNeurons = getAllNeurons();
+	vector<fS_Neuron*> allNeurons = getAllNeurons();
 	for (int i = 0; i < int(allNeurons.size()); i++)
 	{
 		fS_Neuron *neuron = allNeurons[i];
@@ -885,7 +885,7 @@ SString fS_Genotype::getGeno()
 
 char getRandomPartType()
 {
-	int randomIndex = 1 + rndUint(SHAPE_COUNT);	// Solid shapes are 1-based
+	int randomIndex = 1 + rndUint(SHAPE_COUNT);    // Solid shapes are 1-based
 	return SHAPETYPE_TO_SYMBOL.at(Part::Shape(randomIndex));
 }
 
@@ -894,7 +894,7 @@ vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
 	vector<Node*> allNodes;
 	node->getAllNodes(allNodes);
 
-	vector<fS_Neuron *>allNeurons;
+	vector<fS_Neuron*> allNeurons;
 	for (int i = 0; i < int(allNodes.size()); i++)
 	{
 		for (int j = 0; j < int(allNodes[i]->neurons.size()); j++)
@@ -905,7 +905,7 @@ vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
 	return allNeurons;
 }
 
-int fS_Genotype::getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNeuron)
+int fS_Genotype::getNeuronIndex(vector<fS_Neuron *> neurons, fS_Neuron *changedNeuron)
 {
 	int neuronIndex = -1;
 	for (int i = 0; i < int(neurons.size()); i++)
@@ -919,12 +919,12 @@ int fS_Genotype::getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNe
 	return neuronIndex;
 }
 
-void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, int end, SHIFT shift)
+void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron *> &neurons, int start, int end, SHIFT shift)
 {
-	if(start == -1 || end == -1)
+	if (start == -1 || end == -1)
 		return;
 	int shiftValue = end - start + 1;
-	if(shift == SHIFT::LEFT)
+	if (shift == SHIFT::LEFT)
 		shiftValue *= -1;
 
 	for (int i = 0; i < int(neurons.size()); i++)
@@ -937,13 +937,12 @@ void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, 
 				newInputs[it->first] = it->second;
 			else if (it->first >= start)
 			{
-				if(end >= it->first )
+				if (end >= it->first)
 				{
 					if (shift == SHIFT::RIGHT)
 						newInputs[it->first + shiftValue] = it->second;
 					// If shift == -1, just delete the input
-				}
-				else if (it->first > end)
+				} else if (it->first > end)
 					newInputs[it->first + shiftValue] = it->second;
 			}
 		}
@@ -953,7 +952,7 @@ void fS_Genotype::shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, 
 
 vector<Node *> fS_Genotype::getAllNodes()
 {
-	vector<Node *>allNodes;
+	vector<Node*> allNodes;
 	startNode->getAllNodes(allNodes);
 	return allNodes;
 }
@@ -965,7 +964,7 @@ vector<fS_Neuron *> fS_Genotype::getAllNeurons()
 
 Node *fS_Genotype::chooseNode(int fromIndex = 0)
 {
-	vector<Node *>allNodes = getAllNodes();
+	vector<Node*> allNodes = getAllNodes();
 	return allNodes[fromIndex + rndUint(allNodes.size() - fromIndex)];
 }
 
@@ -978,9 +977,9 @@ bool fS_Genotype::allPartSizesValid()
 {
 	getState();
 	vector<Node*> nodes = getAllNodes();
-	for(int i=0; i<int(nodes.size()); i++)
+	for (int i = 0; i < int(nodes.size()); i++)
 	{
-		if(!nodes[i]->isPartSizeValid())
+		if (!nodes[i]->isPartSizeValid())
 		{
 			return false;
 		}
@@ -997,7 +996,7 @@ bool fS_Genotype::addJoint()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		char randomJoint = JOINTS[rndUint(JOINT_COUNT)];
-		randomNode = chooseNode(1);		// First part does not have joints
+		randomNode = chooseNode(1);        // First part does not have joints
 		if (randomNode->joint == DEFAULT_JOINT)
 		{
 			randomNode->joint = randomJoint;
@@ -1062,12 +1061,11 @@ bool fS_Genotype::changeParam(bool ensureCircleSection)
 
 
 			// Do not allow invalid changes in part size
-			if(it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
+			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
 			{
 				it->second *= multiplier;
 				return true;
-			}
-			else
+			} else
 				return randomNode->changeSizeParam(it->first, multiplier, ensureCircleSection);
 		}
 	}
@@ -1089,11 +1087,11 @@ bool fS_Genotype::addParam(bool ensureCircleSection)
 	// Do not allow invalid changes in part size
 	bool isRadiusOfBase = selectedParam == SIZE_X || selectedParam == SIZE_Y;
 	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
-	if(ensureCircleSection && isRadius)
+	if (ensureCircleSection && isRadius)
 	{
-		if(randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
+		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
-		if(randomNode->partType == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
+		if (randomNode->partType == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
 			return false;
 	}
 	// Add modified default value for param
@@ -1141,10 +1139,10 @@ bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
 	// Assign part size to default value
 	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);
 	double minVolume = Model::getMinPart().volume;
-	double defVolume = Model::getDefPart().volume * volumeMultiplier;	// Default value after applying modifiers
+	double defVolume = Model::getDefPart().volume * volumeMultiplier;    // Default value after applying modifiers
 	double maxVolume = Model::getMaxPart().volume;
 	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
-	double relativeVolume = volume / volumeMultiplier;	// Volume without applying modifiers
+	double relativeVolume = volume / volumeMultiplier;    // Volume without applying modifiers
 
 	double newRadius = Node::calculateRadiusFromVolume(newNode->partType, relativeVolume);
 	newNode->params[SIZE_X] = newRadius;
@@ -1152,7 +1150,7 @@ bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
 	newNode->params[SIZE_Z] = newRadius;
 	node->children.push_back(newNode);
 
-	if(mutateSize)
+	if (mutateSize)
 	{
 		getState();
 		newNode->changeSizeParam(SIZE_X, randomParamMultiplier(), true);
@@ -1164,27 +1162,27 @@ bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
 
 bool fS_Genotype::changePartType(bool ensureCircleSection)
 {
-	for(int i=0; i<mutationTries; i++)
+	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
 		int index = rndUint(SHAPE_COUNT);
-		if(index + 1 == randomNode->partType)
+		if (index + 1 == randomNode->partType)
 			index = (index + 1 + rndUint(SHAPE_COUNT - 1)) % SHAPE_COUNT;
 		char newType = SHAPETYPE_TO_SYMBOL.at(Part::Shape(index + 1));
 
 		auto itr = SYMBOL_TO_SHAPETYPE.find(newType);
 		Part::Shape newTypeInt = itr->second;
 
-		#ifdef _DEBUG
+#ifdef _DEBUG
 		if(newTypeInt == randomNode->partTypeInt)
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.");
-		#endif
+#endif
 
-		if(ensureCircleSection)
+		if (ensureCircleSection)
 		{
 			getState();
-			if(randomNode->partType == Part::Shape::SHAPE_CUBOID
-			|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newTypeInt == Part::Shape::SHAPE_ELLIPSOID))
+			if (randomNode->partType == Part::Shape::SHAPE_CUBOID
+				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newTypeInt == Part::Shape::SHAPE_ELLIPSOID))
 			{
 				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
 				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
@@ -1209,7 +1207,7 @@ bool fS_Genotype::addModifier()
 	randomNode->modifiers.push_back(randomModifier);
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
-	if(isSizeMod && !allPartSizesValid())
+	if (isSizeMod && !allPartSizesValid())
 	{
 		randomNode->modifiers.pop_back();
 		return false;
@@ -1228,7 +1226,7 @@ bool fS_Genotype::removeModifier()
 			randomNode->modifiers.pop_back();
 
 			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
-			if(isSizeMod && !allPartSizesValid())
+			if (isSizeMod && !allPartSizesValid())
 			{
 				randomNode->modifiers.push_back(oldMod);
 				return false;
@@ -1242,7 +1240,7 @@ bool fS_Genotype::removeModifier()
 
 void fS_Genotype::rearrangeNeuronConnections(fS_Neuron *changedNeuron, SHIFT shift)
 {
-	vector<fS_Neuron *>neurons = getAllNeurons();
+	vector<fS_Neuron*> neurons = getAllNeurons();
 	int changedNeuronIndex = getNeuronIndex(neurons, changedNeuron);
 	shiftNeuroConnections(neurons, changedNeuronIndex, changedNeuronIndex, shift);
 }
@@ -1262,15 +1260,15 @@ bool fS_Genotype::addNeuro()
 		if (effectiveInputCount > 0)
 		{
 			// Create as many connections for the neuron as possible (at most prefinputs)
-			vector<fS_Neuron *>allNeurons = getAllNeurons();
-			vector<int>neuronsWithOutput;
-			for(int i=0; i<int(allNeurons.size()); i++)
+			vector<fS_Neuron*> allNeurons = getAllNeurons();
+			vector<int> neuronsWithOutput;
+			for (int i = 0; i < int(allNeurons.size()); i++)
 			{
-				if(allNeurons[i]->ncls->getPreferredOutput() > 0)
+				if (allNeurons[i]->ncls->getPreferredOutput() > 0)
 					neuronsWithOutput.push_back(i);
 			}
 			int size = neuronsWithOutput.size();
-			if(size > 0)
+			if (size > 0)
 			{
 				for (int i = 0; i < effectiveInputCount; i++)
 				{
@@ -1311,7 +1309,7 @@ bool fS_Genotype::removeNeuro()
 
 bool fS_Genotype::changeNeuroConnection()
 {
-	vector<fS_Neuron *>neurons = getAllNeurons();
+	vector<fS_Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -1326,7 +1324,7 @@ bool fS_Genotype::changeNeuroConnection()
 			advance(it, rndUint(inputCount));
 
 			Neuro *neuro = new Neuro();
-			if(selectedNeuron->ncls != nullptr)
+			if (selectedNeuron->ncls != nullptr)
 				neuro->setClass(selectedNeuron->ncls);
 			it->second *= GenoOperators::mutateNeuProperty(it->second, neuro, -1);
 			delete neuro;
@@ -1338,7 +1336,7 @@ bool fS_Genotype::changeNeuroConnection()
 
 bool fS_Genotype::addNeuroConnection()
 {
-	vector<fS_Neuron *>neurons = getAllNeurons();
+	vector<fS_Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -1347,10 +1345,10 @@ bool fS_Genotype::addNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		selectedNeuron = neurons[rndUint(size)];
-		if(selectedNeuron->acceptsInputs())
+		if (selectedNeuron->acceptsInputs())
 			break;
 	}
-	if(!selectedNeuron->acceptsInputs())
+	if (!selectedNeuron->acceptsInputs())
 		return false;
 
 	for (int i = 0; i < mutationTries; i++)
@@ -1368,7 +1366,7 @@ bool fS_Genotype::addNeuroConnection()
 
 bool fS_Genotype::removeNeuroConnection()
 {
-	vector<fS_Neuron *>neurons = getAllNeurons();
+	vector<fS_Neuron*> neurons = getAllNeurons();
 	if (neurons.empty())
 		return false;
 
