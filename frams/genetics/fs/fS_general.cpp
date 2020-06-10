@@ -151,7 +151,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (SYMBOL_TO_SHAPETYPE.find(restOfGenotype.at(i)) != SYMBOL_TO_SHAPETYPE.end())
+		if (GENE_TO_SHAPETYPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPETYPE.end())
 			return i;
 	}
 	return -1;
@@ -179,8 +179,8 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	auto itr = SYMBOL_TO_SHAPETYPE.find(restOfGenotype.at(0));
-	if (itr == SYMBOL_TO_SHAPETYPE.end())
+	auto itr = GENE_TO_SHAPETYPE.find(restOfGenotype.at(0));
+	if (itr == GENE_TO_SHAPETYPE.end())
 		throw fS_Exception("Invalid part type");
 
 	partType = itr->second;
@@ -661,7 +661,7 @@ void Node::getGeno(SString &result)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
-	result += SHAPETYPE_TO_SYMBOL.at(partType);
+	result += SHAPETYPE_TO_GENE.at(partType);
 
 	if (!neurons.empty())
 	{
@@ -886,7 +886,7 @@ SString fS_Genotype::getGeno()
 char getRandomPartType()
 {
 	int randomIndex = 1 + rndUint(SHAPE_COUNT);    // Solid shapes are 1-based
-	return SHAPETYPE_TO_SYMBOL.at(Part::Shape(randomIndex));
+	return SHAPETYPE_TO_GENE.at(Part::Shape(randomIndex));
 }
 
 vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
@@ -1168,9 +1168,9 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 		int index = rndUint(SHAPE_COUNT);
 		if (index + 1 == randomNode->partType)
 			index = (index + 1 + rndUint(SHAPE_COUNT - 1)) % SHAPE_COUNT;
-		char newType = SHAPETYPE_TO_SYMBOL.at(Part::Shape(index + 1));
+		char newType = SHAPETYPE_TO_GENE.at(Part::Shape(index + 1));
 
-		auto itr = SYMBOL_TO_SHAPETYPE.find(newType);
+		auto itr = GENE_TO_SHAPETYPE.find(newType);
 		Part::Shape newTypeInt = itr->second;
 
 #ifdef _DEBUG

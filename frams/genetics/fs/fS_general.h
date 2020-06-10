@@ -108,19 +108,19 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_SYMBOL = {
+const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_GENE = {
 		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
 		{Part::Shape::SHAPE_CUBOID,    CUBOID},
 		{Part::Shape::SHAPE_CYLINDER,  CYLINDER},
 };
 
 // This map is inverse to SHAPE_TO_SYMBOL. Those two should be compatible
-const std::unordered_map<char, Part::Shape> SYMBOL_TO_SHAPETYPE = {
+const std::unordered_map<char, Part::Shape> GENE_TO_SHAPETYPE = {
 		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
 		{CUBOID,    Part::Shape::SHAPE_CUBOID},
 		{CYLINDER,  Part::Shape::SHAPE_CYLINDER},
 };
-const int SHAPE_COUNT = 3;    // The value should be compatible with SHAPETYPE_TO_SYMBOL constant
+const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE and GENE_TO_SHAPETYPE
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
