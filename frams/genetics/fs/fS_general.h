@@ -23,6 +23,7 @@
 #include "frams/util/sstringutils.h"
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
+#include <unordered_map>
 
 /** @name Names of genotype modes */
 //@{
@@ -56,7 +57,7 @@ enum class SHIFT
 /** @name Every modifier changes the underlying value by this multiplier */
 const double  MODIFIER_MULTIPLIER = 1.1;
 /** @name In mutation parameters will be multiplied by at most this value */
-const double PARAM_MULTIPLIER = 1.5;
+const double PARAM_MAX_MULTIPLIER = 1.5;
 
 /**
  * Used in finding the proper distance between the parts
@@ -106,7 +107,18 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const string PART_TYPES = "ECR";
+const std::unordered_map<Part::Shape, char> SHAPES = {
+		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
+		{Part::Shape::SHAPE_CUBOID, CUBOID},
+		{Part::Shape::SHAPE_CYLINDER, CYLINDER},
+};
+const std::unordered_map<char, Part::Shape> SHAPES_INV = {
+		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
+		{CUBOID, Part::Shape::SHAPE_CUBOID},
+		{CYLINDER, Part::Shape::SHAPE_CYLINDER},
+};
+const int SHAPES_COUNT = 3;
+
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
@@ -269,7 +281,6 @@ private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	bool isStart;   /// Is a starting node of whole genotype
-	char partType; /// The type of the part
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
@@ -279,23 +290,19 @@ private:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
-	Pt3D calculateSize();
-
-	double calculateVolume()
+	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
 	{
 		double result;
-		Pt3D size = calculateSize();
-		double radiiProduct = size.x * size.y * size.z;
 		switch (partType)
 		{
-			case CUBOID:
-				result = 8.0 * radiiProduct;
+			case Part::Shape::SHAPE_CUBOID:
+				result = std::cbrt(volume / 8.0);
 				break;
-			case CYLINDER:
-				result = 2.0 * M_PI * radiiProduct;
+			case Part::Shape::SHAPE_CYLINDER:
+				result = std::cbrt(volume / (2.0 * M_PI));
 				break;
-			case ELLIPSOID:
-				result = (4.0 / 3.0) * M_PI * radiiProduct;
+			case Part::Shape::SHAPE_ELLIPSOID:
+				result = std::cbrt(volume /  ((4.0 / 3.0) * M_PI));
 				break;
 			default:
 				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
@@ -317,12 +324,6 @@ private:
 	 * @return the position of part type
 	 */
 	int getPartPosition(Substring &restOfGenotype);
-
-	/**
-	 * Extract the value of parameter or return default if parameter not exists
-	 * @return the param value
-	 */
-	double getParam(string key);
 
 	/**
 	 * Extract modifiers from the rest of genotype
@@ -394,6 +395,7 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
+	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
 	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
@@ -407,10 +409,38 @@ public:
 	void getGeno(SString &result);
 
 	/**
+	 * Calculate the effective size of the part (after applying all multipliers and params)
+	 * @return The effective size
+	 */
+	Pt3D calculateSize();
+
+	/**
+	 * Calculate the effective volume of the part
+	 * @return The effective volume
+	 */
+	double calculateVolume();
+
+	/**
+	 * Change the value of the size parameter by given multiplier
+	 * Do not change the value if any of the size restrictions is not satisfied
+	 * @param paramKey
+	 * @param multiplier
+	 * @param ensureCircleSection
+	 * @return True if the parameter value was change, false otherwise
+	 */
+	bool changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection);
+
+	/**
 	 * Counts all the nodes in subtree
 	 * @return node count
 	 */
 	int getNodeCount();
+
+	/**
+	 * Extract the value of parameter or return default if parameter not exists
+	 * @return the param value
+	 */
+	double getParam(string key);
 };
 
 /**
@@ -423,8 +453,6 @@ class fS_Genotype
 	friend class fS_Operators;
 
 private:
-	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
-
 	/**
 	 * Draws a node that has an index greater that specified
 	 * @param fromIndex minimal index of the node
@@ -445,6 +473,8 @@ private:
 	Node *getNearestNode(vector<Node *> allNodes, Node *node);
 
 public:
+	Node *startNode = nullptr;    /// The start (root) node. All other nodes are its descendants
+
 
 	static int precision;
 
@@ -457,6 +487,12 @@ public:
 	~fS_Genotype();
 
 	void getState();
+
+	/**
+	 * Get a random multiplier for parameter mutation
+	 * @return Random parameter multiplier
+	 */
+	double randomParamMultiplier();
 
 	/**
 	 * Get all existing nodes
@@ -544,7 +580,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart();
+	bool addPart(bool ensureCircleSection, bool mutateSize=true);
 
 	/**
 	 * Performs change part type mutation on genotype

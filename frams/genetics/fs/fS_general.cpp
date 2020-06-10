@@ -26,6 +26,8 @@ const std::map<string, double> defaultParamValues = {
 		{JOINT_DISTANCE, 1.0}
 };
 
+const
+
 double round2(double var)
 {
 	double value = (int) (var * 100 + .5);
@@ -149,7 +151,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (PART_TYPES.find(restOfGenotype.at(i)) != string::npos)
+		if (SHAPES_INV.find(restOfGenotype.at(i)) != SHAPES_INV.end())
 			return i;
 	}
 	return -1;
@@ -177,9 +179,11 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	partType = restOfGenotype.at(0);
-	if (PART_TYPES.find(partType) == string::npos)
+	auto itr = SHAPES_INV.find(restOfGenotype.at(0));
+	if (itr == SHAPES_INV.end())
 		throw "Invalid part type";
+
+	partType = itr->second;
 	restOfGenotype.startFrom(1);
 }
 
@@ -508,12 +512,34 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 
 Pt3D Node::calculateSize()
 {
-	double sx = getParam(SIZE_X) * getParam(SIZE) * state->s;
-	double sy = getParam(SIZE_Y) * getParam(SIZE) * state->s;
-	double sz = getParam(SIZE_Z) * getParam(SIZE) * state->s;
+	double sizeMultiplier = getParam(SIZE) * state->s;
+	double sx = getParam(SIZE_X) * sizeMultiplier;
+	double sy = getParam(SIZE_Y) * sizeMultiplier;
+	double sz = getParam(SIZE_Z) * sizeMultiplier;
 	return Pt3D(sx, sy, sz);
 }
 
+double Node::calculateVolume()
+{
+	double result;
+	Pt3D size = calculateSize();
+	double radiiProduct = size.x * size.y * size.z;
+	switch (partType)
+	{
+		case Part::Shape::SHAPE_CUBOID:
+			result = 8.0 * radiiProduct;
+			break;
+		case Part::Shape::SHAPE_CYLINDER:
+			result = 2.0 * M_PI * radiiProduct;
+			break;
+		case Part::Shape::SHAPE_ELLIPSOID:
+			result = (4.0 / 3.0) * M_PI * radiiProduct;
+			break;
+		default:
+			logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
+	}
+	return result;
+}
 
 bool Node::isPartSizeValid()
 {
@@ -529,10 +555,10 @@ bool Node::isPartSizeValid()
 	if(size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
 		return false;
 
-	if(partType == ELLIPSOID && max3(size) != min3(size))
+	if(partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
 		// When not all radii have different values
 		return false;
-	if(partType == CYLINDER && size.x != size.y)
+	if(partType == Part::Shape::SHAPE_CYLINDER && size.x != size.y)
 		// If base radii have different values
 		return false;
 	return true;
@@ -595,17 +621,7 @@ void Node::buildModel(Model &model, Node *parent)
 
 void Node::createPart()
 {
-	Part::Shape model_partType;
-	if (partType == PART_TYPES[0])
-		model_partType = Part::Shape::SHAPE_ELLIPSOID;
-	else if (partType == PART_TYPES[1])
-		model_partType = Part::Shape::SHAPE_CUBOID;
-	else if (partType == PART_TYPES[2])
-		model_partType = Part::Shape::SHAPE_CYLINDER;
-	else
-		throw "Invalid part type";
-
-	part = new Part(model_partType);
+	part = new Part(partType);
 	part->p = Pt3D(round2(state->location.x),
 				   round2(state->location.y),
 				   round2(state->location.z));
@@ -645,7 +661,7 @@ void Node::getGeno(SString &result)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
-	result += partType;
+	result += SHAPES.at(partType);
 
 	if (!neurons.empty())
 	{
@@ -711,6 +727,20 @@ void Node::getGeno(SString &result)
 	}
 }
 
+
+bool Node::changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection)
+{
+	double oldValue = getParam(paramKey);
+	params[paramKey] = oldValue * multiplier;
+	if (!ensureCircleSection || isPartSizeValid())
+		return true;
+	else
+	{
+		params[paramKey] = oldValue;
+		return false;
+	}
+}
+
 void Node::getAllNodes(vector<Node *> &allNodes)
 {
 	allNodes.push_back(this);
@@ -752,6 +782,16 @@ void fS_Genotype::getState()
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
 	startNode->getState(initialState, Pt3D(1.0));
+}
+
+double fS_Genotype::randomParamMultiplier()
+{
+	double multiplier = 1 + fabs(RndGen.GaussStd());
+	if(multiplier > PARAM_MAX_MULTIPLIER)
+		multiplier = PARAM_MAX_MULTIPLIER;
+	if(rndUint(2) == 0)
+		multiplier = 1.0 / multiplier;
+	return multiplier;
 }
 
 void fS_Genotype::buildModel(Model &model)
@@ -843,11 +883,10 @@ SString fS_Genotype::getGeno()
 	return geno;
 }
 
-
 char getRandomPartType()
 {
-	int randomIndex = rndUint(PART_TYPES.size());
-	return PART_TYPES[randomIndex];
+	int randomIndex = 1 + rndUint(SHAPES_COUNT);	// Solid shapes are 1-based
+	return SHAPES.at(Part::Shape(randomIndex));
 }
 
 vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
@@ -1018,26 +1057,18 @@ bool fS_Genotype::changeParam(bool ensureCircleSection)
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-			double oldValue = it->second;
 
-			if(rndUint(2) == 0)
-				it->second *= PARAM_MULTIPLIER;
-			else
-				it->second /= PARAM_MULTIPLIER;
+			double multiplier = randomParamMultiplier();
+
 
 			// Do not allow invalid changes in part size
 			if(it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
-				return true;
-			else if(ensureCircleSection)
 			{
-				if (randomNode->isPartSizeValid())
-					return true;
-				else
-				{
-					it->second = oldValue;
-					return false;
-				}
+				it->second *= multiplier;
+				return true;
 			}
+			else
+				return randomNode->changeSizeParam(it->first, multiplier, ensureCircleSection);
 		}
 	}
 	return false;
@@ -1060,9 +1091,9 @@ bool fS_Genotype::addParam(bool ensureCircleSection)
 	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
 	if(ensureCircleSection && isRadius)
 	{
-		if(randomNode->partType == ELLIPSOID)
+		if(randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
-		if(randomNode->partType == CYLINDER && isRadiusOfBase)
+		if(randomNode->partType == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
 			return false;
 	}
 	// Add modified default value for param
@@ -1096,18 +1127,38 @@ bool fS_Genotype::removePart()
 	return false;
 }
 
-bool fS_Genotype::addPart()
+bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
 {
-	Node *randomNode = chooseNode();
+	getState();
+	Node *node = chooseNode();
 	char partType = getRandomPartType();
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, randomNode->modifierMode, randomNode->paramMode, randomNode->cycleMode);
+	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode);
 	// Add random rotation
 	newNode->params[ROT_X] = RndGen.Uni(-90, 90);
 	newNode->params[ROT_Y] = RndGen.Uni(-90, 90);
 	newNode->params[ROT_Z] = RndGen.Uni(-90, 90);
+	// Assign part size to default value
+	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);
+	double minVolume = Model::getMinPart().volume;
+	double defVolume = Model::getDefPart().volume * volumeMultiplier;	// Default value after applying modifiers
+	double maxVolume = Model::getMaxPart().volume;
+	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
+	double relativeVolume = volume / volumeMultiplier;	// Volume without applying modifiers
 
-	randomNode->children.push_back(newNode);
+	double newRadius = Node::calculateRadiusFromVolume(newNode->partType, relativeVolume);
+	newNode->params[SIZE_X] = newRadius;
+	newNode->params[SIZE_Y] = newRadius;
+	newNode->params[SIZE_Z] = newRadius;
+	node->children.push_back(newNode);
+
+	if(mutateSize)
+	{
+		getState();
+		newNode->changeSizeParam(SIZE_X, randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_Y, randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_Z, randomParamMultiplier(), true);
+	}
 	return true;
 }
 
@@ -1116,26 +1167,35 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int ptSize = PART_TYPES.size();
-		int index = rndUint(ptSize);
-		if(PART_TYPES[index] == randomNode->partType)
-			index = (index + 1 + rndUint(ptSize - 1)) % ptSize;
-		char newType = PART_TYPES[index];
+		int index = rndUint(SHAPES_COUNT);
+		if(index + 1 == randomNode->partType)
+			index = (index + 1 + rndUint(SHAPES_COUNT - 1)) % SHAPES_COUNT;
+		char newType = SHAPES.at(Part::Shape(index + 1));
+
+		auto itr = SHAPES_INV.find(newType);
+		Part::Shape newTypeInt = itr->second;
 
 		#ifdef _DEBUG
-		if(newType == randomNode->partType)
+		if(newTypeInt == randomNode->partTypeInt)
 			throw "Internal error: invalid part type chosen in mutation.";
 		#endif
 
-		// Do not change the type of part when it has size params
-		bool hasNoBaseParams = randomNode->params.count(SIZE_X) == 0 && randomNode->params.count(SIZE_Y) == 0;
-		if((!ensureCircleSection)
-		|| newType == CUBOID
-		|| (newType == CYLINDER && (randomNode->partType == ELLIPSOID || hasNoBaseParams)))
+		if(ensureCircleSection)
 		{
-			randomNode->partType = newType;
-			return true;
+			getState();
+			if(randomNode->partType == Part::Shape::SHAPE_CUBOID
+			|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newTypeInt == Part::Shape::SHAPE_ELLIPSOID))
+			{
+				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+				double newRelativeRadius = Node::calculateRadiusFromVolume(newTypeInt, relativeVolume);
+				randomNode->params[SIZE_X] = newRelativeRadius;
+				randomNode->params[SIZE_Y] = newRelativeRadius;
+				randomNode->params[SIZE_Z] = newRelativeRadius;
+			}
 		}
+		randomNode->partType = newTypeInt;
+		return true;
 	}
 	return false;
 }

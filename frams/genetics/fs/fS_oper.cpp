@@ -63,7 +63,7 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 	switch (method)
 	{
 		case FS_ADD_PART:
-			result = genotype.addPart();
+			result = genotype.addPart(ensureCircleSection);
 			break;
 		case FS_REM_PART:
 			result = genotype.removePart();

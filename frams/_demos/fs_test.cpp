@@ -101,6 +101,70 @@ void testRearrangeAfterCrossover()
 	}
 }
 
+double EPSILON = 0.01;
+bool doubleCompare(double a, double b)
+{
+	return fabs(a - b) < EPSILON;
+}
+
+void testAddPart()
+{
+	string test_cases[] = {
+		"S:E",
+		"S:SE",
+		"S:sE",
+		"S:SSSSSSSE",
+		"S:sssssssE",
+		"S:SSSSSSSSSE",	// More than max
+		"S:sssssssssE", // Less than min
+	};
+	double expectedVolume[] = {
+			1.0,
+			1.33,
+			0.75,
+			7.4,
+			0.14,
+			10.0,
+			0.1,
+	};
+
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		fS_Genotype geno(test_cases[i]);
+
+		geno.addPart(true, false);
+
+		geno.getState();
+		Node *newNode = geno.getAllNodes()[1];
+		assert(doubleCompare(newNode->calculateVolume(), expectedVolume[i]));
+	}
+}
+
+void testChangePartType()
+{
+	string test_cases[] = {
+			"S:C",
+			"S:SSSSC",
+			"S:sssssC",
+			"S:sssssC{x=0.3;y=2.3;z=1.1}",
+			"S:SSSSSSC{x=0.3;y=2.3;z=1.1}",
+	};
+
+	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		fS_Genotype geno(test_cases[i]);
+		geno.getState();
+		double oldVolume = geno.startNode->calculateVolume();
+
+		geno.changePartType(true);
+
+		geno.getState();
+		std::cout<<geno.getGeno().c_str()<<" "<<geno.startNode->calculateVolume()<<" "<<oldVolume<<std::endl;
+		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
+	}
+
+}
+
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases will almost always work when crossoverTries is big enough
@@ -191,7 +255,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test add part
 	tmp = geno.getNodeCount();
-	geno.addPart();
+	geno.addPart(true);
 	assert(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
@@ -671,6 +735,8 @@ int main(int argc, char *argv[])
 	testCrossoverSimilarTrees();
 	testRearrangeBeforeCrossover();
 	testRearrangeAfterCrossover();
+	testAddPart();
+	testChangePartType();
 	int operationCount;
 	if(argc > 1)
 		operationCount = std::stod(argv[1]);
