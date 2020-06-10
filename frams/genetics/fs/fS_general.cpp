@@ -124,10 +124,10 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 		extractNeurons(restOfGeno);
 		extractParams(restOfGeno);
 	}
-	catch (const char *msg)
+	catch (fS_Exception& e)
 	{
 		delete partDescription;
-		throw msg;
+		throw e;
 	}
 
 
@@ -151,7 +151,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (SHAPES_INV.find(restOfGenotype.at(i)) != SHAPES_INV.end())
+		if (SYMBOL_TO_SHAPETYPE.find(restOfGenotype.at(i)) != SYMBOL_TO_SHAPETYPE.end())
 			return i;
 	}
 	return -1;
@@ -161,7 +161,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 {
 	int partTypePosition = getPartPosition(restOfGenotype);
 	if (partTypePosition == -1)
-		throw "Part type missing";
+		throw fS_Exception("Part type missing");
 
 	for (int i = 0; i < partTypePosition; i++)
 	{
@@ -172,16 +172,16 @@ void Node::extractModifiers(Substring &restOfGenotype)
 		else if (MODIFIERS.find(tolower(mType)) != string::npos)
 			modifiers.push_back(mType);
 		else
-			throw "Invalid modifier";
+			throw fS_Exception("Invalid modifier");
 	}
 	restOfGenotype.startFrom(partTypePosition);
 }
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	auto itr = SHAPES_INV.find(restOfGenotype.at(0));
-	if (itr == SHAPES_INV.end())
-		throw "Invalid part type";
+	auto itr = SYMBOL_TO_SHAPETYPE.find(restOfGenotype.at(0));
+	if (itr == SYMBOL_TO_SHAPETYPE.end())
+		throw fS_Exception("Invalid part type");
 
 	partType = itr->second;
 	restOfGenotype.startFrom(1);
@@ -252,7 +252,7 @@ void Node::extractParams(Substring &restOfGenotype)
 			}
 		}
 		if (-1 == separatorIndex)
-			throw "Parameter separator expected";
+			throw fS_Exception("Parameter separator expected");
 
 		// Compute the value of parameter and assign it to the key
 		int valueStartIndex = separatorIndex + 1;
@@ -418,9 +418,9 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			currentDistance = avg(maxDistance, currentDistance);
 		}
 		if (currentDistance > maxDistance)
-			throw "Internal error; then maximal distance between parts exceeded.";
+			throw fS_Exception("Internal error; then maximal distance between parts exceeded.");
 		if (currentDistance < minDistance)
-			throw "Internal error; the minimal distance between parts exceeded.";
+			throw fS_Exception("Internal error; the minimal distance between parts exceeded.");
 
 	}
 
@@ -491,7 +491,7 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
 		if(depth < 0)
-			throw "The number of branch start signs does not equal the number of branch end signs";
+			throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
 		c = str[i];
 		if (c == BRANCH_START)
 			depth++;
@@ -506,7 +506,7 @@ vector <Substring> Node::getBranches(Substring &restOfGenotype)
 			depth -= 1;
 	}
 	if(depth != 1)	// T
-		throw "The number of branch start signs does not equal the number of branch end signs";
+		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
 	return children;
 }
 
@@ -661,7 +661,7 @@ void Node::getGeno(SString &result)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 		result += *it;
-	result += SHAPES.at(partType);
+	result += SHAPETYPE_TO_SYMBOL.at(partType);
 
 	if (!neurons.empty())
 	{
@@ -761,7 +761,7 @@ fS_Genotype::fS_Genotype(const string &genotype)
 	// M - modifier mode, S - standard mode
 	size_t modeSeparatorIndex = geno.find(':');
 	if (modeSeparatorIndex == string::npos)
-		throw "No mode separator";
+		throw fS_Exception("No mode separator");
 
 	string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
 	bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
@@ -885,8 +885,8 @@ SString fS_Genotype::getGeno()
 
 char getRandomPartType()
 {
-	int randomIndex = 1 + rndUint(SHAPES_COUNT);	// Solid shapes are 1-based
-	return SHAPES.at(Part::Shape(randomIndex));
+	int randomIndex = 1 + rndUint(SHAPE_COUNT);	// Solid shapes are 1-based
+	return SHAPETYPE_TO_SYMBOL.at(Part::Shape(randomIndex));
 }
 
 vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
@@ -1167,17 +1167,17 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 	for(int i=0; i<mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int index = rndUint(SHAPES_COUNT);
+		int index = rndUint(SHAPE_COUNT);
 		if(index + 1 == randomNode->partType)
-			index = (index + 1 + rndUint(SHAPES_COUNT - 1)) % SHAPES_COUNT;
-		char newType = SHAPES.at(Part::Shape(index + 1));
+			index = (index + 1 + rndUint(SHAPE_COUNT - 1)) % SHAPE_COUNT;
+		char newType = SHAPETYPE_TO_SYMBOL.at(Part::Shape(index + 1));
 
-		auto itr = SHAPES_INV.find(newType);
+		auto itr = SYMBOL_TO_SHAPETYPE.find(newType);
 		Part::Shape newTypeInt = itr->second;
 
 		#ifdef _DEBUG
 		if(newTypeInt == randomNode->partTypeInt)
-			throw "Internal error: invalid part type chosen in mutation.";
+			throw fS_Exception("Internal error: invalid part type chosen in mutation.");
 		#endif
 
 		if(ensureCircleSection)

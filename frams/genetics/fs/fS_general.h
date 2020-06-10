@@ -6,12 +6,13 @@
 #define _FS_GENERAL_H_
 
 #include <iostream>
-
 #include <float.h>
 #include <vector>
 #include <map>
 #include <set>
 #include <math.h>
+#include <unordered_map>
+#include <exception>
 #include "common/Convert.h"
 #include "common/nonstd_math.h"
 #include "frams/genetics/genooperators.h"
@@ -23,7 +24,6 @@
 #include "frams/util/sstringutils.h"
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
-#include <unordered_map>
 
 /** @name Names of genotype modes */
 //@{
@@ -104,20 +104,23 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const std::unordered_map<Part::Shape, char> SHAPES = {
+const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_SYMBOL = {
 		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
 		{Part::Shape::SHAPE_CUBOID, CUBOID},
 		{Part::Shape::SHAPE_CYLINDER, CYLINDER},
 };
-const std::unordered_map<char, Part::Shape> SHAPES_INV = {
+
+// This map is inverse to SHAPE_TO_SYMBOL. Those two should be compatible
+const std::unordered_map<char, Part::Shape> SYMBOL_TO_SHAPETYPE = {
 		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
 		{CUBOID, Part::Shape::SHAPE_CUBOID},
 		{CYLINDER, Part::Shape::SHAPE_CYLINDER},
 };
-const int SHAPES_COUNT = 3;
+const int SHAPE_COUNT = 3;	// The value should be compatible with SHAPETYPE_TO_SYMBOL constant
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
@@ -129,6 +132,22 @@ const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, 
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
+
+class fS_Exception: public std::exception
+{
+	string msg;
+
+public:
+	virtual const char* what() const throw()
+	{
+		return msg.c_str();
+	}
+
+	fS_Exception(string _msg)
+	{
+		msg = _msg;
+	}
+};
 
 /**
  * Draws an integer value from given range

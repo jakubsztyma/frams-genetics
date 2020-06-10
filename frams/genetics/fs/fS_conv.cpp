@@ -11,8 +11,9 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints)
 	{
 		genotype = new fS_Genotype(i.c_str());
 	}
-	catch (const char *msg)
+	catch (fS_Exception& e)
 	{
+		logPrintf("GenoConv_fS0", "convert", LOG_ERROR, e.what());
 		return SString();
 	}
 

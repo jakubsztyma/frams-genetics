@@ -45,9 +45,9 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname)
 		if(!genotype.allPartSizesValid())
 			return 1;
 	}
-	catch (const char *msg)
+	catch (fS_Exception& e)
 	{
-		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, msg);
+		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, e.what());
 		return 1;
 	}
 	return 0;
