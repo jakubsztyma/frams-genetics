@@ -128,18 +128,15 @@ void testAddPart()
 			0.1,
 	};
 
-	for(int i=0; i<int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
 
-		geno.addPart(true);
+		geno.addPart(true, false);
 
 		geno.getState();
 		Node *newNode = geno.getAllNodes()[1];
 		assert(doubleCompare(newNode->calculateVolume(), expectedVolume[i]));
-		if(newNode->partType != Part::Shape::SHAPE_ELLIPSOID)
-			assert(newNode->getParam(SIZE_Z) != newNode->getParam(SIZE_Y) && newNode->getParam(SIZE_Y) == newNode->getParam(SIZE_X));
-
 	}
 }
 

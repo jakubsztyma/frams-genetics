@@ -57,7 +57,7 @@ enum class SHIFT
 /** @name Every modifier changes the underlying value by this multiplier */
 const double  MODIFIER_MULTIPLIER = 1.1;
 /** @name In mutation parameters will be multiplied by at most this value */
-const double PARAM_MULTIPLIER = 1.5;
+const double PARAM_MAX_MULTIPLIER = 1.5;
 
 /**
  * Used in finding the proper distance between the parts
@@ -402,36 +402,33 @@ public:
 
 	~Node();
 
-
-	Pt3D calculateSize();
-
-	double calculateVolume()
-	{
-		double result;
-		Pt3D size = calculateSize();
-		double radiiProduct = size.x * size.y * size.z;
-		switch (partType)
-		{
-			case Part::Shape::SHAPE_CUBOID:
-				result = 8.0 * radiiProduct;
-				break;
-			case Part::Shape::SHAPE_CYLINDER:
-				result = 2.0 * M_PI * radiiProduct;
-				break;
-			case Part::Shape::SHAPE_ELLIPSOID:
-				result = (4.0 / 3.0) * M_PI * radiiProduct;
-				break;
-			default:
-				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
-		}
-		return result;
-	}
-
 	/**
 	 * Get fS representation of the subtree that starts from this node
 	 * @param result the reference to an object which is used to contain fS genotype
 	 */
 	void getGeno(SString &result);
+
+	/**
+	 * Calculate the effective size of the part (after applying all multipliers and params)
+	 * @return The effective size
+	 */
+	Pt3D calculateSize();
+
+	/**
+	 * Calculate the effective volume of the part
+	 * @return The effective volume
+	 */
+	double calculateVolume();
+
+	/**
+	 * Change the value of the size parameter by given multiplier
+	 * Do not change the value if any of the size restrictions is not satisfied
+	 * @param paramKey
+	 * @param multiplier
+	 * @param ensureCircleSection
+	 * @return True if the parameter value was change, false otherwise
+	 */
+	bool changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree
@@ -490,6 +487,12 @@ public:
 	~fS_Genotype();
 
 	void getState();
+
+	/**
+	 * Get a random multiplier for parameter mutation
+	 * @return Random parameter multiplier
+	 */
+	double randomParamMultiplier();
 
 	/**
 	 * Get all existing nodes
@@ -577,7 +580,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart(bool ensureCircleSection);
+	bool addPart(bool ensureCircleSection, bool mutateSize=true);
 
 	/**
 	 * Performs change part type mutation on genotype
