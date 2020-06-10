@@ -295,7 +295,7 @@ class Node
 {
 	friend class fS_Genotype;
 
-	friend class fS_Operators;
+	friend class GenoOper_fS;
 
 private:
 	Substring *partDescription = nullptr;
@@ -470,7 +470,7 @@ class fS_Genotype
 {
 	friend class Node;
 
-	friend class fS_Operators;
+	friend class GenoOper_fS;
 
 private:
 	/**

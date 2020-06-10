@@ -49,7 +49,7 @@ int countNeuroConnections(fS_Genotype &geno)
 
 void testRearrangeBeforeCrossover()
 {
-	fS_Operators operators;
+	GenoOper_fS operators;
 	string test_cases[][2] = {
 			{"S:EE[]",                                   "S:EE[]"},
 			{"S:E[;;]E[;;]",                             "S:E[;;]E[;;]"},
@@ -79,7 +79,7 @@ void testRearrangeBeforeCrossover()
 
 void testRearrangeAfterCrossover()
 {
-	fS_Operators operators;
+	GenoOper_fS operators;
 	string test_cases[][2] = {
 			{"S:E[0_1;0]E[]",                       "S:E[0_1;0]E[]"},
 			{"S:E[0_1;0]E[Rnd;;]",                  "S:E[0_1;0]E[Rnd;;]"},
@@ -172,7 +172,7 @@ void testChangePartType()
  */
 void testCrossoverSimilarTrees()
 {
-	fS_Operators operators;
+	GenoOper_fS operators;
 	string test_cases[] = {
 			"S:EE",
 			"S:E(E,E)",
@@ -339,7 +339,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 void validationTest()
 {
 	GenoConv_fS0 converter = GenoConv_fS0();
-	fS_Operators operators;
+	GenoOper_fS operators;
 	SString invalidGenotypes[] = {
 			"EEE",      // No mode specifier
 			"S:FFF",    // No part type
@@ -407,7 +407,7 @@ void evolutionTest(int operationCount)
 	fS_Genotype::precision = 6;
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
-	fS_Operators operators;
+	GenoOper_fS operators;
 	SString **gens = new SString *[gen_size];
 	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
 	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");

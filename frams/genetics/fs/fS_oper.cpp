@@ -5,7 +5,7 @@
 #include "fS_oper.h"
 
 
-#define FIELDSTRUCT fS_Operators
+#define FIELDSTRUCT GenoOper_fS
 static ParamEntry GENOfSparam_tab[] =
 		{
 				{"Genetics: fS",            1, FS_OPCOUNT + 1,},
@@ -30,14 +30,14 @@ static ParamEntry GENOfSparam_tab[] =
 
 #undef FIELDSTRUCT
 
-fS_Operators::fS_Operators()
+GenoOper_fS::GenoOper_fS()
 {
 	par.setParamTab(GENOfSparam_tab);
 	par.select(this);
 	par.setDefault();
 }
 
-int fS_Operators::checkValidity(const char *geno, const char *genoname)
+int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 {
 	try
 	{
@@ -47,14 +47,14 @@ int fS_Operators::checkValidity(const char *geno, const char *genoname)
 	}
 	catch (fS_Exception &e)
 	{
-		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, e.what());
+		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
 		return 1;
 	}
 	return 0;
 }
 
 
-int fS_Operators::mutate(char *&geno, float &chg, int &method)
+int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 {
 	fS_Genotype genotype(geno);
 
@@ -121,7 +121,7 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 	return GENOPER_OPFAIL;
 }
 
-int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
+int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
 	int parentCount = 2;
 	fS_Genotype *parents[parentCount] = {new fS_Genotype(g0), new fS_Genotype(g1)};
@@ -209,7 +209,7 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	return GENOPER_OK;
 }
 
-void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
+void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
 	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
@@ -221,7 +221,7 @@ void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *
 	}
 }
 
-void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
+void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
 	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
