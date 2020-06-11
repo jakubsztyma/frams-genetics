@@ -120,13 +120,14 @@ void testAddPart()
 			"S:sssssssssE", // Less than min
 	};
 	double expectedVolume[] = {
-			1.0,
-			1.33,
-			0.75,
-			7.4,
-			0.14,
-			10.0,
-			0.1,
+			4.19,
+			5.58,
+			3.15,
+			20.94,
+			0.84,
+			20.94,
+			0.84
+
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
