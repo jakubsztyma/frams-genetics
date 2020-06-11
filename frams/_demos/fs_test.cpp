@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <chrono>
-#include "frams/genetics/fs/fS_general.h"
-#include "frams/genetics/fs/fS_conv.h"
-#include "frams/genetics/fs/fS_oper.h"
+#include "frams/genetics/fS/fS_general.h"
+#include "frams/genetics/fS/fS_conv.h"
+#include "frams/genetics/fS/fS_oper.h"
 
 using std::cout;
 using std::endl;

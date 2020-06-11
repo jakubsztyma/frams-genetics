@@ -1,3 +1,6 @@
+*.d
+*.o
+
 *
 !frams
 frams/*
@@ -5,8 +8,9 @@ frams/*
 !frams/genetics
 frams/_demos/*
 frams/genetics/*
-
+#
 !frams/_demos/fs_test.cpp
 !frams/Makefile-SDK
 !frams/Makefile-SDK-files
 !frams/genetics/fs
+!frams/genetics/fS
