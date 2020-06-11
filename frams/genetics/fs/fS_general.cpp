@@ -1168,13 +1168,13 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 		int index = rndUint(SHAPE_COUNT);
 		if (index + 1 == randomNode->partType)
 			index = (index + 1 + rndUint(SHAPE_COUNT - 1)) % SHAPE_COUNT;
-		char newType = SHAPETYPE_TO_GENE.at(Part::Shape(index + 1));
+		char newTypeChr = SHAPETYPE_TO_GENE.at(Part::Shape(index + 1));
 
-		auto itr = GENE_TO_SHAPETYPE.find(newType);
-		Part::Shape newTypeInt = itr->second;
+		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
+		Part::Shape newType = itr->second;
 
 #ifdef _DEBUG
-		if(newTypeInt == randomNode->partTypeInt)
+		if(newType == randomNode->partType)
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.");
 #endif
 
@@ -1182,17 +1182,17 @@ bool fS_Genotype::changePartType(bool ensureCircleSection)
 		{
 			getState();
 			if (randomNode->partType == Part::Shape::SHAPE_CUBOID
-				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newTypeInt == Part::Shape::SHAPE_ELLIPSOID))
+				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newType == Part::Shape::SHAPE_ELLIPSOID))
 			{
 				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
 				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
-				double newRelativeRadius = Node::calculateRadiusFromVolume(newTypeInt, relativeVolume);
+				double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
 				randomNode->params[SIZE_X] = newRelativeRadius;
 				randomNode->params[SIZE_Y] = newRelativeRadius;
 				randomNode->params[SIZE_Z] = newRelativeRadius;
 			}
 		}
-		randomNode->partType = newTypeInt;
+		randomNode->partType = newType;
 		return true;
 	}
 	return false;
