@@ -363,9 +363,9 @@ void validationTest()
 
 void testRearrangeInputs()
 {
-	int size = 6;
+	const int size = 6;
 	string before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
-	SHIFT shift[size] = {
+	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -373,15 +373,15 @@ void testRearrangeInputs()
 			SHIFT::LEFT,
 			SHIFT::LEFT,
 	};
-	int neuronNumber[size] = {
+	int neuronNumber[size]{
 			0,    // First
 			2,   // Middle
 			5,    // Last
 			0,
 			2,
-			5,
+			5
 	};
-	string after[size] = {
+	string after[size]{
 			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
 			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
