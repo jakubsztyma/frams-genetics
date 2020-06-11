@@ -4,7 +4,7 @@
 ALL_DIRS={common,PrintFloat,frams,frams/canvas,frams/config,common/loggers,frams/genetics,frams/genetics/f0,frams/genetics/f1,frams/genetics/f2,frams/genetics/f3,frams/genetics/f4,frams/genetics/fs,frams/genetics/f5,frams/genetics/f6,frams/genetics/f7,frams/genetics/f8,frams/genetics/f9,frams/genetics/fn,frams/genetics/fF,frams/genetics/fT,frams/genetics/fB,frams/genetics/fH,frams/genetics/fL,frams/model,frams/neuro,frams/neuro/impl,frams/param,frams/test,frams/util,frams/vm/classes,common/virtfile,frams/_demos,frams/model/geometry,frams/_demos/geometry,frams/model/similarity,frams/model/similarity/hungarian,frams/model/similarity/SVD}
 
 GENMANF4=frams/genetics/f4/f4_oper.o
-GENMANFS=frams/genetics/fs/fS_oper.o
+GENMANFS=frams/genetics/fS/fS_oper.o
 GENMANF9=frams/genetics/f9/f9_oper.o
 GENMANFF=frams/genetics/fF/fF_oper.o
 GENMANFT=frams/genetics/fT/fTest_oper.o
@@ -15,7 +15,7 @@ GENMANFL=frams/genetics/fL/fL_oper.o frams/genetics/fL/fL_general.o frams/geneti
 
 CONVF1=frams/genetics/f1/f1_conv.o frams/genetics/geneprops.o
 CONVF4=frams/genetics/f4/f4_conv.o frams/genetics/f4/f4_general.o frams/genetics/geneprops.o
-CONVFS=frams/genetics/fs/fS_conv.o frams/genetics/fs/fS_general.o
+CONVFS=frams/genetics/fS/fS_conv.o frams/genetics/fS/fS_general.o
 CONVF9=frams/genetics/f9/f9_conv.o
 CONVFF=frams/genetics/fF/fF_conv.o frams/genetics/fF/fF_genotype.o frams/genetics/fF/fF_chamber3d.o
 CONVFN=frams/genetics/fn/fn_conv.o

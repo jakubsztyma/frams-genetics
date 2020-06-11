@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <chrono>
-#include "frams/genetics/fs/fS_general.h"
-#include "frams/genetics/fs/fS_conv.h"
-#include "frams/genetics/fs/fS_oper.h"
+#include "frams/genetics/fS/fS_general.h"
+#include "frams/genetics/fS/fS_conv.h"
+#include "frams/genetics/fS/fS_oper.h"
 
 using std::cout;
 using std::endl;
@@ -409,6 +409,9 @@ void evolutionTest(int operationCount)
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	GenoOper_fS operators;
+	cout<<operators.getSimplest()<<endl;
+	assert(strcmp(operators.getSimplest(), "S:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
+
 	SString **gens = new SString *[gen_size];
 	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
 	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
