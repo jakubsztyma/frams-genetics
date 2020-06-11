@@ -123,8 +123,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 
 int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
-	int parentCount = 2;
-	fS_Genotype *parents[parentCount] = {new fS_Genotype(g0), new fS_Genotype(g1)};
+	fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
 
 	if (parents[0]->startNode->children.empty() || parents[1]->startNode->children.empty())
 	{
@@ -133,10 +132,10 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 		return GENOPER_OPFAIL;
 	}
 
-	Node *selected[parentCount];
-	int childIndexes[parentCount];
+	Node *selected[PARENT_COUNT];
+	int childIndexes[PARENT_COUNT];
 	// Choose random subtrees that have similar size
-	vector<Node*> allNodes[parentCount]
+	vector<Node*> allNodes[PARENT_COUNT]
 	{
 		parents[0]->getAllNodes(),
 				parents[1]->getAllNodes()
@@ -144,10 +143,10 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	double bestQuotient = DBL_MAX;
 	for (int i = 0; i < crossOverTries; i++)
 	{
-		Node *selectedTmp[parentCount];
-		int childIndexesTmp[parentCount];
-		double childNodeCount[parentCount];
-		for (int i = 0; i < parentCount; i++)
+		Node *selectedTmp[PARENT_COUNT];
+		int childIndexesTmp[PARENT_COUNT];
+		double childNodeCount[PARENT_COUNT];
+		for (int i = 0; i < PARENT_COUNT; i++)
 		{
 			do
 			{
@@ -161,7 +160,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 		if (quotient < bestQuotient)
 		{
 			bestQuotient = quotient;
-			for (int i = 0; i < parentCount; i++)
+			for (int i = 0; i < PARENT_COUNT; i++)
 			{
 				selected[i] = selectedTmp[i];
 				childIndexes[i] = childIndexesTmp[i];
@@ -172,8 +171,8 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	}
 
 	// Compute gene percentages in children
-	double subtreeSizes[parentCount], restSizes[parentCount];
-	for (int i = 0; i < parentCount; i++)
+	double subtreeSizes[PARENT_COUNT], restSizes[PARENT_COUNT];
+	for (int i = 0; i < PARENT_COUNT; i++)
 	{
 
 		subtreeSizes[i] = selected[i]->children[childIndexes[i]]->getNodeCount();
@@ -187,7 +186,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	subtrees[0] = selected[0]->children[childIndexes[0]];
 	subtrees[1] = selected[1]->children[childIndexes[1]];
 
-	int subOldStart[parentCount] {-1, -1};
+	int subOldStart[PARENT_COUNT] {-1, -1};
 	rearrangeConnectionsBeforeCrossover(parents[0], subtrees[0], subOldStart[0]);
 	rearrangeConnectionsBeforeCrossover(parents[1], subtrees[1], subOldStart[0]);
 
