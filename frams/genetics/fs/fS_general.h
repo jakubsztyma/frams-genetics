@@ -6,12 +6,13 @@
 #define _FS_GENERAL_H_
 
 #include <iostream>
-
 #include <float.h>
 #include <vector>
 #include <map>
 #include <set>
 #include <math.h>
+#include <unordered_map>
+#include <exception>
 #include "common/Convert.h"
 #include "common/nonstd_math.h"
 #include "frams/genetics/genooperators.h"
@@ -23,7 +24,6 @@
 #include "frams/util/sstringutils.h"
 #include "frams/util/extvalue.h"
 #include "frams/neuro/neurolibrary.h"
-#include <unordered_map>
 
 /** @name Names of genotype modes */
 //@{
@@ -55,7 +55,7 @@ enum class SHIFT
 };
 
 /** @name Every modifier changes the underlying value by this multiplier */
-const double  MODIFIER_MULTIPLIER = 1.1;
+const double MODIFIER_MULTIPLIER = 1.1;
 /** @name In mutation parameters will be multiplied by at most this value */
 const double PARAM_MAX_MULTIPLIER = 1.5;
 
@@ -104,31 +104,50 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define HINGE_XY 'c'
 
 const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
+
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const std::unordered_map<Part::Shape, char> SHAPES = {
+const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_GENE = {
 		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
-		{Part::Shape::SHAPE_CUBOID, CUBOID},
-		{Part::Shape::SHAPE_CYLINDER, CYLINDER},
+		{Part::Shape::SHAPE_CUBOID,    CUBOID},
+		{Part::Shape::SHAPE_CYLINDER,  CYLINDER},
 };
-const std::unordered_map<char, Part::Shape> SHAPES_INV = {
+
+// This map is inverse to SHAPE_TO_SYMBOL. Those two should be compatible
+const std::unordered_map<char, Part::Shape> GENE_TO_SHAPETYPE = {
 		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
-		{CUBOID, Part::Shape::SHAPE_CUBOID},
-		{CYLINDER, Part::Shape::SHAPE_CYLINDER},
+		{CUBOID,    Part::Shape::SHAPE_CUBOID},
+		{CYLINDER,  Part::Shape::SHAPE_CYLINDER},
 };
-const int SHAPES_COUNT = 3;
+const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE and GENE_TO_SHAPETYPE
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "ifs";
-const char SIZE_MODIFIER= 's';
-const vector <string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
+const char SIZE_MODIFIER = 's';
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
+
+class fS_Exception : public std::exception
+{
+	string msg;
+
+public:
+	virtual const char *what() const throw()
+	{
+		return msg.c_str();
+	}
+
+	fS_Exception(string _msg)
+	{
+		msg = _msg;
+	}
+};
 
 /**
  * Draws an integer value from given range
@@ -256,11 +275,12 @@ public:
 
 	fS_Neuron(const char *str, int length);
 
-	fS_Neuron(){};
+	fS_Neuron()
+	{};
 
 	bool acceptsInputs()
 	{
-		if(ncls == nullptr)
+		if (ncls == nullptr)
 			return true;
 		return ncls->prefinputs < int(inputs.size());
 	}
@@ -275,7 +295,7 @@ class Node
 {
 	friend class fS_Genotype;
 
-	friend class fS_Operators;
+	friend class GenoOper_fS;
 
 private:
 	Substring *partDescription = nullptr;
@@ -302,7 +322,7 @@ private:
 				result = std::cbrt(volume / (2.0 * M_PI));
 				break;
 			case Part::Shape::SHAPE_ELLIPSOID:
-				result = std::cbrt(volume /  ((4.0 / 3.0) * M_PI));
+				result = std::cbrt(volume / ((4.0 / 3.0) * M_PI));
 				break;
 			default:
 				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
@@ -353,7 +373,7 @@ private:
 	 * Extract child branches from the rest of genotype
 	 * @return vector of child branches
 	 */
-	vector <Substring> getBranches(Substring &restOfGenotype);
+	vector<Substring> getBranches(Substring &restOfGenotype);
 
 	/**
 	 * Get phenotypic state that derives from ancestors.
@@ -450,7 +470,7 @@ class fS_Genotype
 {
 	friend class Node;
 
-	friend class fS_Operators;
+	friend class GenoOper_fS;
 
 private:
 	/**
@@ -513,7 +533,7 @@ public:
 	 * @param changedNeuron
 	 * @return
 	 */
-	static int getNeuronIndex(vector<fS_Neuron*> neurons, fS_Neuron *changedNeuron);
+	static int getNeuronIndex(vector<fS_Neuron *> neurons, fS_Neuron *changedNeuron);
 
 	/**
 	 * Left- or right- shift the indexes of neuro connections by the given range
@@ -522,7 +542,7 @@ public:
 	 * @param end The end of the range
 	 * @param shift
 	 */
-	static void shiftNeuroConnections(vector<fS_Neuron*> &neurons, int start, int end, SHIFT shift);
+	static void shiftNeuroConnections(vector<fS_Neuron *> &neurons, int start, int end, SHIFT shift);
 
 	/**
 	 * Get all existing neurons
@@ -580,7 +600,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart(bool ensureCircleSection, bool mutateSize=true);
+	bool addPart(bool ensureCircleSection, bool mutateSize = true);
 
 	/**
 	 * Performs change part type mutation on genotype
@@ -636,7 +656,6 @@ public:
 
 	bool changeNeuroParam();
 };
-
 
 
 #endif

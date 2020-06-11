@@ -5,13 +5,13 @@
 #include "fS_oper.h"
 
 
-#define FIELDSTRUCT fS_Operators
+#define FIELDSTRUCT GenoOper_fS
 static ParamEntry GENOfSparam_tab[] =
 		{
 				{"Genetics: fS",            1, FS_OPCOUNT + 1,},
-				{"fS_mut_add_part",              0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
-				{"fS_mut_rem_part",              0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
-				{"fS_mut_mod_part",              0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
+				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
+				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
+				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
 				{"fS_mut_add_joint",        0, 0, "Add joint",                "f 0 100 10", FIELD(prob[FS_ADD_JOINT]),            "mutation: probability of adding a joint",},
 				{"fS_mut_rem_joint",        0, 0, "Remove joint",             "f 0 100 10", FIELD(prob[FS_REM_JOINT]),            "mutation: probability of removing a joint",},
 				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
@@ -30,31 +30,31 @@ static ParamEntry GENOfSparam_tab[] =
 
 #undef FIELDSTRUCT
 
-fS_Operators::fS_Operators()
+GenoOper_fS::GenoOper_fS()
 {
 	par.setParamTab(GENOfSparam_tab);
 	par.select(this);
 	par.setDefault();
 }
 
-int fS_Operators::checkValidity(const char *geno, const char *genoname)
+int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 {
 	try
 	{
 		fS_Genotype genotype = fS_Genotype(geno);
-		if(!genotype.allPartSizesValid())
+		if (!genotype.allPartSizesValid())
 			return 1;
 	}
-	catch (const char *msg)
+	catch (fS_Exception &e)
 	{
-		logPrintf("fS_Operators", "checkValidity", LOG_ERROR, msg);
+		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
 		return 1;
 	}
 	return 0;
 }
 
 
-int fS_Operators::mutate(char *&geno, float &chg, int &method)
+int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 {
 	fS_Genotype genotype(geno);
 
@@ -121,7 +121,7 @@ int fS_Operators::mutate(char *&geno, float &chg, int &method)
 	return GENOPER_OPFAIL;
 }
 
-int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
+int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
 	int parentCount = 2;
 	fS_Genotype *parents[parentCount] = {new fS_Genotype(g0), new fS_Genotype(g1)};
@@ -139,10 +139,10 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	vector<Node*> allNodes[parentCount]
 	{
 		parents[0]->getAllNodes(),
-		parents[1]->getAllNodes()
+				parents[1]->getAllNodes()
 	};
 	double bestQuotient = DBL_MAX;
-	for(int i=0; i<crossOverTries; i++)
+	for (int i = 0; i < crossOverTries; i++)
 	{
 		Node *selectedTmp[parentCount];
 		int childIndexesTmp[parentCount];
@@ -158,22 +158,22 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 		}
 		// Choose the most similar subtrees
 		double quotient = std::max(childNodeCount[0], childNodeCount[1]) / std::min(childNodeCount[0], childNodeCount[1]);
-		if(quotient < bestQuotient)
+		if (quotient < bestQuotient)
 		{
 			bestQuotient = quotient;
-			for(int i=0; i<parentCount;i++)
+			for (int i = 0; i < parentCount; i++)
 			{
 				selected[i] = selectedTmp[i];
 				childIndexes[i] = childIndexesTmp[i];
 			}
 		}
-		if(quotient == 1.0)
+		if (quotient == 1.0)
 			break;
 	}
 
 	// Compute gene percentages in children
 	double subtreeSizes[parentCount], restSizes[parentCount];
-	for(int i=0; i<parentCount; i++)
+	for (int i = 0; i < parentCount; i++)
 	{
 
 		subtreeSizes[i] = selected[i]->children[childIndexes[i]]->getNodeCount();
@@ -187,16 +187,16 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	subtrees[0] = selected[0]->children[childIndexes[0]];
 	subtrees[1] = selected[1]->children[childIndexes[1]];
 
-		int subOldStart[parentCount]{-1, -1};
-	rearrangeConnectionsBeforeCrossover(parents[0],  subtrees[0], subOldStart[0]);
-	rearrangeConnectionsBeforeCrossover(parents[1],  subtrees[1], subOldStart[0]);
+	int subOldStart[parentCount] {-1, -1};
+	rearrangeConnectionsBeforeCrossover(parents[0], subtrees[0], subOldStart[0]);
+	rearrangeConnectionsBeforeCrossover(parents[1], subtrees[1], subOldStart[0]);
 
 	// Swap the subtress
 	std::swap(selected[0]->children[childIndexes[0]], selected[1]->children[childIndexes[1]]);
 
 	// Rearrange neurons after crossover
-	rearrangeConnectionsAfterCrossover(parents[0],  subtrees[1], subOldStart[0]);
-	rearrangeConnectionsAfterCrossover(parents[1],  subtrees[0], subOldStart[1]);
+	rearrangeConnectionsAfterCrossover(parents[0], subtrees[1], subOldStart[0]);
+	rearrangeConnectionsAfterCrossover(parents[1], subtrees[0], subOldStart[1]);
 
 	// Clenup, assign children to result strings
 	free(g0);
@@ -209,9 +209,9 @@ int fS_Operators::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	return GENOPER_OK;
 }
 
-void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
+void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
-	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
+	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	if (!subNeurons.empty())
@@ -221,9 +221,9 @@ void fS_Operators::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *
 	}
 }
 
-void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
+void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
-	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
+	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
 	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
 
 	// Shift the inputs right
@@ -232,7 +232,7 @@ void fS_Operators::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *s
 		int subStart = fS_Genotype::getNeuronIndex(genoNeurons, subNeurons[0]);
 		int subCount = subNeurons.size();
 		int subEnd = subStart + subCount - 1;
-		for(int i=0; i<subCount; i++)
+		for (int i = 0; i < subCount; i++)
 		{
 			auto inputs = subNeurons[i]->inputs;
 			std::map<int, double> newInputs;

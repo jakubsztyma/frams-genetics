@@ -32,14 +32,14 @@
 //@}
 
 
-class fS_Operators : public GenoOperators
+class GenoOper_fS : public GenoOperators
 {
 public:
 	static const int crossOverTries = 100;
 	double prob[FS_OPCOUNT];
 	paInt ensureCircleSection;
 
-	fS_Operators();
+	GenoOper_fS();
 
 	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
 
