@@ -269,7 +269,6 @@ public:
 class fS_Neuron
 {
 public:
-	SString clss;
 	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 

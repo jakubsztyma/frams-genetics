@@ -5,6 +5,7 @@
 #include "frams/genetics/fS/fS_general.h"
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/fS_oper.h"
+#include "frams/genetics/preconfigured.h"
 
 using std::cout;
 using std::endl;
@@ -317,9 +318,11 @@ void testOneGenotype(SString *test, int expectedPartCount)
 		assert(tmp + 1 == int(geno.getAllNeurons().size()));
 
 	// Test add neuro connections
+	cout<<geno.getGeno().c_str()<<endl;
 	tmp = countNeuroConnections(geno);
 	if (geno.addNeuroConnection())
 		assert(tmp + 1 == countNeuroConnections(geno));
+	cout<<geno.getGeno().c_str()<<endl;
 
 	// Test change neuro connection
 	tmpStr = geno.getGeno();
@@ -728,6 +731,7 @@ int main(int argc, char *argv[])
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
 	auto start = std::chrono::steady_clock::now();
+	PreconfiguredGenetics genetics;
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{

@@ -26,8 +26,6 @@ const std::map<string, double> defaultParamValues = {
 		{JOINT_DISTANCE, 1.0}
 };
 
-const
-
 double round2(double var)
 {
 	double value = (int) (var * 100 + .5);
@@ -1264,7 +1262,7 @@ bool fS_Genotype::addNeuro()
 			vector<int> neuronsWithOutput;
 			for (int i = 0; i < int(allNeurons.size()); i++)
 			{
-				if (allNeurons[i]->ncls->getPreferredOutput() > 0)
+				if (allNeurons[i]->ncls != nullptr && allNeurons[i]->ncls->prefoutput > 0)
 					neuronsWithOutput.push_back(i);
 			}
 			int size = neuronsWithOutput.size();
