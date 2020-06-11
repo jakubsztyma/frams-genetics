@@ -208,6 +208,11 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	return GENOPER_OK;
 }
 
+const char* GenoOper_fS::getSimplest()
+{
+	return "S:C{x=0.80599;y=0.80599;z=0.80599}";
+}
+
 void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
 	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
@@ -247,3 +252,4 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 		fS_Genotype::shiftNeuroConnections(genoNeurons, subStart, subEnd, SHIFT::RIGHT);
 	}
 }
+

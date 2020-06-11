@@ -50,6 +50,8 @@ public:
 
 	int mutate(char *&geno, float &chg, int &method);
 
+	const char* getSimplest();
+
 	/**
 	 * Remove connections to the subtree that will be removed from genotype
 	 * @param geno An fS_Genotype
