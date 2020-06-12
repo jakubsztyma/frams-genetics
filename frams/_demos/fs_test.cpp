@@ -242,9 +242,9 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	SString genotype_str = test[0];
 
 	/// Test translate
-//	cout << "Geno: " << test[0].c_str() << endl;
-//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+	cout << "Geno: " << test[0].c_str() << endl;
+	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
@@ -318,11 +318,9 @@ void testOneGenotype(SString *test, int expectedPartCount)
 		assert(tmp + 1 == int(geno.getAllNeurons().size()));
 
 	// Test add neuro connections
-	cout<<geno.getGeno().c_str()<<endl;
 	tmp = countNeuroConnections(geno);
 	if (geno.addNeuroConnection())
 		assert(tmp + 1 == countNeuroConnections(geno));
-	cout<<geno.getGeno().c_str()<<endl;
 
 	// Test change neuro connection
 	tmpStr = geno.getGeno();

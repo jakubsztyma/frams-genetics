@@ -79,10 +79,19 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		return;
 
 	int inputStart = 0;
+	std::cout<<inputStrings[0].c_str()<<std::endl;
 	if (NeuroLibrary::staticlibrary.findClassIndex(inputStrings[0], true) != -1)
 	{
+		std::cout<<"OK"<<std::endl;
 		inputStart = 1;
-		ncls = NeuroLibrary::staticlibrary.findClass(inputStrings[0], true);
+		NeuroClass *nc = NeuroLibrary::staticlibrary.findClass(inputStrings[0], true);
+		std::cout<<"My class "<<nc->getName().c_str()<<std::endl;
+		setClass(nc);
+		std::cout<<"My class "<<nc->getName().c_str()<<std::endl;
+	}
+	else{
+		std::cout<<"NO"<<std::endl;
+			setClass(NeuroLibrary::staticlibrary.findClass("N", true));
 	}
 
 	for (int i = inputStart; i < int(inputStrings.size()); i++)
@@ -595,8 +604,9 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		fS_Neuron *n = neurons[i];
 		Neuro *neuro = model.addNewNeuro();
-		if (n->ncls != nullptr)
-			neuro->setClass(n->ncls);
+		std::cout<<n->getClass()->getName().c_str()<<" "<<n->hasDefaultClass()<<std::endl;
+		if (!n->hasDefaultClass())
+			neuro->setClass(n->getClass());
 		if (neuro->getClass()->preflocation == 2)
 		{
 			if (parent != nullptr)
@@ -670,9 +680,9 @@ void Node::getGeno(SString &result)
 			fS_Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->ncls != nullptr)
+			if (!n->hasDefaultClass())
 			{
-				result += n->ncls->getName().c_str();
+				result += n->getClass()->getName().c_str();
 				if (!n->inputs.empty())
 					result += NEURON_INTERNAL_SEPARATOR;
 			}
@@ -1262,7 +1272,7 @@ bool fS_Genotype::addNeuro()
 			vector<int> neuronsWithOutput;
 			for (int i = 0; i < int(allNeurons.size()); i++)
 			{
-				if (allNeurons[i]->ncls != nullptr && allNeurons[i]->ncls->prefoutput > 0)
+				if (!allNeurons[i]->hasDefaultClass() && allNeurons[i]->getClass()->prefoutput > 0)
 					neuronsWithOutput.push_back(i);
 			}
 			int size = neuronsWithOutput.size();
@@ -1321,11 +1331,7 @@ bool fS_Genotype::changeNeuroConnection()
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			Neuro *neuro = new Neuro();
-			if (selectedNeuron->ncls != nullptr)
-				neuro->setClass(selectedNeuron->ncls);
-			it->second *= GenoOperators::mutateNeuProperty(it->second, neuro, -1);
-			delete neuro;
+			it->second *= GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
 			return true;
 		}
 	}
@@ -1352,9 +1358,10 @@ bool fS_Genotype::addNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		int index = rndUint(size);
-		NeuroClass *nc = neurons[index]->ncls;
-		if (selectedNeuron->inputs.count(index) == 0 && nc != nullptr && nc->getPreferredOutput() > 0)
+		NeuroClass *nc = neurons[index]->getClass();
+		if (selectedNeuron->inputs.count(index) == 0 && !neurons[index]->hasDefaultClass()  && nc->getPreferredOutput() > 0)
 		{
+
 			selectedNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 			return true;
 		}

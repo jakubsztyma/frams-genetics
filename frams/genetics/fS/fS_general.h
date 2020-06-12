@@ -266,22 +266,28 @@ public:
 /**
  * Represent a neuron and its inputs
  */
-class fS_Neuron
+class fS_Neuron: public Neuro
 {
 public:
-	NeuroClass *ncls = nullptr;
 	std::map<int, double> inputs;
 
 	fS_Neuron(const char *str, int length);
 
 	fS_Neuron()
-	{};
+	{
+		myclass = NeuroLibrary::staticlibrary.findClass("N", true);
+	};
+
+	bool hasDefaultClass()
+	{
+		return getClass()->getName() == "N";
+	}
 
 	bool acceptsInputs()
 	{
-		if (ncls == nullptr)
+		if (hasDefaultClass())
 			return true;
-		return ncls->prefinputs < int(inputs.size());
+		return getClass()->prefinputs < int(inputs.size());
 	}
 };
 
