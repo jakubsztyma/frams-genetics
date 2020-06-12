@@ -1,6 +1,6 @@
-//
-// Created by jakub on 19.03.2020.
-//
+// This file is a part of Framsticks SDK.  http://www.framsticks.com/
+// Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
+// See LICENSE.txt for details.
 
 #include "fS_oper.h"
 
@@ -35,6 +35,7 @@ GenoOper_fS::GenoOper_fS()
 	par.setParamTab(GENOfSparam_tab);
 	par.select(this);
 	par.setDefault();
+	supported_format = 'S';
 }
 
 int GenoOper_fS::checkValidity(const char *geno, const char *genoname)

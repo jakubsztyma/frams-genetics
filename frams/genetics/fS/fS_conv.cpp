@@ -1,6 +1,6 @@
-//
-// Created by jakub on 22.02.2020.
-//
+// This file is a part of Framsticks SDK.  http://www.framsticks.com/
+// Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
+// See LICENSE.txt for details.
 
 #include "fS_conv.h"
 

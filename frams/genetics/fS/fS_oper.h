@@ -1,6 +1,6 @@
-//
-// Created by jakub on 21.02.2020.
-//
+// This file is a part of Framsticks SDK.  http://www.framsticks.com/
+// Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
+// See LICENSE.txt for details.
 
 #ifndef _FS_OPER_H_
 #define _FS_OPER_H_
@@ -49,6 +49,8 @@ public:
 	int checkValidity(const char *geno, const char *genoname);
 
 	int mutate(char *&geno, float &chg, int &method);
+
+	uint32_t style(const char *g, int pos) { return 0; }
 
 	const char* getSimplest();
 
