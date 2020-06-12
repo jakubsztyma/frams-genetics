@@ -50,7 +50,7 @@ public:
 
 	int mutate(char *&geno, float &chg, int &method);
 
-	uint32_t style(const char *g, int pos) { return 0; }
+	uint32_t style(const char *g, int pos);
 
 	const char* getSimplest();
 

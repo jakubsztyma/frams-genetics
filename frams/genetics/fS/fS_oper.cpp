@@ -214,6 +214,34 @@ const char* GenoOper_fS::getSimplest()
 	return "S:C{x=0.80599;y=0.80599;z=0.80599}";
 }
 
+uint32_t GenoOper_fS::style(const char *geno, int pos)
+{
+	char ch = geno[pos];
+	uint32_t style = GENSTYLE_CS(0, GENSTYLE_NONE);
+	if (ch == ELLIPSOID || ch == CUBOID || ch == CYLINDER) // part type
+	{
+		style = GENSTYLE_RGBS(0, 0, 200, GENSTYLE_BOLD);
+	}
+	else if(JOINTS.find(ch) != string::npos)	// Joint type
+	{
+		style = GENSTYLE_RGBS(0, 200, 200, GENSTYLE_BOLD);
+	}
+	else if(MODIFIERS.find(ch) != string::npos) // Modifier
+	{
+		style = GENSTYLE_RGBS(0, 200, 0, GENSTYLE_NONE);
+	}
+	else if (isdigit(ch) || strchr(".=", ch)) // Numerical value
+	{
+		style = GENSTYLE_RGBS(200, 0, 0, GENSTYLE_NONE);
+	}
+	else if(strchr("()_;[],", ch))
+	{
+		style = GENSTYLE_CS(0, GENSTYLE_BOLD); // Important char
+	}
+
+	return style;
+}
+
 void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
 	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
