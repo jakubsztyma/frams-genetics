@@ -79,20 +79,13 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		return;
 
 	int inputStart = 0;
-	std::cout<<inputStrings[0].c_str()<<std::endl;
+	SString className = "N";
 	if (NeuroLibrary::staticlibrary.findClassIndex(inputStrings[0], true) != -1)
 	{
-		std::cout<<"OK"<<std::endl;
 		inputStart = 1;
-		NeuroClass *nc = NeuroLibrary::staticlibrary.findClass(inputStrings[0], true);
-		std::cout<<"My class "<<nc->getName().c_str()<<std::endl;
-		setClass(nc);
-		std::cout<<"My class "<<nc->getName().c_str()<<std::endl;
+		className = inputStrings[0];
 	}
-	else{
-		std::cout<<"NO"<<std::endl;
-			setClass(NeuroLibrary::staticlibrary.findClass("N", true));
-	}
+	setClass(NeuroLibrary::staticlibrary.findClass(className, true));
 
 	for (int i = inputStart; i < int(inputStrings.size()); i++)
 	{
@@ -602,11 +595,8 @@ void Node::buildModel(Model &model, Node *parent)
 
 	for (int i = 0; i < int(neurons.size()); i++)
 	{
-		fS_Neuron *n = neurons[i];
-		Neuro *neuro = model.addNewNeuro();
-		std::cout<<n->getClass()->getName().c_str()<<" "<<n->hasDefaultClass()<<std::endl;
-		if (!n->hasDefaultClass())
-			neuro->setClass(n->getClass());
+		Neuro *neuro = new Neuro(*neurons[i]);
+		model.addNeuro(neuro);
 		if (neuro->getClass()->preflocation == 2)
 		{
 			if (parent != nullptr)
@@ -680,9 +670,9 @@ void Node::getGeno(SString &result)
 			fS_Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (!n->hasDefaultClass())
+			if (n->getClassName() != "N")
 			{
-				result += n->getClass()->getName().c_str();
+				result += n->getClassName();
 				if (!n->inputs.empty())
 					result += NEURON_INTERNAL_SEPARATOR;
 			}
@@ -1272,7 +1262,7 @@ bool fS_Genotype::addNeuro()
 			vector<int> neuronsWithOutput;
 			for (int i = 0; i < int(allNeurons.size()); i++)
 			{
-				if (!allNeurons[i]->hasDefaultClass() && allNeurons[i]->getClass()->prefoutput > 0)
+				if (allNeurons[i]->getClass()->prefoutput > 0)
 					neuronsWithOutput.push_back(i);
 			}
 			int size = neuronsWithOutput.size();
@@ -1358,8 +1348,7 @@ bool fS_Genotype::addNeuroConnection()
 	for (int i = 0; i < mutationTries; i++)
 	{
 		int index = rndUint(size);
-		NeuroClass *nc = neurons[index]->getClass();
-		if (selectedNeuron->inputs.count(index) == 0 && !neurons[index]->hasDefaultClass()  && nc->getPreferredOutput() > 0)
+		if (selectedNeuron->inputs.count(index) == 0 && neurons[index]->getClass()->getPreferredOutput() > 0)
 		{
 
 			selectedNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;

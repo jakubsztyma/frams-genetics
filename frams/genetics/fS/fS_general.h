@@ -274,19 +274,10 @@ public:
 	fS_Neuron(const char *str, int length);
 
 	fS_Neuron()
-	{
-		myclass = NeuroLibrary::staticlibrary.findClass("N", true);
-	};
-
-	bool hasDefaultClass()
-	{
-		return getClass()->getName() == "N";
-	}
+	{};
 
 	bool acceptsInputs()
 	{
-		if (hasDefaultClass())
-			return true;
 		return getClass()->prefinputs < int(inputs.size());
 	}
 };
