@@ -79,13 +79,18 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		return;
 
 	int inputStart = 0;
-	SString className = "N";
-	if (NeuroLibrary::staticlibrary.findClassIndex(inputStrings[0], true) != -1)
+	SString details = "N";
+
+	SString tmp = inputStrings[0];
+	if(tmp.indexOf(':') != -1)
+		tmp = tmp.substr(0, tmp.indexOf(':'));
+
+	if (NeuroLibrary::staticlibrary.findClassIndex(tmp, true) != -1)
 	{
 		inputStart = 1;
-		className = inputStrings[0];
+		details = inputStrings[0];
 	}
-	setClass(NeuroLibrary::staticlibrary.findClass(className, true));
+	setDetails(details);
 
 	for (int i = inputStart; i < int(inputStrings.size()); i++)
 	{
@@ -672,7 +677,7 @@ void Node::getGeno(SString &result)
 				result += NEURON_SEPARATOR;
 			if (n->getClassName() != "N")
 			{
-				result += n->getClassName();
+				result += n->getDetails();
 				if (!n->inputs.empty())
 					result += NEURON_INTERNAL_SEPARATOR;
 			}
@@ -1382,6 +1387,19 @@ bool fS_Genotype::removeNeuroConnection()
 
 bool fS_Genotype::changeNeuroParam()
 {
-	// TODO implement
+	vector<fS_Neuron*> neurons = getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	fS_Neuron *selectedNeuron = neurons[rndUint(neurons.size())];
+	SyntParam par = selectedNeuron->classProperties();
+	int propNo = GenoOperators::selectRandomProperty(selectedNeuron);
+	if(propNo != -1)
+	{
+		double oldValue = par.getDouble(propNo % 100);
+		double newValue = GenoOperators::mutateNeuProperty(oldValue, selectedNeuron, propNo);
+		par.setDouble(propNo % 100, newValue);
+		return true;
+	}
 	return false;
 }
