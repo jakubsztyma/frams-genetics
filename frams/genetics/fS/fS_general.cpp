@@ -886,12 +886,6 @@ SString fS_Genotype::getGeno()
 	return geno;
 }
 
-char getRandomPartType()
-{
-	int randomIndex = 1 + rndUint(SHAPE_COUNT);    // Solid shapes are 1-based
-	return SHAPETYPE_TO_GENE.at(Part::Shape(randomIndex));
-}
-
 vector<fS_Neuron *> fS_Genotype::extractNeurons(Node *node)
 {
 	vector<Node*> allNodes;
@@ -1128,11 +1122,12 @@ bool fS_Genotype::removePart()
 	return false;
 }
 
-bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
+bool fS_Genotype::addPart(bool ensureCircleSection, string availableTypes,  bool mutateSize)
 {
 	getState();
 	Node *node = chooseNode();
-	char partType = getRandomPartType();
+	char partType = availableTypes[rndUint(availableTypes.length())];
+
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode);
 	// Add random rotation
@@ -1163,15 +1158,16 @@ bool fS_Genotype::addPart(bool ensureCircleSection, bool mutateSize)
 	return true;
 }
 
-bool fS_Genotype::changePartType(bool ensureCircleSection)
+bool fS_Genotype::changePartType(bool ensureCircleSection, string availTypes)
 {
+	int availTypesLength = availTypes.length();
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = chooseNode();
-		int index = rndUint(SHAPE_COUNT);
-		if (index + 1 == randomNode->partType)
-			index = (index + 1 + rndUint(SHAPE_COUNT - 1)) % SHAPE_COUNT;
-		char newTypeChr = SHAPETYPE_TO_GENE.at(Part::Shape(index + 1));
+		int index = rndUint(availTypesLength);
+		if (availTypes[index] == SHAPETYPE_TO_GENE.at(randomNode->partType))
+			index = (index + 1 + rndUint(availTypesLength)) % availTypesLength;
+		char newTypeChr = availTypes[index];
 
 		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
 		Part::Shape newType = itr->second;

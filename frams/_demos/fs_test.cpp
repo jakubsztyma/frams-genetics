@@ -135,7 +135,7 @@ void testAddPart()
 	{
 		fS_Genotype geno(test_cases[i]);
 
-		geno.addPart(true, false);
+		geno.addPart(true, "ECR", false);
 
 		geno.getState();
 		Node *newNode = geno.getAllNodes()[1];
@@ -165,6 +165,23 @@ void testChangePartType()
 		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
+
+}
+void testUsePartType()
+{
+	fS_Genotype geno("S:E");
+	geno.changePartType(true, "C");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
+	geno.changePartType(true, "E");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	geno.changePartType(true, "R");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
+	geno.addPart(true, "C");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
+	geno.addPart(true, "E");
+	assert(geno.getAllNodes()[2]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	geno.addPart(true, "R");
+	assert(geno.getAllNodes()[3]->partType == Part::Shape::SHAPE_CYLINDER);
 
 }
 
@@ -744,6 +761,7 @@ int main(int argc, char *argv[])
 	testRearrangeAfterCrossover();
 	testAddPart();
 	testChangePartType();
+	testUsePartType();
 	int operationCount;
 	if (argc > 1)
 		operationCount = std::stod(argv[1]);

@@ -41,6 +41,7 @@ public:
 	static const int crossOverTries = 100;
 	double prob[FS_OPCOUNT];
 	paInt ensureCircleSection;
+	paInt useElli, useCub,  useCyl;
 
 	GenoOper_fS();
 

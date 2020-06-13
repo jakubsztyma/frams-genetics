@@ -596,13 +596,13 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart(bool ensureCircleSection, bool mutateSize = true);
+	bool addPart(bool ensureCircleSection, string availableTypes = "ECR", bool mutateSize = true);
 
 	/**
 	 * Performs change part type mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changePartType(bool ensureCircleSection);
+	bool changePartType(bool ensureCircleSection, string availableTypes = "ECR");
 
 	/**
 	 * Performs remove part type mutation on genotype
