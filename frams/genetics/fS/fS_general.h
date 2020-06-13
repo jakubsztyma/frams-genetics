@@ -13,6 +13,7 @@
 #include <math.h>
 #include <unordered_map>
 #include <exception>
+#include <assert.h>
 #include "common/Convert.h"
 #include "common/nonstd_math.h"
 #include "frams/genetics/genooperators.h"

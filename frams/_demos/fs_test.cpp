@@ -470,13 +470,10 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		// TODO remove checkValidity condition
 		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
 			assert(0. < f1 && f1 < 1.);
 			assert(0. < f2 && f2 < 1.);
-			assert(0 == operators.checkValidity(arr1, ""));
-			assert(0 == operators.checkValidity(arr2, ""));
 
 			delete gens[i1];
 			delete gens[i2];
@@ -669,38 +666,38 @@ int main(int argc, char *argv[])
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"},
-			{"S:E[G]",                                            "p:sh=1\n"
-																  "n:p=0, d=G\n"},
+			{"S:E[T]",                                            "p:sh=1\n"
+																  "n:p=0, d=T\n"},
 			{"S:E[]E[0]",                                         "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"
 																  "c:1, 0\n"},
-			{"S:E[G;T_0]",                                        "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin;T_0]",                                        "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "c:1, 0\n"},
-			{"S:E[G_2;T_0;T_0_1]",                                "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin_2;T_0;T_0_1]",                                "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2\n"
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[G_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
+			{"S:E[Sin_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
 																  "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 																  "j:0, 1, sh=1\n"
-																  "n:p=0, d=G\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2\n"
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[G_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2, 2.0\n"

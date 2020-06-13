@@ -602,12 +602,9 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		Neuro *neuro = new Neuro(*neurons[i]);
 		model.addNeuro(neuro);
-		if (neuro->getClass()->preflocation == 2)
+		if (neuro->getClass()->preflocation == 2 && parent != nullptr)
 		{
-			if (parent != nullptr)
-				neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
-			else
-				neuro->attachToPart(part);
+			neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
 		} else
 			neuro->attachToPart(part);
 	}
@@ -1249,31 +1246,29 @@ bool fS_Genotype::addNeuro()
 	Node *randomNode = chooseNode();
 	fS_Neuron *newNeuron;
 	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
-	if (rndclass == NULL)
-		newNeuron = new fS_Neuron();
-	else
+	if(rndclass->preflocation == 2 && randomNode == startNode)
+		return false;
+
+	const char *name = rndclass->getName().c_str();
+	newNeuron = new fS_Neuron(name, strlen(name));
+	int effectiveInputCount = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
+	if (effectiveInputCount > 0)
 	{
-		const char *name = rndclass->getName().c_str();
-		newNeuron = new fS_Neuron(name, strlen(name));
-		int effectiveInputCount = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
-		if (effectiveInputCount > 0)
+		// Create as many connections for the neuron as possible (at most prefinputs)
+		vector<fS_Neuron*> allNeurons = getAllNeurons();
+		vector<int> neuronsWithOutput;
+		for (int i = 0; i < int(allNeurons.size()); i++)
 		{
-			// Create as many connections for the neuron as possible (at most prefinputs)
-			vector<fS_Neuron*> allNeurons = getAllNeurons();
-			vector<int> neuronsWithOutput;
-			for (int i = 0; i < int(allNeurons.size()); i++)
+			if (allNeurons[i]->getClass()->prefoutput > 0)
+				neuronsWithOutput.push_back(i);
+		}
+		int size = neuronsWithOutput.size();
+		if (size > 0)
+		{
+			for (int i = 0; i < effectiveInputCount; i++)
 			{
-				if (allNeurons[i]->getClass()->prefoutput > 0)
-					neuronsWithOutput.push_back(i);
-			}
-			int size = neuronsWithOutput.size();
-			if (size > 0)
-			{
-				for (int i = 0; i < effectiveInputCount; i++)
-				{
-					int selectedNeuron = neuronsWithOutput[rndUint(size)];
-					newNeuron->inputs[selectedNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
-				}
+				int selectedNeuron = neuronsWithOutput[rndUint(size)];
+				newNeuron->inputs[selectedNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
 			}
 		}
 	}
