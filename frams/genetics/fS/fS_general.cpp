@@ -32,6 +32,18 @@ double round2(double var)
 	return (double) value / 100;
 }
 
+double fS_stod(const string&  str, size_t* size = 0)
+{
+	try
+	{
+		return std::stod(str, size);
+	}
+	catch(const std::invalid_argument& ex)
+	{
+		throw fS_Exception("Invalid numeric value");
+	}
+}
+
 State::State(State *_state)
 {
 	location = Pt3D(_state->location);
@@ -106,9 +118,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		} else
 		{
 			keyLength = separatorIndex;
-			value = std::stod(buffer + separatorIndex + 1);
+			value = fS_stod(buffer + separatorIndex + 1);
 		}
-		inputs[std::stod(buffer, &keyLength)] = value;
+		inputs[fS_stod(buffer, &keyLength)] = value;
 	}
 }
 
@@ -194,6 +206,7 @@ void Node::extractPartType(Substring &restOfGenotype)
 
 vector<int> getSeparatorPositions(const char *str, int len, char separator, char endSign, int &endIndex)
 {
+	endIndex = -1;
 	vector<int> separators {-1};
 	for (int i = 0; i < len; i++)
 	{
@@ -217,6 +230,8 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	const char *ns = restOfGenotype.c_str() + 1;
 	int neuronsEndIndex;
 	vector<int> separators = getSeparatorPositions(ns, restOfGenotype.len, NEURON_SEPARATOR, NEURON_END, neuronsEndIndex);
+	if(neuronsEndIndex == -1)
+		throw fS_Exception("Lacking neuro end sign");
 
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
@@ -237,9 +252,10 @@ void Node::extractParams(Substring &restOfGenotype)
 	const char *paramString = restOfGenotype.c_str() + 1;
 
 	// Find the indexes of the parameter separators
-
 	int paramsEndIndex;
 	vector<int> separators = getSeparatorPositions(paramString, restOfGenotype.len, PARAM_SEPARATOR, PARAM_END, paramsEndIndex);
+	if(paramsEndIndex == -1)
+		throw fS_Exception("Lacking param end sign");
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
 		int start = separators[i] + 1;
@@ -262,9 +278,12 @@ void Node::extractParams(Substring &restOfGenotype)
 		// Compute the value of parameter and assign it to the key
 		int valueStartIndex = separatorIndex + 1;
 		string key(buffer, separatorIndex);
+		if(std::find(PARAMS.begin(), PARAMS.end(), key) == PARAMS.end())
+			throw fS_Exception("Invalid parameter key");
+
 		const char *val = buffer + valueStartIndex;
 		size_t len = length - valueStartIndex;
-		params[key] = std::stod(val, &len);
+		params[key] = fS_stod(val, &len);
 
 	}
 
