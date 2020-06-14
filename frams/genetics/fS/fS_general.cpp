@@ -32,7 +32,7 @@ double round2(double var)
 	return (double) value / 100;
 }
 
-double fS_stod(const string&  str, size_t* size = 0)
+double fS_stod(const string&  str, int start=1, size_t* size = 0)
 {
 	try
 	{
@@ -40,7 +40,7 @@ double fS_stod(const string&  str, size_t* size = 0)
 	}
 	catch(const std::invalid_argument& ex)
 	{
-		throw fS_Exception("Invalid numeric value");
+		throw fS_Exception("Invalid numeric value",start);
 	}
 }
 
@@ -118,9 +118,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		} else
 		{
 			keyLength = separatorIndex;
-			value = fS_stod(buffer + separatorIndex + 1);
+			value = fS_stod(buffer + separatorIndex + 1, 1, 0);
 		}
-		inputs[fS_stod(buffer, &keyLength)] = value;
+		inputs[fS_stod(buffer, 1, &keyLength)] = value;
 	}
 }
 
@@ -168,7 +168,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 {
 	int partTypePosition = getPartPosition(restOfGenotype);
 	if (partTypePosition == -1)
-		throw fS_Exception("Part type missing");
+		throw fS_Exception("Part type missing", restOfGenotype.start);
 
 	for (int i = 0; i < partTypePosition; i++)
 	{
@@ -179,7 +179,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 		else if (MODIFIERS.find(tolower(mType)) != string::npos)
 			modifiers.push_back(mType);
 		else
-			throw fS_Exception("Invalid modifier");
+			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
 	restOfGenotype.startFrom(partTypePosition);
 }
@@ -188,7 +188,7 @@ void Node::extractPartType(Substring &restOfGenotype)
 {
 	auto itr = GENE_TO_SHAPETYPE.find(restOfGenotype.at(0));
 	if (itr == GENE_TO_SHAPETYPE.end())
-		throw fS_Exception("Invalid part type");
+		throw fS_Exception("Invalid part type", restOfGenotype.start);
 
 	partType = itr->second;
 	restOfGenotype.startFrom(1);
@@ -221,7 +221,7 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	int neuronsEndIndex;
 	vector<int> separators = getSeparatorPositions(ns, restOfGenotype.len, NEURON_SEPARATOR, NEURON_END, neuronsEndIndex);
 	if(neuronsEndIndex == -1)
-		throw fS_Exception("Lacking neuro end sign");
+		throw fS_Exception("Lacking neuro end sign", restOfGenotype.start);
 
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
@@ -245,7 +245,7 @@ void Node::extractParams(Substring &restOfGenotype)
 	int paramsEndIndex;
 	vector<int> separators = getSeparatorPositions(paramString, restOfGenotype.len, PARAM_SEPARATOR, PARAM_END, paramsEndIndex);
 	if(paramsEndIndex == -1)
-		throw fS_Exception("Lacking param end sign");
+		throw fS_Exception("Lacking param end sign", restOfGenotype.start);
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
 		int start = separators[i] + 1;
@@ -263,17 +263,21 @@ void Node::extractParams(Substring &restOfGenotype)
 			}
 		}
 		if (-1 == separatorIndex)
-			throw fS_Exception("Parameter separator expected");
+			throw fS_Exception("Parameter separator expected", restOfGenotype.start);
 
 		// Compute the value of parameter and assign it to the key
 		int valueStartIndex = separatorIndex + 1;
 		string key(buffer, separatorIndex);
 		if(std::find(PARAMS.begin(), PARAMS.end(), key) == PARAMS.end())
-			throw fS_Exception("Invalid parameter key");
+			throw fS_Exception("Invalid parameter key", restOfGenotype.start + start);
 
 		const char *val = buffer + valueStartIndex;
 		size_t len = length - valueStartIndex;
-		params[key] = fS_stod(val, &len);
+		double value = fS_stod(val, restOfGenotype.start + start + valueStartIndex, &len);
+		if((key==SIZE_X || key==SIZE_Y || key==SIZE_Z) && value <= 0.0)
+			throw fS_Exception("Invalid value of radius parameter", restOfGenotype.start + start + valueStartIndex);
+
+		params[key] = value;
 
 	}
 
@@ -432,9 +436,9 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			currentDistance = avg(maxDistance, currentDistance);
 		}
 		if (currentDistance > maxDistance)
-			throw fS_Exception("Internal error; then maximal distance between parts exceeded.");
+			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 1);
 		if (currentDistance < minDistance)
-			throw fS_Exception("Internal error; the minimal distance between parts exceeded.");
+			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 1);
 
 	}
 
@@ -505,7 +509,7 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
 		if (depth < 0)
-			throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
+			throw fS_Exception("The number of branch start signs does not equal the number of branch end signs", restOfGenotype.start + i);
 		c = str[i];
 		if (c == BRANCH_START)
 			depth++;
@@ -520,7 +524,7 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 			depth -= 1;
 	}
 	if (depth != 1)    // T
-		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs");
+		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs", restOfGenotype.start);
 	return children;
 }
 
@@ -770,7 +774,7 @@ fS_Genotype::fS_Genotype(const string &genotype)
 	// M - modifier mode, S - standard mode
 	size_t modeSeparatorIndex = geno.find(':');
 	if (modeSeparatorIndex == string::npos)
-		throw fS_Exception("No mode separator");
+		throw fS_Exception("No mode separator", 1);
 
 	string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
 	bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
@@ -1180,7 +1184,7 @@ bool fS_Genotype::changePartType(bool ensureCircleSection, string availTypes)
 
 #ifdef _DEBUG
 		if(newType == randomNode->partType)
-			throw fS_Exception("Internal error: invalid part type chosen in mutation.");
+			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
 		if (ensureCircleSection)

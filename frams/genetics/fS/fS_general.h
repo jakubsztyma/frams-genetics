@@ -137,16 +137,18 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 class fS_Exception : public std::exception
 {
 	string msg;
-
 public:
+
+	int errorPosition;
 	virtual const char *what() const throw()
 	{
 		return msg.c_str();
 	}
 
-	fS_Exception(string _msg)
+	fS_Exception(string _msg, int _errorPosition)
 	{
 		msg = _msg;
+		errorPosition = _errorPosition;
 	}
 };
 

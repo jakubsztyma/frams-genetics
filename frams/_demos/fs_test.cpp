@@ -372,12 +372,18 @@ void validationTest()
 			"S:E[G_1:w_2]",    // Invalid neuro connection value
 			"S:E{",    // Lacking param end
 			"S:E[",    // Lacking neuro end
+			"S:E{x=1.5;y=0.0}",    // Lacking param end
+//			"S:E[2]",    // Invalid neuron connection key
+	};
+	int errorIndexes[] = {
+			1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 3, 3, 11 //1
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
 		cout<<invalidGenotypes[i].c_str()<<endl;
-		assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
+		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
+		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
 	}
