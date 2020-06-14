@@ -2,6 +2,7 @@
 // Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
 // See LICENSE.txt for details.
 
+#include <float.h>
 #include "fS_oper.h"
 
 

@@ -2,8 +2,13 @@
 // Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
 // See LICENSE.txt for details.
 
+#include <float.h>
 #include "fS_general.h"
 #include "frams/model/geometry/geometryutils.h"
+#include "frams/genetics/genooperators.h"
+#include "common/Convert.h"
+#include "frams/util/rndutil.h"
+#include "frams/neuro/neurolibrary.h"
 
 
 int fS_Genotype::precision = 2;

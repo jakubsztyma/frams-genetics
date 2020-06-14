@@ -381,8 +381,6 @@ void validationTest()
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
-		cout<<invalidGenotypes[i].c_str()<<endl;
-		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
 		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");

@@ -6,25 +6,12 @@
 #define _FS_GENERAL_H_
 
 #include <iostream>
-#include <float.h>
 #include <vector>
 #include <map>
-#include <set>
-#include <math.h>
 #include <unordered_map>
 #include <exception>
-#include <assert.h>
-#include "common/Convert.h"
-#include "common/nonstd_math.h"
-#include "frams/genetics/genooperators.h"
-#include "frams/util/3d.h"
-#include "frams/util/sstring.h"
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
-#include "frams/util/rndutil.h"
-#include "frams/util/sstringutils.h"
-#include "frams/util/extvalue.h"
-#include "frams/neuro/neurolibrary.h"
 
 /** @name Names of genotype modes */
 //@{
