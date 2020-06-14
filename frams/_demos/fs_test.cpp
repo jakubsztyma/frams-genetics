@@ -5,6 +5,7 @@
 #include "frams/genetics/fS/fS_general.h"
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/fS_oper.h"
+#include "frams/genetics/preconfigured.h"
 
 using std::cout;
 using std::endl;
@@ -134,7 +135,7 @@ void testAddPart()
 	{
 		fS_Genotype geno(test_cases[i]);
 
-		geno.addPart(true, false);
+		geno.addPart(true, "ECR", false);
 
 		geno.getState();
 		Node *newNode = geno.getAllNodes()[1];
@@ -164,6 +165,23 @@ void testChangePartType()
 		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
+
+}
+void testUsePartType()
+{
+	fS_Genotype geno("S:E");
+	geno.changePartType(true, "C");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
+	geno.changePartType(true, "E");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	geno.changePartType(true, "R");
+	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
+	geno.addPart(true, "C");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
+	geno.addPart(true, "E");
+	assert(geno.getAllNodes()[2]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	geno.addPart(true, "R");
+	assert(geno.getAllNodes()[3]->partType == Part::Shape::SHAPE_CYLINDER);
 
 }
 
@@ -241,9 +259,9 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	SString genotype_str = test[0];
 
 	/// Test translate
-//	cout << "Geno: " << test[0].c_str() << endl;
-//	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
-//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
+	cout << "Geno: " << test[0].c_str() << endl;
+	cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+	cout << "Expected: \n" << test[1].c_str() << endl << endl;
 	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 
 	/// Test get geno
@@ -350,11 +368,15 @@ void validationTest()
 			"S:E{qw=1.0}",    // Wrong param key
 			"S:E{f=}",    // Wrong param value
 			"S:E{f=fr}",    // Wrong param value
+			"S:E[G_w_2]",    // Invalid neuro connection key
+			"S:E[G_1:w_2]",    // Invalid neuro connection value
+			"S:E{",    // Lacking param end
+			"S:E[",    // Lacking neuro end
 	};
-	const int invalidCount = 5;
-	for (int i = 0; i < invalidCount; i++)
+	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
+		cout<<invalidGenotypes[i].c_str()<<endl;
 		assert(1 == operators.checkValidity(invalidGenotypes[i].c_str(), ""));
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -452,13 +474,10 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
-		// TODO remove checkValidity condition
 		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
 			assert(0. < f1 && f1 < 1.);
 			assert(0. < f2 && f2 < 1.);
-			assert(0 == operators.checkValidity(arr1, ""));
-			assert(0 == operators.checkValidity(arr2, ""));
 
 			delete gens[i1];
 			delete gens[i2];
@@ -651,38 +670,38 @@ int main(int argc, char *argv[])
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"},
-			{"S:E[G]",                                            "p:sh=1\n"
-																  "n:p=0, d=G\n"},
+			{"S:E[T]",                                            "p:sh=1\n"
+																  "n:p=0, d=T\n"},
 			{"S:E[]E[0]",                                         "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"
 																  "c:1, 0\n"},
-			{"S:E[G;T_0]",                                        "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin;T_0]",                                        "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "c:1, 0\n"},
-			{"S:E[G_2;T_0;T_0_1]",                                "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin_2;T_0;T_0_1]",                                "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2\n"
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[G_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
+			{"S:E[Sin_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
 																  "p:4.0, sh=1, sz=2.0, ry=90.0\n"
 																  "j:0, 1, sh=1\n"
-																  "n:p=0, d=G\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2\n"
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[G_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
-																  "n:p=0, d=G\n"
+			{"S:E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
+																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
 																  "c:0, 2, 2.0\n"
@@ -728,6 +747,7 @@ int main(int argc, char *argv[])
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
 	auto start = std::chrono::steady_clock::now();
+	PreconfiguredGenetics genetics;
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
@@ -742,6 +762,7 @@ int main(int argc, char *argv[])
 	testRearrangeAfterCrossover();
 	testAddPart();
 	testChangePartType();
+	testUsePartType();
 	int operationCount;
 	if (argc > 1)
 		operationCount = std::stod(argv[1]);

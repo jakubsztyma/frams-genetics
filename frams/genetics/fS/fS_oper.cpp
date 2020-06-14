@@ -1,6 +1,6 @@
-//
-// Created by jakub on 19.03.2020.
-//
+// This file is a part of Framsticks SDK.  http://www.framsticks.com/
+// Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
+// See LICENSE.txt for details.
 
 #include "fS_oper.h"
 
@@ -8,7 +8,7 @@
 #define FIELDSTRUCT GenoOper_fS
 static ParamEntry GENOfSparam_tab[] =
 		{
-				{"Genetics: fS",            1, FS_OPCOUNT + 1,},
+				{"Genetics: fS",            1, FS_OPCOUNT + 4,},
 				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
 				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
 				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
@@ -26,6 +26,9 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection", "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
 				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",     "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
 				{"fS_circle_section",       0, 0, "Ensure circle section",    "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
+				{"fS_use_elli",       0, 0, "Use ellipsoids in mutations",    "d 0 1 1",    FIELD(useElli),           "Use ellipsoids in mutations"},
+				{"fS_use_cub",       0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),           "Use cuboids in mutations"},
+				{"fS_use_cyl",       0, 0, "Use cylinders in mutations",    "d 0 1 1",    FIELD(useCyl),           "Use cylinders in mutations"},
 		};
 
 #undef FIELDSTRUCT
@@ -35,6 +38,7 @@ GenoOper_fS::GenoOper_fS()
 	par.setParamTab(GENOfSparam_tab);
 	par.select(this);
 	par.setDefault();
+	supported_format = 'S';
 }
 
 int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
@@ -58,18 +62,28 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 {
 	fS_Genotype genotype(geno);
 
+	// Calculate available part types
+	string availableTypes;
+	if(useElli)
+		availableTypes += ELLIPSOID;
+	if(useCub)
+		availableTypes += CUBOID;
+	if(useCyl)
+		availableTypes += CYLINDER;
+
+	// Select a mutation
 	bool result = false;
 	method = GenoOperators::roulette(prob, FS_OPCOUNT);
 	switch (method)
 	{
 		case FS_ADD_PART:
-			result = genotype.addPart(ensureCircleSection);
+			result = genotype.addPart(ensureCircleSection, availableTypes);
 			break;
 		case FS_REM_PART:
 			result = genotype.removePart();
 			break;
 		case FS_MOD_PART:
-			result = genotype.changePartType(ensureCircleSection);
+			result = genotype.changePartType(ensureCircleSection, availableTypes);
 			break;
 		case FS_ADD_JOINT:
 			result = genotype.addJoint();
@@ -211,6 +225,34 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 const char* GenoOper_fS::getSimplest()
 {
 	return "S:C{x=0.80599;y=0.80599;z=0.80599}";
+}
+
+uint32_t GenoOper_fS::style(const char *geno, int pos)
+{
+	char ch = geno[pos];
+	uint32_t style = GENSTYLE_CS(0, GENSTYLE_NONE);
+	if (ch == ELLIPSOID || ch == CUBOID || ch == CYLINDER) // part type
+	{
+		style = GENSTYLE_RGBS(0, 0, 200, GENSTYLE_BOLD);
+	}
+	else if(JOINTS.find(ch) != string::npos)	// Joint type
+	{
+		style = GENSTYLE_RGBS(0, 200, 200, GENSTYLE_BOLD);
+	}
+	else if(MODIFIERS.find(ch) != string::npos) // Modifier
+	{
+		style = GENSTYLE_RGBS(0, 200, 0, GENSTYLE_NONE);
+	}
+	else if (isdigit(ch) || strchr(".=", ch)) // Numerical value
+	{
+		style = GENSTYLE_RGBS(200, 0, 0, GENSTYLE_NONE);
+	}
+	else if(strchr("()_;[],", ch))
+	{
+		style = GENSTYLE_CS(0, GENSTYLE_BOLD); // Important char
+	}
+
+	return style;
 }
 
 void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
