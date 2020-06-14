@@ -130,24 +130,14 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
+	Substring partDescriptionTmp(restOfGeno);
 
-	partDescription = new Substring(restOfGeno);
+	extractModifiers(restOfGeno);
+	extractPartType(restOfGeno);
+	extractNeurons(restOfGeno);
+	extractParams(restOfGeno);
 
-	// TODO decide what causes the problems with part description memory leaks
-	try
-	{
-		extractModifiers(restOfGeno);
-		extractPartType(restOfGeno);
-		extractNeurons(restOfGeno);
-		extractParams(restOfGeno);
-	}
-	catch (fS_Exception &e)
-	{
-		delete partDescription;
-		throw e;
-	}
-
-
+	partDescription = new Substring(partDescriptionTmp);
 	partDescription->shortenBy(restOfGeno.len);
 	if (restOfGeno.len > 0)
 		getChildren(restOfGeno);
