@@ -37,7 +37,7 @@ double round2(double var)
 	return (double) value / 100;
 }
 
-double fS_stod(const string&  str, int start=1, size_t* size = 0)
+double fS_stod(const string&  str, int start, size_t* size)
 {
 	try
 	{
@@ -45,7 +45,7 @@ double fS_stod(const string&  str, int start=1, size_t* size = 0)
 	}
 	catch(const std::invalid_argument& ex)
 	{
-		throw fS_Exception("Invalid numeric value",start);
+		throw fS_Exception("Invalid numeric value", start);
 	}
 }
 
@@ -124,7 +124,8 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		} else
 		{
 			keyLength = separatorIndex;
-			value = fS_stod(buffer + separatorIndex + 1, 1, 0);
+			size_t valueLength = keyValue.len() - (separatorIndex);
+			value = fS_stod(buffer + separatorIndex + 1, 1, &valueLength);
 		}
 		inputs[fS_stod(buffer, 1, &keyLength)] = value;
 	}
@@ -776,23 +777,22 @@ int Node::getNodeCount()
 
 fS_Genotype::fS_Genotype(const string &genotype)
 {
-	string geno = genotype.c_str();
-	// M - modifier mode, S - standard mode
-	size_t modeSeparatorIndex = geno.find(':');
-	if (modeSeparatorIndex == string::npos)
-		throw fS_Exception("No mode separator", 1);
-
-	string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
-	bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
-	bool paramMode = modeStr.find(PARAM_MODE) != string::npos;
-	bool cycleMode = modeStr.find(CYCLE_MODE) != string::npos;
-
-	int actualGenoStart = modeSeparatorIndex + 1;
-	Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
-	startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
-
 	try
 	{
+		string geno = genotype.c_str();
+		// M - modifier mode, S - standard mode
+		size_t modeSeparatorIndex = geno.find(':');
+		if (modeSeparatorIndex == string::npos)
+			throw fS_Exception("No mode separator", 1);
+
+		string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
+		bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
+		bool paramMode = modeStr.find(PARAM_MODE) != string::npos;
+		bool cycleMode = modeStr.find(CYCLE_MODE) != string::npos;
+
+		int actualGenoStart = modeSeparatorIndex + 1;
+		Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
+		startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)

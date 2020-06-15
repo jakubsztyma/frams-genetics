@@ -4,6 +4,7 @@
 
 #include <float.h>
 #include "fS_oper.h"
+#include <assert.h>
 
 
 #define FIELDSTRUCT GenoOper_fS
@@ -46,10 +47,10 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 {
 	try
 	{
-		fS_Genotype genotype = fS_Genotype(geno);
+		fS_Genotype genotype(geno);
 		if(!genotype.allPartSizesValid())
 		{
-			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Wrong part size");
+			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
 			return 1;
 		}
 	}
@@ -141,6 +142,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 
 int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
+	assert(PARENT_COUNT == 2);
 	fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
 
 	// Choose random subtrees that have similar size
