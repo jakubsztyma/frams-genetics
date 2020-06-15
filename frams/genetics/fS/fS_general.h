@@ -286,7 +286,7 @@ class Node
 private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
-	bool isStart;   /// Is a starting node of whole genotype
+	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
@@ -404,7 +404,7 @@ public:
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *parent);
 
 	~Node();
 

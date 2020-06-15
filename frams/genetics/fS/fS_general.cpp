@@ -129,9 +129,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 	}
 }
 
-Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart = false)
+Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *_parent)
 {
-	isStart = _isStart;
+	parent = _parent;
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
@@ -456,7 +456,7 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 {
 	if (state != nullptr)
 		delete state;
-	if (isStart)
+	if (parent == nullptr)
 		state = _state;
 	else
 		state = new State(_state);
@@ -477,7 +477,7 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 	}
 
 	Pt3D size = calculateSize();
-	if (!isStart)
+	if (parent != nullptr)
 	{
 		// Rotate
 		state->rotate(getVectorRotation());
@@ -494,7 +494,7 @@ void Node::getChildren(Substring &restOfGenotype)
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
-		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode));
+		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode, this));
 	}
 }
 
@@ -788,7 +788,7 @@ fS_Genotype::fS_Genotype(const string &genotype)
 
 	int actualGenoStart = modeSeparatorIndex + 1;
 	Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
-	startNode = new Node(substring, modifierMode, paramMode, cycleMode, true);
+	startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
 }
 
 fS_Genotype::~fS_Genotype()
@@ -1144,7 +1144,7 @@ bool fS_Genotype::addPart(bool ensureCircleSection, string availableTypes,  bool
 	char partType = availableTypes[rndUint(availableTypes.length())];
 
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode);
+	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode, node);
 	// Add random rotation
 	newNode->params[ROT_X] = RndGen.Uni(-90, 90);
 	newNode->params[ROT_Y] = RndGen.Uni(-90, 90);
