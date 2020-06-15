@@ -548,6 +548,8 @@ public:
 	 */
 	bool allPartSizesValid();
 
+	void validateNeuroInputs();
+
 	/**
 	 * Builds Model object from internal representation
 	 * @param a reference to a model that will contain a built model

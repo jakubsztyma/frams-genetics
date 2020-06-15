@@ -81,9 +81,10 @@ void rotateVector(Pt3D &vector, const Pt3D &rotation)
 
 void State::rotate(const Pt3D &rotation)
 {
-	rotateVector(v, rotation);
-	v.normalize();
+       rotateVector(v, rotation);
+       v.normalize();
 }
+
 
 fS_Neuron::fS_Neuron(const char *str, int length)
 {
@@ -789,6 +790,16 @@ fS_Genotype::fS_Genotype(const string &genotype)
 	int actualGenoStart = modeSeparatorIndex + 1;
 	Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
 	startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
+
+	try
+	{
+		validateNeuroInputs();
+	}
+	catch (fS_Exception &e)
+	{
+		delete startNode;
+		throw e;
+	}
 }
 
 fS_Genotype::~fS_Genotype()
@@ -997,6 +1008,24 @@ bool fS_Genotype::allPartSizesValid()
 		}
 	}
 	return true;
+}
+
+
+void fS_Genotype::validateNeuroInputs()
+{
+
+	// Validate neuro input numbers
+	vector<fS_Neuron*> allNeurons = getAllNeurons();
+	int allNeuronsSize = allNeurons.size();
+	for(int i=0; i<allNeuronsSize; i++)
+	{
+		fS_Neuron *n = allNeurons[i];
+		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
+		{
+			if (it->first < 0 || it->first >= allNeuronsSize)
+				throw fS_Exception("Invalid neuron input", 1);
+		}
+	}
 }
 
 bool fS_Genotype::addJoint()

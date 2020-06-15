@@ -47,9 +47,9 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	try
 	{
 		fS_Genotype genotype = fS_Genotype(geno);
-		if (!genotype.allPartSizesValid())
+		if(!genotype.allPartSizesValid())
 		{
-			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
+			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Wrong part size");
 			return 1;
 		}
 	}
