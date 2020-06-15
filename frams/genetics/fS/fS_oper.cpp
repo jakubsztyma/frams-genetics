@@ -2,6 +2,7 @@
 // Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
 // See LICENSE.txt for details.
 
+#include <float.h>
 #include "fS_oper.h"
 
 
@@ -46,13 +47,16 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	try
 	{
 		fS_Genotype genotype = fS_Genotype(geno);
-		if (!genotype.allPartSizesValid())
+		if(!genotype.allPartSizesValid())
+		{
+			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Wrong part size");
 			return 1;
+		}
 	}
 	catch (fS_Exception &e)
 	{
 		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
-		return 1;
+		return e.errorPosition;
 	}
 	return 0;
 }
@@ -139,48 +143,27 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
 	fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
 
-	if (parents[0]->startNode->children.empty() || parents[1]->startNode->children.empty())
-	{
-		delete parents[0];
-		delete parents[1];
-		return GENOPER_OPFAIL;
-	}
-
-	Node *selected[PARENT_COUNT];
-	int childIndexes[PARENT_COUNT];
 	// Choose random subtrees that have similar size
-	vector<Node*> allNodes[PARENT_COUNT]
-	{
-		parents[0]->getAllNodes(),
-				parents[1]->getAllNodes()
-	};
+	Node *selected[PARENT_COUNT];
+	vector<Node*> allNodes0 = parents[0]->getAllNodes();
+	vector<Node*> allNodes1 = parents[1]->getAllNodes();
+
 	double bestQuotient = DBL_MAX;
 	for (int i = 0; i < crossOverTries; i++)
 	{
-		Node *selectedTmp[PARENT_COUNT];
-		int childIndexesTmp[PARENT_COUNT];
-		double childNodeCount[PARENT_COUNT];
-		for (int i = 0; i < PARENT_COUNT; i++)
-		{
-			do
-			{
-				selectedTmp[i] = allNodes[i][rndUint(allNodes[i].size())];
-			} while (selectedTmp[i]->children.empty());
-			childIndexesTmp[i] = rndUint(selectedTmp[i]->children.size());
-			childNodeCount[i] = selectedTmp[i]->children[childIndexesTmp[i]]->getNodeCount();
-		}
-		// Choose the most similar subtrees
-		double quotient = std::max(childNodeCount[0], childNodeCount[1]) / std::min(childNodeCount[0], childNodeCount[1]);
+		Node *tmp0 = allNodes0[rndUint(allNodes0.size())];
+		Node *tmp1 = allNodes1[rndUint(allNodes1.size())];
+		// Choose this pair if it is the most similar
+		double quotient = double(tmp0->getNodeCount()) / double(tmp1->getNodeCount());
+		if(quotient < 1.0)
+			quotient = 1.0 / quotient;
 		if (quotient < bestQuotient)
 		{
 			bestQuotient = quotient;
-			for (int i = 0; i < PARENT_COUNT; i++)
-			{
-				selected[i] = selectedTmp[i];
-				childIndexes[i] = childIndexesTmp[i];
-			}
+			selected[0] = tmp0;
+			selected[1] = tmp1;
 		}
-		if (quotient == 1.0)
+		if (bestQuotient == 1.0)
 			break;
 	}
 
@@ -189,27 +172,33 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	for (int i = 0; i < PARENT_COUNT; i++)
 	{
 
-		subtreeSizes[i] = selected[i]->children[childIndexes[i]]->getNodeCount();
+		subtreeSizes[i] = selected[i]->getNodeCount();
 		restSizes[i] = parents[i]->getNodeCount() - subtreeSizes[i];
 	}
 	chg0 = restSizes[0] / (restSizes[0] + subtreeSizes[1]);
 	chg1 = restSizes[1] / (restSizes[1] + subtreeSizes[0]);
 
 	// Rearrange neurons before crossover
-	Node *subtrees[2];
-	subtrees[0] = selected[0]->children[childIndexes[0]];
-	subtrees[1] = selected[1]->children[childIndexes[1]];
-
 	int subOldStart[PARENT_COUNT] {-1, -1};
-	rearrangeConnectionsBeforeCrossover(parents[0], subtrees[0], subOldStart[0]);
-	rearrangeConnectionsBeforeCrossover(parents[1], subtrees[1], subOldStart[0]);
+	rearrangeConnectionsBeforeCrossover(parents[0], selected[0], subOldStart[0]);
+	rearrangeConnectionsBeforeCrossover(parents[1], selected[1], subOldStart[1]);
 
 	// Swap the subtress
-	std::swap(selected[0]->children[childIndexes[0]], selected[1]->children[childIndexes[1]]);
+	for(int i=0; i<PARENT_COUNT; i++)
+	{
+		Node *other = selected[1 - i];
+		Node *p = selected[i]->parent;
+		if (p != nullptr)
+		{
+			size_t index = std::distance(p->children.begin(), std::find(p->children.begin(), p->children.end(), selected[i]));
+			p->children[index] = other;
+		} else
+			parents[i]->startNode = other;
+	}
 
 	// Rearrange neurons after crossover
-	rearrangeConnectionsAfterCrossover(parents[0], subtrees[1], subOldStart[0]);
-	rearrangeConnectionsAfterCrossover(parents[1], subtrees[0], subOldStart[1]);
+	rearrangeConnectionsAfterCrossover(parents[0], selected[1], subOldStart[0]);
+	rearrangeConnectionsAfterCrossover(parents[1], selected[0], subOldStart[1]);
 
 	// Clenup, assign children to result strings
 	free(g0);

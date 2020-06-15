@@ -6,25 +6,12 @@
 #define _FS_GENERAL_H_
 
 #include <iostream>
-#include <float.h>
 #include <vector>
 #include <map>
-#include <set>
-#include <math.h>
 #include <unordered_map>
 #include <exception>
-#include <assert.h>
-#include "common/Convert.h"
-#include "common/nonstd_math.h"
-#include "frams/genetics/genooperators.h"
-#include "frams/util/3d.h"
-#include "frams/util/sstring.h"
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
-#include "frams/util/rndutil.h"
-#include "frams/util/sstringutils.h"
-#include "frams/util/extvalue.h"
-#include "frams/neuro/neurolibrary.h"
 
 /** @name Names of genotype modes */
 //@{
@@ -137,16 +124,18 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 class fS_Exception : public std::exception
 {
 	string msg;
-
 public:
+
+	int errorPosition;
 	virtual const char *what() const throw()
 	{
 		return msg.c_str();
 	}
 
-	fS_Exception(string _msg)
+	fS_Exception(string _msg, int _errorPosition)
 	{
 		msg = _msg;
+		errorPosition = _errorPosition;
 	}
 };
 
@@ -297,7 +286,7 @@ class Node
 private:
 	Substring *partDescription = nullptr;
 	bool cycleMode, modifierMode, paramMode; /// Possible modes
-	bool isStart;   /// Is a starting node of whole genotype
+	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
 
@@ -415,7 +404,7 @@ public:
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, bool _isStart);
+	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *parent);
 
 	~Node();
 
@@ -558,6 +547,8 @@ public:
 	 * @return
 	 */
 	bool allPartSizesValid();
+
+	void validateNeuroInputs();
 
 	/**
 	 * Builds Model object from internal representation
