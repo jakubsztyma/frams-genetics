@@ -34,7 +34,6 @@
 
 const int PARENT_COUNT = 2;
 
-
 class GenoOper_fS : public GenoOperators
 {
 public:
