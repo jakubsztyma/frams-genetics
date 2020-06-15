@@ -126,7 +126,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 			result = genotype.removeNeuroConnection();
 			break;
 		case FS_MOD_NEURO_PARAMS:
-//			result = genotype.changeNeuroParam();
+			result = genotype.changeNeuroParam();
 			break;
 	}
 

@@ -1429,15 +1429,29 @@ bool fS_Genotype::changeNeuroParam()
 	if (neurons.empty())
 		return false;
 
-	fS_Neuron *selectedNeuron = neurons[rndUint(neurons.size())];
-	SyntParam par = selectedNeuron->classProperties();
-	int propNo = GenoOperators::selectRandomProperty(selectedNeuron);
-	if(propNo != -1)
+	fS_Neuron *neu = neurons[rndUint(neurons.size())];
+	SyntParam par = neu->classProperties();
+
+	if (par.getPropCount() > 0)
 	{
-		double oldValue = par.getDouble(propNo % 100);
-		double newValue = GenoOperators::mutateNeuProperty(oldValue, selectedNeuron, propNo);
-		par.setDouble(propNo % 100, newValue);
-		return true;
+		int i = rndUint(par.getPropCount());
+		if (*par.type(i) == 'f')
+		{
+			double change = GenoOperators::mutateNeuProperty(par.getDouble(i), neu, 100 + i);
+			par.setDouble(i, change);
+		}
+		SString line;
+		int tmp = 0;
+		par.update(&line);
+		SString props;
+		line.getNextToken(tmp, props, '\n'); // removal of newline character
+		if (props != "")
+		{
+			SString det = neu->getClass()->name + ": " + props;
+			neu->setDetails(det);
+			return true;
+		}
 	}
+
 	return false;
 }

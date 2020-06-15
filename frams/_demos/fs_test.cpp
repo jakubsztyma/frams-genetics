@@ -214,7 +214,7 @@ void testCrossoverSimilarTrees()
 
 			operators.crossOver(arr1, arr2, f1, f2);
 
-			cout<<arr1<<" "<<test_cases[i].c_str()<<endl;
+//			cout<<arr1<<" "<<test_cases[i].c_str()<<endl;
 			assert(strcmp(arr1, test_cases[i].c_str()) == 0);
 			free(arr1);
 			free(arr2);
