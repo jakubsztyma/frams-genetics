@@ -118,6 +118,24 @@ const char SIZE_MODIFIER = 's';
 const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
 
+/** @name Default values of node parameters*/
+static const Part defPart = Model::getDefPart();
+const std::map<string, double> defaultParamValues = {
+		{INGESTION,      defPart.ingest},
+		{FRICTION,       defPart.friction},
+		{ROT_X,          0.0},
+		{ROT_Y,          0.0},
+		{ROT_Z,          0.0},
+		{RX,             0.0},
+		{RY,             0.0},
+		{RZ,             0.0},
+		{SIZE,           1.0},
+		{SIZE_X,         1.0},
+		{SIZE_Y,         1.0},
+		{SIZE_Z,         1.0},
+		{JOINT_DISTANCE, 1.0}
+};
+
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
 
@@ -464,7 +482,7 @@ private:
 	 * @param fromIndex minimal index of the node
 	 * @return pointer to drawn node
 	 */
-	Node *chooseNode(int fromIndex);
+	Node *chooseNode(int fromIndex=0);
 
 	/**
 	 * Draws a value from defined distribution
@@ -498,7 +516,7 @@ public:
 	 * Get a random multiplier for parameter mutation
 	 * @return Random parameter multiplier
 	 */
-	double randomParamMultiplier();
+	static double randomParamMultiplier();
 
 	/**
 	 * Get all existing nodes
@@ -572,77 +590,6 @@ public:
 	 */
 	void rearrangeNeuronConnections(fS_Neuron *newNeuron, SHIFT shift);
 
-	/**
-	 * Performs add joint mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool addJoint();
-
-	/**
-	 * Performs remove mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool removeJoint();
-
-	/**
-	 * Performs add part mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool addPart(bool ensureCircleSection, string availableTypes = "ECR", bool mutateSize = true);
-
-	/**
-	 * Performs change part type mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool changePartType(bool ensureCircleSection, string availableTypes = "ECR");
-
-	/**
-	 * Performs remove part type mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool removePart();
-
-	/**
-	 * Performs add param mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool addParam(bool ensureCircleSection);
-
-	/**
-	 * Performs remove param mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool removeParam();
-
-	/**
-	 * Performs change param mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool changeParam(bool ensureCircleSection);
-
-	/**
-	 * Performs add modifier mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool addModifier();
-
-	/**
-	 * Performs remove modifier mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool removeModifier();
-
-	bool addNeuro();
-
-	bool removeNeuro();
-
-	bool changeNeuroConnection();
-
-	bool addNeuroConnection();
-
-	bool removeNeuroConnection();
-
-	bool changeNeuroParam();
 };
 
 

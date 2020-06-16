@@ -3,14 +3,14 @@
 // See LICENSE.txt for details.
 
 #include <float.h>
-#include "fS_oper.h"
 #include <assert.h>
-
+#include "fS_oper.h"
+#include "frams/util/rndutil.h"
 
 #define FIELDSTRUCT GenoOper_fS
 static ParamEntry GENOfSparam_tab[] =
 		{
-				{"Genetics: fS",            1, FS_OPCOUNT + 4,},
+				{"Genetics: fS",            1, FS_OPCOUNT + 5,},
 				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
 				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
 				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
@@ -31,6 +31,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_use_elli",       0, 0, "Use ellipsoids in mutations",    "d 0 1 1",    FIELD(useElli),           "Use ellipsoids in mutations"},
 				{"fS_use_cub",       0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),           "Use cuboids in mutations"},
 				{"fS_use_cyl",       0, 0, "Use cylinders in mutations",    "d 0 1 1",    FIELD(useCyl),           "Use cylinders in mutations"},
+				{"fS_strong_add_part_mutation",       0, 0, "Ensure circle section",    "d 0 1 1",    FIELD(strongAddPart),           "Ensure that ellipsoids and cylinders have circle cross-section"},
 		};
 
 #undef FIELDSTRUCT
@@ -82,52 +83,52 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 	switch (method)
 	{
 		case FS_ADD_PART:
-			result = genotype.addPart(ensureCircleSection, availableTypes);
+			result = addPart(genotype, availableTypes);
 			break;
 		case FS_REM_PART:
-			result = genotype.removePart();
+			result = removePart(genotype);
 			break;
 		case FS_MOD_PART:
-			result = genotype.changePartType(ensureCircleSection, availableTypes);
+			result = changePartType(genotype, availableTypes);
 			break;
 		case FS_ADD_JOINT:
-			result = genotype.addJoint();
+			result = addJoint(genotype);
 			break;
 		case FS_REM_JOINT:
-			result = genotype.removeJoint();
+			result = removeJoint(genotype);
 			break;
 		case FS_ADD_PARAM:
-			result = genotype.addParam(ensureCircleSection);
+			result = addParam(genotype);
 			break;
 		case FS_REM_PARAM:
-			result = genotype.removeParam();
+			result = removeParam(genotype);
 			break;
 		case FS_MOD_PARAM:
-			result = genotype.changeParam(ensureCircleSection);
+			result = changeParam(genotype);
 			break;
 		case FS_ADD_MOD:
-			result = genotype.addModifier();
+			result = addModifier(genotype);
 			break;
 		case FS_REM_MOD:
-			result = genotype.removeModifier();
+			result = removeModifier(genotype);
 			break;
 		case FS_ADD_NEURO:
-			result = genotype.addNeuro();
+			result = addNeuro(genotype);
 			break;
 		case FS_REM_NEURO:
-			result = genotype.removeNeuro();
+			result = removeNeuro(genotype);
 			break;
 		case FS_MOD_NEURO_CONNECTION:
-			result = genotype.changeNeuroConnection();
+			result = changeNeuroConnection(genotype);
 			break;
 		case FS_ADD_NEURO_CONNECTION:
-			result = genotype.addNeuroConnection();
+			result = addNeuroConnection(genotype);
 			break;
 		case FS_REM_NEURO_CONNECTION:
-			result = genotype.removeNeuroConnection();
+			result = removeNeuroConnection(genotype);
 			break;
 		case FS_MOD_NEURO_PARAMS:
-			result = genotype.changeNeuroParam();
+			result = changeNeuroParam(genotype);
 			break;
 	}
 
@@ -286,3 +287,439 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 	}
 }
 
+bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateSize)
+{
+	geno.getState();
+	Node *node = geno.chooseNode();
+	char partType = availableTypes[rndUint(availableTypes.length())];
+
+	Substring substring(&partType, 0, 1);
+	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode, node);
+	// Add random rotation
+	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
+	if(strongAddPart)
+	{
+		for(int i=0; i < 3; i++)
+			newNode->params[rotationParams[i]] = RndGen.Uni(-90, 90);
+	}
+	else
+	{
+		string selectedParam = rotationParams[rndUint(3)];
+		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+	}
+	string rParams[]{RX, RY, RZ};
+	if(strongAddPart)
+	{
+		for(int i=0; i < 3; i++)
+			newNode->params[rParams[i]] = RndGen.Uni(-90, 90);
+	}
+	else
+	{
+		string selectedParam = rParams[rndUint(3)];
+		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+	}
+	// Assign part size to default value
+	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);
+	double minVolume = Model::getMinPart().volume;
+	double defVolume = Model::getDefPart().volume * volumeMultiplier;    // Default value after applying modifiers
+	double maxVolume = Model::getMaxPart().volume;
+	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
+	double relativeVolume = volume / volumeMultiplier;    // Volume without applying modifiers
+
+	double newRadius = Node::calculateRadiusFromVolume(newNode->partType, relativeVolume);
+	newNode->params[SIZE_X] = newRadius;
+	newNode->params[SIZE_Y] = newRadius;
+	newNode->params[SIZE_Z] = newRadius;
+	node->children.push_back(newNode);
+
+	if (mutateSize)
+	{
+		geno.getState();
+		newNode->changeSizeParam(SIZE_X, fS_Genotype::randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_Y, fS_Genotype::randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_Z, fS_Genotype::randomParamMultiplier(), true);
+	}
+	return true;
+}
+
+bool GenoOper_fS::removePart(fS_Genotype &geno)
+{
+	Node *randomNode, *selectedChild;
+	// Choose a parent with children
+	for (int i = 0; i < mutationTries; i++)
+	{
+		randomNode = geno.chooseNode();
+		int childCount = randomNode->children.size();
+		if (childCount > 0)
+		{
+			int selectedIndex = rndUint(childCount);
+			selectedChild = randomNode->children[selectedIndex];
+			if (selectedChild->children.empty() && selectedChild->neurons.empty())
+			{
+				// Remove the selected child
+				swap(randomNode->children[selectedIndex], randomNode->children[childCount - 1]);
+				randomNode->children.pop_back();
+				randomNode->children.shrink_to_fit();
+				delete selectedChild;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
+{
+	int availTypesLength = availTypes.length();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Node *randomNode = geno.chooseNode();
+		int index = rndUint(availTypesLength);
+		if (availTypes[index] == SHAPETYPE_TO_GENE.at(randomNode->partType))
+			index = (index + 1 + rndUint(availTypesLength)) % availTypesLength;
+		char newTypeChr = availTypes[index];
+
+		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
+		Part::Shape newType = itr->second;
+
+#ifdef _DEBUG
+		if(newType == randomNode->partType)
+			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
+#endif
+
+		if (ensureCircleSection)
+		{
+			geno.getState();
+			if (randomNode->partType == Part::Shape::SHAPE_CUBOID
+				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newType == Part::Shape::SHAPE_ELLIPSOID))
+			{
+				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+				double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
+				randomNode->params[SIZE_X] = newRelativeRadius;
+				randomNode->params[SIZE_Y] = newRelativeRadius;
+				randomNode->params[SIZE_Z] = newRelativeRadius;
+			}
+		}
+		randomNode->partType = newType;
+		return true;
+	}
+	return false;
+}
+
+bool GenoOper_fS::addJoint(fS_Genotype &geno)
+{
+	if (geno.startNode->children.empty())
+		return false;
+
+	Node *randomNode;
+	for (int i = 0; i < mutationTries; i++)
+	{
+		char randomJoint = JOINTS[rndUint(JOINT_COUNT)];
+		randomNode = geno.chooseNode(1);        // First part does not have joints
+		if (randomNode->joint == DEFAULT_JOINT)
+		{
+			randomNode->joint = randomJoint;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool GenoOper_fS::removeJoint(fS_Genotype &geno)
+{
+	// This operator may can lower success rate that others, as it does not work when there is only one node
+	if (geno.startNode->children.size() < 1) // Only one node; there are no joints
+		return false;
+
+	// Choose a node with joints
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Node *randomNode = geno.chooseNode(1);    // First part does not have joints
+		if (randomNode->joint != DEFAULT_JOINT)
+		{
+			randomNode->joint = DEFAULT_JOINT;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::addParam(fS_Genotype &geno)
+{
+	Node *randomNode = geno.chooseNode();
+	int paramCount = randomNode->params.size();
+	if (paramCount == int(PARAMS.size()))
+		return false;
+	string selectedParam = PARAMS[rndUint(PARAMS.size())];
+	// Not allow 'j' parameter when the cycle mode is not on
+	if (selectedParam == JOINT_DISTANCE && !geno.startNode->cycleMode)
+		return false;
+	if (randomNode->params.count(selectedParam) > 0)
+		return false;
+	// Do not allow invalid changes in part size
+	bool isRadiusOfBase = selectedParam == SIZE_X || selectedParam == SIZE_Y;
+	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
+	if (ensureCircleSection && isRadius)
+	{
+		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
+			return false;
+		if (randomNode->partType == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
+			return false;
+	}
+	// Add modified default value for param
+	randomNode->params[selectedParam] = defaultParamValues.at(selectedParam);
+	return true;
+}
+
+bool GenoOper_fS::removeParam(fS_Genotype &geno)
+{
+	// Choose a node with params
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Node *randomNode = geno.chooseNode();
+		int paramCount = randomNode->params.size();
+		if (paramCount >= 1)
+		{
+			auto it = randomNode->params.begin();
+			advance(it, rndUint(paramCount));
+			randomNode->params.erase(it->first);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::changeParam(fS_Genotype &geno)
+{
+	geno.getState();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Node *randomNode = geno.chooseNode();
+		int paramCount = randomNode->params.size();
+		if (paramCount >= 1)
+		{
+			auto it = randomNode->params.begin();
+			advance(it, rndUint(paramCount));
+
+			double multiplier = fS_Genotype::randomParamMultiplier();
+
+
+			// Do not allow invalid changes in part size
+			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
+			{
+				it->second *= multiplier;
+				return true;
+			} else
+				return randomNode->changeSizeParam(it->first, multiplier, ensureCircleSection);
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::addModifier(fS_Genotype &geno)
+{
+	Node *randomNode = geno.chooseNode();
+	char randomModifier = MODIFIERS[rndUint(MODIFIERS.length())];
+	if (rndUint(2) == 1)
+		randomModifier = toupper(randomModifier);
+	randomNode->modifiers.push_back(randomModifier);
+
+	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
+	if (isSizeMod && !geno.allPartSizesValid())
+	{
+		randomNode->modifiers.pop_back();
+		return false;
+	}
+	return true;
+}
+
+bool GenoOper_fS::removeModifier(fS_Genotype &geno)
+{
+	for (int i = 0; i < mutationTries; i++)
+	{
+		Node *randomNode = geno.chooseNode();
+		if (!(randomNode->modifiers.empty()))
+		{
+			char oldMod = randomNode->modifiers.back();
+			randomNode->modifiers.pop_back();
+
+			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
+			if (isSizeMod && !geno.allPartSizesValid())
+			{
+				randomNode->modifiers.push_back(oldMod);
+				return false;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+bool GenoOper_fS::addNeuro(fS_Genotype &geno)
+{
+	Node *randomNode = geno.chooseNode();
+	fS_Neuron *newNeuron;
+	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
+	if(rndclass->preflocation == 2 && randomNode == geno.startNode)
+		return false;
+
+	const char *name = rndclass->getName().c_str();
+	newNeuron = new fS_Neuron(name, strlen(name));
+	int effectiveInputCount = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
+	if (effectiveInputCount > 0)
+	{
+		// Create as many connections for the neuron as possible (at most prefinputs)
+		vector<fS_Neuron*> allNeurons = geno.getAllNeurons();
+		vector<int> neuronsWithOutput;
+		for (int i = 0; i < int(allNeurons.size()); i++)
+		{
+			if (allNeurons[i]->getClass()->prefoutput > 0)
+				neuronsWithOutput.push_back(i);
+		}
+		int size = neuronsWithOutput.size();
+		if (size > 0)
+		{
+			for (int i = 0; i < effectiveInputCount; i++)
+			{
+				int selectedNeuron = neuronsWithOutput[rndUint(size)];
+				newNeuron->inputs[selectedNeuron] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+			}
+		}
+	}
+
+	randomNode->neurons.push_back(newNeuron);
+
+	geno.rearrangeNeuronConnections(newNeuron, SHIFT::RIGHT);
+	return true;
+}
+
+bool GenoOper_fS::removeNeuro(fS_Genotype &geno)
+{
+	Node *randomNode = geno.chooseNode();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		randomNode = geno.chooseNode();
+		if (!randomNode->neurons.empty())
+		{
+			// Remove the selected neuron
+			int size = randomNode->neurons.size();
+			fS_Neuron *it = randomNode->neurons[rndUint(size)];
+			geno.rearrangeNeuronConnections(it, SHIFT::LEFT);        // Important to rearrange the neurons before deleting
+			swap(it, randomNode->neurons.back());
+			randomNode->neurons.pop_back();
+			randomNode->neurons.shrink_to_fit();
+			delete it;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
+{
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	int size = neurons.size();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		fS_Neuron *selectedNeuron = neurons[rndUint(size)];
+		if (!selectedNeuron->inputs.empty())
+		{
+			int inputCount = selectedNeuron->inputs.size();
+			auto it = selectedNeuron->inputs.begin();
+			advance(it, rndUint(inputCount));
+
+			it->second *= GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::addNeuroConnection(fS_Genotype &geno)
+{
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	int size = neurons.size();
+	fS_Neuron *selectedNeuron;
+	for (int i = 0; i < mutationTries; i++)
+	{
+		selectedNeuron = neurons[rndUint(size)];
+		if (selectedNeuron->acceptsInputs())
+			break;
+	}
+	if (!selectedNeuron->acceptsInputs())
+		return false;
+
+	for (int i = 0; i < mutationTries; i++)
+	{
+		int index = rndUint(size);
+		if (selectedNeuron->inputs.count(index) == 0 && neurons[index]->getClass()->getPreferredOutput() > 0)
+		{
+
+			selectedNeuron->inputs[index] = DEFAULT_NEURO_CONNECTION_WEIGHT;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::removeNeuroConnection(fS_Genotype &geno)
+{
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	int size = neurons.size();
+	for (int i = 0; i < mutationTries; i++)
+	{
+		fS_Neuron *selectedNeuron = neurons[rndUint(size)];
+		if (!selectedNeuron->inputs.empty())
+		{
+			int inputCount = selectedNeuron->inputs.size();
+			auto it = selectedNeuron->inputs.begin();
+			advance(it, rndUint(inputCount));
+			selectedNeuron->inputs.erase(it->first);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
+{
+	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	if (neurons.empty())
+		return false;
+
+	fS_Neuron *neu = neurons[rndUint(neurons.size())];
+	SyntParam par = neu->classProperties();
+
+	if (par.getPropCount() > 0)
+	{
+		int i = rndUint(par.getPropCount());
+		if (*par.type(i) == 'f')
+		{
+			double change = GenoOperators::mutateNeuProperty(par.getDouble(i), neu, 100 + i);
+			par.setDouble(i, change);
+		}
+		SString line;
+		int tmp = 0;
+		par.update(&line);
+		SString props;
+		line.getNextToken(tmp, props, '\n'); // removal of newline character
+		if (props != "")
+		{
+			SString det = neu->getClass()->name + ": " + props;
+			neu->setDetails(det);
+			return true;
+		}
+	}
+
+	return false;
+}

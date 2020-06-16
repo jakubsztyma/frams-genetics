@@ -41,6 +41,7 @@ public:
 	double prob[FS_OPCOUNT];
 	paInt ensureCircleSection;
 	paInt useElli, useCub,  useCyl;
+	paInt strongAddPart;
 
 	GenoOper_fS();
 
@@ -69,6 +70,79 @@ public:
 	 * @param subOldStart An index of the first neuron in the subtree when it was in old genotype
 	 */
 	void rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart);
+
+
+	/**
+	 * Performs add part mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addPart(fS_Genotype &geno, string availableTypes = "ECR", bool mutateSize = true);
+
+	/**
+	 * Performs remove part type mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removePart(fS_Genotype &geno);
+
+	/**
+	 * Performs change part type mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool changePartType(fS_Genotype &geno, string availableTypes = "ECR");
+
+	/**
+	 * Performs add joint mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addJoint(fS_Genotype &geno);
+
+	/**
+	 * Performs remove mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeJoint(fS_Genotype &geno);
+
+	/**
+	 * Performs add param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addParam(fS_Genotype &geno);
+
+	/**
+	 * Performs remove param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeParam(fS_Genotype &geno);
+
+	/**
+	 * Performs change param mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool changeParam(fS_Genotype &geno);
+
+	/**
+	 * Performs add modifier mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool addModifier(fS_Genotype &geno);
+
+	/**
+	 * Performs remove modifier mutation on genotype
+	 * @return true if mutation succeeded, false otherwise
+	 */
+	bool removeModifier(fS_Genotype &geno);
+
+	bool addNeuro(fS_Genotype &geno);
+
+	bool removeNeuro(fS_Genotype &geno);
+
+	bool changeNeuroConnection(fS_Genotype &geno);
+
+	bool addNeuroConnection(fS_Genotype &geno);
+
+	bool removeNeuroConnection(fS_Genotype &geno);
+
+	bool changeNeuroParam(fS_Genotype &geno);
 };
 
 #endif
