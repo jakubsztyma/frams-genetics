@@ -11,7 +11,7 @@
 #include "frams/neuro/neurolibrary.h"
 
 
-int fS_Genotype::precision = 2;
+int fS_Genotype::precision = 4;
 
 
 double round2(double var)

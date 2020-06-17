@@ -391,7 +391,7 @@ void validationTest()
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
-		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
+//		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
 		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -764,6 +764,7 @@ int main(int argc, char *argv[])
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 
+	fS_Genotype::precision = 2;
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
