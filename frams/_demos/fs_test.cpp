@@ -111,6 +111,7 @@ bool doubleCompare(double a, double b)
 
 void testAddPart()
 {
+	GenoOper_fS operators;
 	string test_cases[] = {
 			"S:E",
 			"S:SE",
@@ -135,7 +136,7 @@ void testAddPart()
 	{
 		fS_Genotype geno(test_cases[i]);
 
-		geno.addPart(true, "ECR", false);
+		operators.addPart(geno, "ECR", false);
 
 		geno.getState();
 		Node *newNode = geno.getAllNodes()[1];
@@ -145,6 +146,7 @@ void testAddPart()
 
 void testChangePartType()
 {
+	GenoOper_fS operators;
 	string test_cases[] = {
 			"S:C",
 			"S:SSSSC",
@@ -159,7 +161,7 @@ void testChangePartType()
 		geno.getState();
 		double oldVolume = geno.startNode->calculateVolume();
 
-		geno.changePartType(true);
+		operators.changePartType(geno, "CER");
 
 		geno.getState();
 		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
@@ -169,18 +171,19 @@ void testChangePartType()
 }
 void testUsePartType()
 {
+	GenoOper_fS operators;
 	fS_Genotype geno("S:E");
-	geno.changePartType(true, "C");
+	operators.changePartType(geno, "C");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
-	geno.changePartType(true, "E");
+	operators.changePartType(geno, "E");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
-	geno.changePartType(true, "R");
+	operators.changePartType(geno, "R");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
-	geno.addPart(true, "C");
+	operators.addPart(geno, "C");
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
-	geno.addPart(true, "E");
+	operators.addPart(geno, "E");
 	assert(geno.getAllNodes()[2]->partType == Part::Shape::SHAPE_ELLIPSOID);
-	geno.addPart(true, "R");
+	operators.addPart(geno, "R");
 	assert(geno.getAllNodes()[3]->partType == Part::Shape::SHAPE_CYLINDER);
 
 }
@@ -253,6 +256,7 @@ void testAllPartSizesValid()
 
 void testOneGenotype(SString *test, int expectedPartCount)
 {
+	GenoOper_fS operators;
 	GenoConv_fS0 converter = GenoConv_fS0();
 	MultiMap map;
 	int tmp = -1;
@@ -276,38 +280,38 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test add part
 	tmp = geno.getNodeCount();
-	geno.addPart(true);
+	operators.addPart(geno);
 	assert(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
 	tmp = geno.getNodeCount();
-	if (geno.changePartType(true))
+	if (operators.changePartType(geno))
 		assert(tmp == geno.getNodeCount());
 
 	// Test remove part
 	tmp = geno.getNodeCount();
-	if (geno.removePart())
+	if (operators.removePart(geno))
 		assert(tmp == 1 + geno.getNodeCount());
 
 	// Test add joint
 	tmp = countJoints(geno.getGeno());
-	if (geno.addJoint())
+	if (operators.addJoint(geno))
 		assert(tmp + 1 == countJoints(geno.getGeno()));
 
 	// Test remove joint
 	tmp = countJoints(geno.getGeno());
-	if (geno.removeJoint())
+	if (operators.removeJoint(geno))
 		assert(tmp - 1 == countJoints(geno.getGeno()));
 
 	// Test add param
 	tmp = countParams(geno.getGeno());
-	if (geno.addParam(true))
+	if (operators.addParam(geno))
 		assert(tmp + 1 == countParams(geno.getGeno()));
 
 	// Test change param
 	tmpStr = geno.getGeno();
 	tmp = countParams(geno.getGeno());
-	if (geno.changeParam(true))
+	if (operators.changeParam(geno))
 	{
 		SString resultGeno = geno.getGeno();
 		assert(tmp == countParams(resultGeno));
@@ -317,42 +321,42 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test remove param
 	tmp = countParams(geno.getGeno());
-	if (geno.removeParam())
+	if (operators.removeParam(geno))
 		assert(tmp == 1 + countParams(geno.getGeno()));
 
 	// Test add modifier
 	tmp = countModifiers(geno.getGeno());
-	if (geno.addModifier())
+	if (operators.addModifier(geno))
 		assert(tmp + 1 == countModifiers(geno.getGeno()));
 
 	// Test remove modifier
 	tmp = countModifiers(geno.getGeno());
-	if (geno.removeModifier())
+	if (operators.removeModifier(geno))
 		assert(tmp == 1 + countModifiers(geno.getGeno()));
 
 	// Test add neuro
 	tmp = geno.getAllNeurons().size();
-	if (geno.addNeuro())
+	if (operators.addNeuro(geno))
 		assert(tmp + 1 == int(geno.getAllNeurons().size()));
 
 	// Test add neuro connections
 	tmp = countNeuroConnections(geno);
-	if (geno.addNeuroConnection())
+	if (operators.addNeuroConnection(geno))
 		assert(tmp + 1 == countNeuroConnections(geno));
 
 	// Test change neuro connection
 	tmpStr = geno.getGeno();
-	if (geno.changeNeuroConnection())
+	if (operators.changeNeuroConnection(geno))
 		assert(genotype_str != geno.getGeno());
 
 	// Test remove neuro connections
 	tmp = countNeuroConnections(geno);
-	if (geno.removeNeuroConnection())
+	if (operators.removeNeuroConnection(geno))
 		assert(tmp - 1 == countNeuroConnections(geno));
 
 	// Test remove neuro
 	tmp = geno.getAllNeurons().size();
-	if (geno.removeNeuro())
+	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 }
 
@@ -758,7 +762,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
-//		testOneGenotype(test_cases[i], expectedPartCount[i]);
+		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
 	testAllPartSizesValid();
