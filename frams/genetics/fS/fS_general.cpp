@@ -979,7 +979,7 @@ int fS_Genotype::getNodeCount()
 	return startNode->getNodeCount();
 }
 
-int fS_Genotype::allPartSizesValid()
+int fS_Genotype::checkValidityOfPartSizes()
 {
 	getState();
 	vector<Node*> nodes = getAllNodes();

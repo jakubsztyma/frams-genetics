@@ -249,7 +249,7 @@ void testAllPartSizesValid()
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
-		assert(geno.allPartSizesValid() != 0);
+		assert(geno.checkValidityOfPartSizes() != 0);
 	}
 }
 

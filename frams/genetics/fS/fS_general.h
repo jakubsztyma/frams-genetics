@@ -562,7 +562,7 @@ public:
 	\retval error_position 1-based
 	\retval 0 when all part sizes are valid
 	 */
-	int allPartSizesValid();
+	int checkValidityOfPartSizes();
 
 	void validateNeuroInputs();
 

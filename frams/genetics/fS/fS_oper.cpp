@@ -31,7 +31,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_use_elli",       0, 0, "Use ellipsoids in mutations",    "d 0 1 1",    FIELD(useElli),           "Use ellipsoids in mutations"},
 				{"fS_use_cub",       0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),           "Use cuboids in mutations"},
 				{"fS_use_cyl",       0, 0, "Use cylinders in mutations",    "d 0 1 1",    FIELD(useCyl),           "Use cylinders in mutations"},
-				{"fS_strong_add_part_mutation",       0, 0, "Strong add part mutation",    "d 0 1 1",    FIELD(strongAddPart),           "Add part mutation will produce more parametrized parts"},
+				{"fS_mut_add_part_strong",       0, 0, "Strong add part mutation",    "d 0 1 1",    FIELD(strongAddPart),           "Add part mutation will produce more parametrized parts"},
 		};
 
 #undef FIELDSTRUCT
@@ -49,7 +49,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	try
 	{
 		fS_Genotype genotype(geno);
-		int errorPosition = genotype.allPartSizesValid();
+		int errorPosition = genotype.checkValidityOfPartSizes();
 		if(errorPosition != 0)
 		{
 			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
@@ -144,7 +144,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 
 int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
-	assert(PARENT_COUNT == 2);
+	assert(PARENT_COUNT == 2); // Cross over works only for 2 parents
 	fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
 
 	// Choose random subtrees that have similar size
@@ -528,7 +528,7 @@ bool GenoOper_fS::addModifier(fS_Genotype &geno)
 	randomNode->modifiers.push_back(randomModifier);
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
-	if (isSizeMod && geno.allPartSizesValid() != 0)
+	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
 		randomNode->modifiers.pop_back();
 		return false;
@@ -547,7 +547,7 @@ bool GenoOper_fS::removeModifier(fS_Genotype &geno)
 			randomNode->modifiers.pop_back();
 
 			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
-			if (isSizeMod && geno.allPartSizesValid() != 0)
+			if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 			{
 				randomNode->modifiers.push_back(oldMod);
 				return false;
