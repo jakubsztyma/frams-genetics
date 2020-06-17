@@ -69,7 +69,7 @@ void State::rotate(const Pt3D &rotation)
 }
 
 
-fS_Neuron::fS_Neuron(const char *str, int length)
+fS_Neuron::fS_Neuron(const char *str, int start, int length)
 {
 	if (length == 0)
 		return;
@@ -108,9 +108,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		{
 			keyLength = separatorIndex;
 			size_t valueLength = keyValue.len() - (separatorIndex);
-			value = fS_stod(buffer + separatorIndex + 1, 1, &valueLength);
+			value = fS_stod(buffer + separatorIndex + 1, start, &valueLength);
 		}
-		inputs[fS_stod(buffer, 1, &keyLength)] = value;
+		inputs[fS_stod(buffer, start, &keyLength)] = value;
 	}
 }
 
@@ -217,7 +217,7 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	{
 		int start = separators[i] + 1;
 		int length = separators[i + 1] - start;
-		fS_Neuron *newNeuron = new fS_Neuron(ns + start, length);
+		fS_Neuron *newNeuron = new fS_Neuron(ns + start, restOfGenotype.start + start, length);
 		neurons.push_back(newNeuron);
 	}
 
@@ -426,9 +426,9 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			currentDistance = avg(maxDistance, currentDistance);
 		}
 		if (currentDistance > maxDistance)
-			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 1);
+			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
 		if (currentDistance < minDistance)
-			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 1);
+			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
 
 	}
 
@@ -766,7 +766,7 @@ fS_Genotype::fS_Genotype(const string &genotype)
 		// M - modifier mode, S - standard mode
 		size_t modeSeparatorIndex = geno.find(':');
 		if (modeSeparatorIndex == string::npos)
-			throw fS_Exception("No mode separator", 1);
+			throw fS_Exception("No mode separator", 0);
 
 		string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
 		bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
@@ -979,7 +979,7 @@ int fS_Genotype::getNodeCount()
 	return startNode->getNodeCount();
 }
 
-bool fS_Genotype::allPartSizesValid()
+int fS_Genotype::allPartSizesValid()
 {
 	getState();
 	vector<Node*> nodes = getAllNodes();
@@ -987,10 +987,10 @@ bool fS_Genotype::allPartSizesValid()
 	{
 		if (!nodes[i]->isPartSizeValid())
 		{
-			return false;
+			return nodes[i]->partDescription->start;
 		}
 	}
-	return true;
+	return 0;
 }
 
 
@@ -1006,7 +1006,7 @@ void fS_Genotype::validateNeuroInputs()
 		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 		{
 			if (it->first < 0 || it->first >= allNeuronsSize)
-				throw fS_Exception("Invalid neuron input", 1);
+				throw fS_Exception("Invalid neuron input", 0);
 		}
 	}
 }

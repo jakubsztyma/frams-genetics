@@ -31,7 +31,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_use_elli",       0, 0, "Use ellipsoids in mutations",    "d 0 1 1",    FIELD(useElli),           "Use ellipsoids in mutations"},
 				{"fS_use_cub",       0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),           "Use cuboids in mutations"},
 				{"fS_use_cyl",       0, 0, "Use cylinders in mutations",    "d 0 1 1",    FIELD(useCyl),           "Use cylinders in mutations"},
-				{"fS_strong_add_part_mutation",       0, 0, "Ensure circle section",    "d 0 1 1",    FIELD(strongAddPart),           "Ensure that ellipsoids and cylinders have circle cross-section"},
+				{"fS_strong_add_part_mutation",       0, 0, "Strong add part mutation",    "d 0 1 1",    FIELD(strongAddPart),           "Add part mutation will produce more parametrized parts"},
 		};
 
 #undef FIELDSTRUCT
@@ -49,16 +49,17 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	try
 	{
 		fS_Genotype genotype(geno);
-		if(!genotype.allPartSizesValid())
+		int errorPosition = genotype.allPartSizesValid();
+		if(errorPosition != 0)
 		{
 			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
-			return 1;
+			return 1 + errorPosition;
 		}
 	}
 	catch (fS_Exception &e)
 	{
 		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
-		return e.errorPosition;
+		return 1 + e.errorPosition;
 	}
 	return 0;
 }
@@ -527,7 +528,7 @@ bool GenoOper_fS::addModifier(fS_Genotype &geno)
 	randomNode->modifiers.push_back(randomModifier);
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
-	if (isSizeMod && !geno.allPartSizesValid())
+	if (isSizeMod && geno.allPartSizesValid() != 0)
 	{
 		randomNode->modifiers.pop_back();
 		return false;
@@ -546,7 +547,7 @@ bool GenoOper_fS::removeModifier(fS_Genotype &geno)
 			randomNode->modifiers.pop_back();
 
 			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
-			if (isSizeMod && !geno.allPartSizesValid())
+			if (isSizeMod && geno.allPartSizesValid() != 0)
 			{
 				randomNode->modifiers.push_back(oldMod);
 				return false;
@@ -565,7 +566,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 		return false;
 
 	const char *name = rndclass->getName().c_str();
-	newNeuron = new fS_Neuron(name, strlen(name));
+	newNeuron = new fS_Neuron(name, randomNode->partDescription->start, strlen(name));
 	int effectiveInputCount = rndclass->prefinputs > -1 ? rndclass->prefinputs : 1;
 	if (effectiveInputCount > 0)
 	{

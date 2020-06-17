@@ -249,7 +249,7 @@ void testAllPartSizesValid()
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
-		assert(geno.allPartSizesValid() == false);
+		assert(geno.allPartSizesValid() != 0);
 	}
 }
 
@@ -383,11 +383,15 @@ void validationTest()
 			"S:E[;;3]",    // Invalid neuron connection key
 	};
 	int errorIndexes[] = {
-			1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 3, 3, 11, 1, 1, 1
+			1, 3, 3, 3, 4,
+			4, 6, 6, 4, 4,
+			4, 4, 12, 1, 1,
+			1,
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
+		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
 		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");

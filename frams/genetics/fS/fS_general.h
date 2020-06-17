@@ -279,10 +279,7 @@ class fS_Neuron: public Neuro
 public:
 	std::map<int, double> inputs;
 
-	fS_Neuron(const char *str, int length);
-
-	fS_Neuron()
-	{};
+	fS_Neuron(const char *str, int start, int length);
 
 	bool acceptsInputs()
 	{
@@ -562,9 +559,10 @@ public:
 
 	/**
 	 * Check if sizes of all parts in genotype are valid
-	 * @return
+	\retval error_position 1-based
+	\retval 0 when all part sizes are valid
 	 */
-	bool allPartSizesValid();
+	int allPartSizesValid();
 
 	void validateNeuroInputs();
 
