@@ -23,7 +23,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_rem_mod",          0, 0, "Remove modifier",          "f 0 100 10", FIELD(prob[FS_REM_MOD]),              "mutation: probability of deleting a modifier",},
 				{"fS_mut_add_neuro",        0, 0, "Add neuron",               "f 0 100 10", FIELD(prob[FS_ADD_NEURO]),            "mutation: probability of adding a neuron",},
 				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",            "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
-				{"fS_mut_mod_neuro",        0, 0, "Modify neuron",            "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
+				{"fS_mut_mod_neuro_conn",        0, 0, "Modify neuron connection",            "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
 				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",    "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
 				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection", "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
 				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",     "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
@@ -633,7 +633,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second *= GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
+			it->second = GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
 			return true;
 		}
 	}
