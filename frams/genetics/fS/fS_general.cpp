@@ -319,6 +319,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 {
 	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 	double minRadius = min3(radii);
+	if(minRadius <= 0)
+	    throw fS_Exception("Invalid part size", 0);
 	double maxRadius = max3(radii);
 	if (MAX_DIAMETER_QUOTIENT > maxRadius / minRadius)
 		sphereRadius = minRadius;
