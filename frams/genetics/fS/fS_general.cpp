@@ -116,24 +116,36 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 
 Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *_parent)
 {
-	parent = _parent;
-	modifierMode = _modifierMode;
-	paramMode = _paramMode;
-	cycleMode = _cycleMode;
-	Substring partDescriptionTmp(restOfGeno);
+	try
+	{
+		parent = _parent;
+		modifierMode = _modifierMode;
+		paramMode = _paramMode;
+		cycleMode = _cycleMode;
+		partDescription = new Substring(restOfGeno);
 
-	extractModifiers(restOfGeno);
-	extractPartType(restOfGeno);
-	extractNeurons(restOfGeno);
-	extractParams(restOfGeno);
+		extractModifiers(restOfGeno);
+		extractPartType(restOfGeno);
+		extractNeurons(restOfGeno);
+		extractParams(restOfGeno);
 
-	partDescription = new Substring(partDescriptionTmp);
-	partDescription->shortenBy(restOfGeno.len);
-	if (restOfGeno.len > 0)
-		getChildren(restOfGeno);
+		partDescription->shortenBy(restOfGeno.len);
+		if (restOfGeno.len > 0)
+			getChildren(restOfGeno);
+	}
+	catch(fS_Exception &e)
+	{
+		cleanUp();
+		throw e;
+	}
 }
 
 Node::~Node()
+{
+	cleanUp();
+}
+
+void Node::cleanUp()
 {
 	delete partDescription;
 	if (state != nullptr)

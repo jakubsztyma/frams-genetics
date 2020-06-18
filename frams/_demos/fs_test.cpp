@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <chrono>
+#include <common/nonstd_math.h>
 #include "frams/genetics/fS/fS_general.h"
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/fS_oper.h"
@@ -179,12 +180,9 @@ void testUsePartType()
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
 	operators.changePartType(geno, "R");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
-	operators.addPart(geno, "C");
-	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
-	operators.addPart(geno, "E");
-	assert(geno.getAllNodes()[2]->partType == Part::Shape::SHAPE_ELLIPSOID);
 	operators.addPart(geno, "R");
-	assert(geno.getAllNodes()[3]->partType == Part::Shape::SHAPE_CYLINDER);
+	cout<<geno.getGeno().c_str()<<endl;
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
 
 }
 
@@ -253,6 +251,16 @@ void testAllPartSizesValid()
 	}
 }
 
+void testRandomModification(string test)
+{
+	GenoOper_fS operators;
+	for(int i=0; i<20; i++)
+	{
+		int index = rndUint(test.length());
+		test.insert(index, string(1, (char)rndUint(128)));
+		operators.checkValidity(test.c_str(), "");
+	}
+}
 
 void testOneGenotype(SString *test, int expectedPartCount)
 {
@@ -358,6 +366,8 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	tmp = geno.getAllNeurons().size();
 	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
+
+	testRandomModification(test->c_str());
 }
 
 void validationTest()
@@ -545,7 +555,7 @@ int main(int argc, char *argv[])
 			},
 			{"S:EbE",                                             "p:sh=1\n"
 																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=2\n"}, // Carametrized joints
+																  "j:0, 1, sh=2\n"}, // Parametrized joints
 			{"S:CcC",                                             "p:sh=2\n"
 																  "p:2.0, sh=2\n"
 																  "j:0, 1, sh=3\n"}, // Many parametrized joints

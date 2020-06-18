@@ -331,6 +331,8 @@ private:
 		return result;
 	}
 
+	void cleanUp();
+
 	Pt3D getRotation();
 
 	Pt3D getVectorRotation();
