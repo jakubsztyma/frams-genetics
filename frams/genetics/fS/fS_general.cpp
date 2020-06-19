@@ -176,10 +176,10 @@ void Node::extractModifiers(Substring &restOfGenotype)
 	{
 		// Extract modifiers and joint
 		char mType = restOfGenotype.at(i);
-		if (JOINTS.find(mType) != string::npos)
-			joint = mType;
-		else if (MODIFIERS.find(tolower(mType)) != string::npos)
-			modifiers.push_back(mType);
+		if (JOINTS.find(tolower(mType)) != string::npos)
+			joint = tolower(mType);
+		else if (MODIFIERS.find(toupper(mType)) != string::npos)
+			modifiers[toupper(mType)] += isupper(mType) ? 1 : -1;
 		else
 			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
@@ -462,16 +462,15 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 
 
 	// Update state by modifiers
-	for (int i = 0; i < int(modifiers.size()); i++)
+	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 	{
-		char mod = modifiers[i];
-		double multiplier = isupper(mod) ? MODIFIER_MULTIPLIER : 1.0 / MODIFIER_MULTIPLIER;
-		char modLower = tolower(mod);
-		if (modLower == MODIFIERS[0])
+		char mod = it->first;
+		double multiplier = pow(MODIFIER_MULTIPLIER, it->second);
+		if (mod == MODIFIERS[0])
 			state->ing *= multiplier;
-		else if (modLower == MODIFIERS[1])
+		else if (mod == MODIFIERS[1])
 			state->fr *= multiplier;
-		else if (modLower == MODIFIERS[2])
+		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
 	}
 
@@ -677,7 +676,16 @@ void Node::getGeno(SString &result)
 	if (joint != DEFAULT_JOINT)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
-		result += *it;
+	{
+		char mod = it->first;
+		int count = it->second;
+		if(it->second < 0)
+		{
+			mod = tolower(mod);
+			count = fabs(count);
+		}
+		result += std::string(count, mod).c_str();
+	}
 	result += SHAPETYPE_TO_GENE.at(partType);
 
 	if (!neurons.empty())

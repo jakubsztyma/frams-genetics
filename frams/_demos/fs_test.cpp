@@ -334,13 +334,8 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test add modifier
 	tmp = countModifiers(geno.getGeno());
-	if (operators.addModifier(geno))
-		assert(tmp + 1 == countModifiers(geno.getGeno()));
-
-	// Test remove modifier
-	tmp = countModifiers(geno.getGeno());
-	if (operators.removeModifier(geno))
-		assert(tmp == 1 + countModifiers(geno.getGeno()));
+	if (operators.changeModifier(geno))
+		assert(tmp != countModifiers(geno.getGeno()));
 
 	// Test add neuro
 	tmp = geno.getAllNeurons().size();
@@ -577,7 +572,7 @@ int main(int argc, char *argv[])
 			{"M:E",                                               "p:sh=1\n"},  // Basic modifier mode
 			{"M:FE",                                              "p:sh=1, fr=0.44\n"},  // Friction modifier
 			{"M:fE",                                              "p:sh=1, fr=0.36\n"},  // Friction modifier
-			{"M:FFFFffE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
+			{"M:FFE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
 			{"S:E{f=0.3}E{f=0.5}",                                "p:sh=1, fr=0.3\n"
 																  "p:2.0, sh=1, fr=0.5\n"
 																  "j:0, 1, sh=1\n"},
@@ -645,11 +640,11 @@ int main(int argc, char *argv[])
 																  "j:0, 1, sh=1\n"},  // size modifiers
 			{"M:IE",                                              "p:sh=1, ing=0.28\n"},  // Ingestion modifier
 			{"M:iE",                                              "p:sh=1, ing=0.23\n"},  // Ingestion modifier
-			{"M:IIIIiiE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
+			{"M:IIE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
 			{"S:E{i=0.3}E{i=0.5}",                                "p:sh=1, ing=0.3\n"     // Ingestion param
 																  "p:2.0, sh=1, ing=0.5\n"
 																  "j:0, 1, sh=1\n"},
-			{"MS:IIIIiiE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+			{"MS:IIE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
 			// Test collisions
 			{"S:EE{ty=180.0;x=3.0}",                              "p:sh=1\n"
 																  "p:-3.99, sh=1, sx=3.0\n"

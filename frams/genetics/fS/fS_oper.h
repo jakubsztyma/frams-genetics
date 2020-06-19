@@ -9,7 +9,7 @@
 #include "../genooperators.h"
 
 /** @name Number of various genetic operations */
-#define FS_OPCOUNT 16
+#define FS_OPCOUNT 15
 
 /** @name Codes for general mutation types */
 //@{
@@ -21,14 +21,13 @@
 #define FS_ADD_PARAM 5
 #define FS_REM_PARAM 6
 #define FS_MOD_PARAM 7
-#define FS_ADD_MOD 8
-#define FS_REM_MOD 9
-#define FS_ADD_NEURO 10
-#define FS_REM_NEURO 11
-#define FS_MOD_NEURO_CONNECTION 12
-#define FS_ADD_NEURO_CONNECTION 13
-#define FS_REM_NEURO_CONNECTION 14
-#define FS_MOD_NEURO_PARAMS 15
+#define FS_MOD_MOD 8
+#define FS_ADD_NEURO 9
+#define FS_REM_NEURO 10
+#define FS_MOD_NEURO_CONNECTION 11
+#define FS_ADD_NEURO_CONNECTION 12
+#define FS_REM_NEURO_CONNECTION 13
+#define FS_MOD_NEURO_PARAMS 14
 //@}
 
 
@@ -121,16 +120,10 @@ public:
 	bool changeParam(fS_Genotype &geno);
 
 	/**
-	 * Performs add modifier mutation on genotype
+	 * Performs change modifier mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addModifier(fS_Genotype &geno);
-
-	/**
-	 * Performs remove modifier mutation on genotype
-	 * @return true if mutation succeeded, false otherwise
-	 */
-	bool removeModifier(fS_Genotype &geno);
+	bool changeModifier(fS_Genotype &geno);
 
 	bool addNeuro(fS_Genotype &geno);
 

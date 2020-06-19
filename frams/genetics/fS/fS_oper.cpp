@@ -19,8 +19,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
 				{"fS_mut_rem_param",        0, 0, "Remove param",             "f 0 100 10", FIELD(prob[FS_REM_PARAM]),            "mutation: probability of removing a parameter",},
 				{"fS_mut_mod_param",        0, 0, "Modify param",             "f 0 100 10", FIELD(prob[FS_MOD_PARAM]),            "mutation: probability of modifying a parameter",},
-				{"fS_mut_add_mod",          0, 0, "Add modifier",             "f 0 100 10", FIELD(prob[FS_ADD_MOD]),              "mutation: probability of adding a modifier",},
-				{"fS_mut_rem_mod",          0, 0, "Remove modifier",          "f 0 100 10", FIELD(prob[FS_REM_MOD]),              "mutation: probability of deleting a modifier",},
+				{"fS_mut_mod_mod",          0, 0, "Modify modifier",           "f 0 100 10", FIELD(prob[FS_MOD_MOD]),              "mutation: probability of modifying a modifier",},
 				{"fS_mut_add_neuro",        0, 0, "Add neuron",               "f 0 100 10", FIELD(prob[FS_ADD_NEURO]),            "mutation: probability of adding a neuron",},
 				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",            "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
 				{"fS_mut_mod_neuro_conn",        0, 0, "Modify neuron connection",            "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
@@ -107,11 +106,8 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 		case FS_MOD_PARAM:
 			result = changeParam(genotype);
 			break;
-		case FS_ADD_MOD:
-			result = addModifier(genotype);
-			break;
-		case FS_REM_MOD:
-			result = removeModifier(genotype);
+		case FS_MOD_MOD:
+			result = changeModifier(genotype);
 			break;
 		case FS_ADD_NEURO:
 			result = addNeuro(genotype);
@@ -519,44 +515,21 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 	return false;
 }
 
-bool GenoOper_fS::addModifier(fS_Genotype &geno)
+bool GenoOper_fS::changeModifier(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	char randomModifier = MODIFIERS[rndUint(MODIFIERS.length())];
-	if (rndUint(2) == 1)
-		randomModifier = toupper(randomModifier);
-	randomNode->modifiers.push_back(randomModifier);
+	randomNode->modifiers[randomModifier] += rndUint(2) == 1 ? 1 : -1;
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
 	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
-		randomNode->modifiers.pop_back();
+		randomNode->modifiers[randomModifier] += 1;
 		return false;
 	}
 	return true;
 }
 
-bool GenoOper_fS::removeModifier(fS_Genotype &geno)
-{
-	for (int i = 0; i < mutationTries; i++)
-	{
-		Node *randomNode = geno.chooseNode();
-		if (!(randomNode->modifiers.empty()))
-		{
-			char oldMod = randomNode->modifiers.back();
-			randomNode->modifiers.pop_back();
-
-			bool isSizeMod = tolower(oldMod) == SIZE_MODIFIER;
-			if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
-			{
-				randomNode->modifiers.push_back(oldMod);
-				return false;
-			}
-			return true;
-		}
-	}
-	return false;
-}
 bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
