@@ -519,12 +519,12 @@ bool GenoOper_fS::changeModifier(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	char randomModifier = MODIFIERS[rndUint(MODIFIERS.length())];
-	randomNode->modifiers[randomModifier] += rndUint(2) == 1 ? 1 : -1;
+	randomNode->modifiers[randomModifier] += rndUint(2) == 0 ? 1 : -1;
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
 	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
-		randomNode->modifiers[randomModifier] += 1;
+		randomNode->modifiers[randomModifier]++;
 		return false;
 	}
 	return true;

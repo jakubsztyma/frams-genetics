@@ -257,7 +257,7 @@ void testRandomModification(string test)
 	for(int i=0; i<20; i++)
 	{
 		int index = rndUint(test.length());
-		test.insert(index, string(1, (char)rndUint(128)));
+		test.insert(index, string(1, (char)rndUint(256)));
 		operators.checkValidity(test.c_str(), "");
 	}
 }
