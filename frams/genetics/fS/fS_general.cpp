@@ -54,11 +54,7 @@ void State::addVector(const double length)
 void rotateVector(Pt3D &vector, const Pt3D &rotation)
 {
 	Orient rotmatrix = Orient_1;
-	rotmatrix.rotate(Pt3D(
-			Convert::toRadians(rotation.x),
-			Convert::toRadians(rotation.y),
-			Convert::toRadians(rotation.z)
-	));
+	rotmatrix.rotate(rotation);
 	vector = rotmatrix.transform(vector);
 }
 
@@ -592,17 +588,17 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	double rx = getParam(ROT_X);
-	double ry = getParam(ROT_Y);
-	double rz = getParam(ROT_Z);
+	double rx = Convert::toRadians(getParam(ROT_X));
+	double ry = Convert::toRadians(getParam(ROT_Y));
+	double rz = Convert::toRadians(getParam(ROT_Z));
 	return Pt3D(rx, ry, rz);
 }
 
 Pt3D Node::getRotation()
 {
-	double rx = getParam(RX);
-	double ry = getParam(RY);
-	double rz = getParam(RZ);
+	double rx = Convert::toRadians(getParam(RX));
+	double ry = Convert::toRadians(getParam(RY));
+	double rz = Convert::toRadians(getParam(RZ));
 	return Pt3D(rx, ry, rz);
 }
 
@@ -648,6 +644,7 @@ void Node::createPart()
 	part->scale.x = round2(size.x);
 	part->scale.y = round2(size.y);
 	part->scale.z = round2(size.z);
+	Pt3D rotation = getRotation();
 	part->setRot(getRotation());
 }
 
