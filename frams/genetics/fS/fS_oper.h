@@ -8,8 +8,6 @@
 #include "fS_general.h"
 #include "../genooperators.h"
 
-/** @name Number of various genetic operations */
-#define FS_OPCOUNT 15
 
 /** @name Codes for general mutation types */
 //@{
@@ -28,6 +26,7 @@
 #define FS_ADD_NEURO_CONNECTION 12
 #define FS_REM_NEURO_CONNECTION 13
 #define FS_MOD_NEURO_PARAMS 14
+#define FS_OPCOUNT 15
 //@}
 
 

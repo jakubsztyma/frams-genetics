@@ -116,14 +116,14 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 
 Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *_parent)
 {
+	parent = _parent;
+	modifierMode = _modifierMode;
+	paramMode = _paramMode;
+	cycleMode = _cycleMode;
+	partDescription = new Substring(restOfGeno);
+
 	try
 	{
-		parent = _parent;
-		modifierMode = _modifierMode;
-		paramMode = _paramMode;
-		cycleMode = _cycleMode;
-		partDescription = new Substring(restOfGeno);
-
 		extractModifiers(restOfGeno);
 		extractPartType(restOfGeno);
 		extractNeurons(restOfGeno);
@@ -524,7 +524,7 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 			children.push_back(substring);
 			start = i + 1;
 		} else if (c == BRANCH_END)
-			depth -= 1;
+			depth--;
 	}
 	if (depth != 1)    // T
 		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs", restOfGenotype.start);

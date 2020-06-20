@@ -181,8 +181,13 @@ void testUsePartType()
 	operators.changePartType(geno, "R");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
 	operators.addPart(geno, "R");
-	cout<<geno.getGeno().c_str()<<endl;
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
+	operators.removePart(geno);
+	operators.addPart(geno, "C");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
+	operators.removePart(geno);
+	operators.addPart(geno, "E");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_ELLIPSOID);
 
 }
 
@@ -257,7 +262,7 @@ void testRandomModification(string test)
 	for(int i=0; i<20; i++)
 	{
 		int index = rndUint(test.length());
-		test.insert(index, string(1, (char)rndUint(128)));
+		test.insert(index, string(1, (char)rndUint(256)));
 		operators.checkValidity(test.c_str(), "");
 	}
 }
