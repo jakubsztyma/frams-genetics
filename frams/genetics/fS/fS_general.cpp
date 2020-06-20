@@ -11,7 +11,7 @@
 #include "frams/neuro/neurolibrary.h"
 
 
-int fS_Genotype::precision = 2;
+int fS_Genotype::precision = 4;
 
 
 double round2(double var)
@@ -69,7 +69,7 @@ void State::rotate(const Pt3D &rotation)
 }
 
 
-fS_Neuron::fS_Neuron(const char *str, int length)
+fS_Neuron::fS_Neuron(const char *str, int start, int length)
 {
 	if (length == 0)
 		return;
@@ -108,9 +108,9 @@ fS_Neuron::fS_Neuron(const char *str, int length)
 		{
 			keyLength = separatorIndex;
 			size_t valueLength = keyValue.len() - (separatorIndex);
-			value = fS_stod(buffer + separatorIndex + 1, 1, &valueLength);
+			value = fS_stod(buffer + separatorIndex + 1, start, &valueLength);
 		}
-		inputs[fS_stod(buffer, 1, &keyLength)] = value;
+		inputs[fS_stod(buffer, start, &keyLength)] = value;
 	}
 }
 
@@ -120,20 +120,32 @@ Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cyc
 	modifierMode = _modifierMode;
 	paramMode = _paramMode;
 	cycleMode = _cycleMode;
-	Substring partDescriptionTmp(restOfGeno);
+	partDescription = new Substring(restOfGeno);
 
-	extractModifiers(restOfGeno);
-	extractPartType(restOfGeno);
-	extractNeurons(restOfGeno);
-	extractParams(restOfGeno);
+	try
+	{
+		extractModifiers(restOfGeno);
+		extractPartType(restOfGeno);
+		extractNeurons(restOfGeno);
+		extractParams(restOfGeno);
 
-	partDescription = new Substring(partDescriptionTmp);
-	partDescription->shortenBy(restOfGeno.len);
-	if (restOfGeno.len > 0)
-		getChildren(restOfGeno);
+		partDescription->shortenBy(restOfGeno.len);
+		if (restOfGeno.len > 0)
+			getChildren(restOfGeno);
+	}
+	catch(fS_Exception &e)
+	{
+		cleanUp();
+		throw e;
+	}
 }
 
 Node::~Node()
+{
+	cleanUp();
+}
+
+void Node::cleanUp()
 {
 	delete partDescription;
 	if (state != nullptr)
@@ -164,10 +176,10 @@ void Node::extractModifiers(Substring &restOfGenotype)
 	{
 		// Extract modifiers and joint
 		char mType = restOfGenotype.at(i);
-		if (JOINTS.find(mType) != string::npos)
-			joint = mType;
-		else if (MODIFIERS.find(tolower(mType)) != string::npos)
-			modifiers.push_back(mType);
+		if (JOINTS.find(tolower(mType)) != string::npos)
+			joint = tolower(mType);
+		else if (MODIFIERS.find(toupper(mType)) != string::npos)
+			modifiers[toupper(mType)] += isupper(mType) ? 1 : -1;
 		else
 			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
@@ -217,7 +229,7 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	{
 		int start = separators[i] + 1;
 		int length = separators[i + 1] - start;
-		fS_Neuron *newNeuron = new fS_Neuron(ns + start, length);
+		fS_Neuron *newNeuron = new fS_Neuron(ns + start, restOfGenotype.start + start, length);
 		neurons.push_back(newNeuron);
 	}
 
@@ -319,6 +331,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 {
 	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 	double minRadius = min3(radii);
+	if(minRadius <= 0)
+	    throw fS_Exception("Invalid part size", 0);
 	double maxRadius = max3(radii);
 	if (MAX_DIAMETER_QUOTIENT > maxRadius / minRadius)
 		sphereRadius = minRadius;
@@ -426,9 +440,9 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			currentDistance = avg(maxDistance, currentDistance);
 		}
 		if (currentDistance > maxDistance)
-			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 1);
+			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
 		if (currentDistance < minDistance)
-			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 1);
+			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
 
 	}
 
@@ -448,16 +462,15 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 
 
 	// Update state by modifiers
-	for (int i = 0; i < int(modifiers.size()); i++)
+	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 	{
-		char mod = modifiers[i];
-		double multiplier = isupper(mod) ? MODIFIER_MULTIPLIER : 1.0 / MODIFIER_MULTIPLIER;
-		char modLower = tolower(mod);
-		if (modLower == MODIFIERS[0])
+		char mod = it->first;
+		double multiplier = pow(MODIFIER_MULTIPLIER, it->second);
+		if (mod == MODIFIERS[0])
 			state->ing *= multiplier;
-		else if (modLower == MODIFIERS[1])
+		else if (mod == MODIFIERS[1])
 			state->fr *= multiplier;
-		else if (modLower == MODIFIERS[2])
+		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
 	}
 
@@ -511,7 +524,7 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 			children.push_back(substring);
 			start = i + 1;
 		} else if (c == BRANCH_END)
-			depth -= 1;
+			depth--;
 	}
 	if (depth != 1)    // T
 		throw fS_Exception("The number of branch start signs does not equal the number of branch end signs", restOfGenotype.start);
@@ -663,7 +676,16 @@ void Node::getGeno(SString &result)
 	if (joint != DEFAULT_JOINT)
 		result += joint;
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
-		result += *it;
+	{
+		char mod = it->first;
+		int count = it->second;
+		if(it->second < 0)
+		{
+			mod = tolower(mod);
+			count = fabs(count);
+		}
+		result += std::string(count, mod).c_str();
+	}
 	result += SHAPETYPE_TO_GENE.at(partType);
 
 	if (!neurons.empty())
@@ -766,7 +788,7 @@ fS_Genotype::fS_Genotype(const string &genotype)
 		// M - modifier mode, S - standard mode
 		size_t modeSeparatorIndex = geno.find(':');
 		if (modeSeparatorIndex == string::npos)
-			throw fS_Exception("No mode separator", 1);
+			throw fS_Exception("No mode separator", 0);
 
 		string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
 		bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
@@ -979,7 +1001,7 @@ int fS_Genotype::getNodeCount()
 	return startNode->getNodeCount();
 }
 
-bool fS_Genotype::allPartSizesValid()
+int fS_Genotype::checkValidityOfPartSizes()
 {
 	getState();
 	vector<Node*> nodes = getAllNodes();
@@ -987,10 +1009,10 @@ bool fS_Genotype::allPartSizesValid()
 	{
 		if (!nodes[i]->isPartSizeValid())
 		{
-			return false;
+			return nodes[i]->partDescription->start;
 		}
 	}
-	return true;
+	return 0;
 }
 
 
@@ -1006,7 +1028,7 @@ void fS_Genotype::validateNeuroInputs()
 		for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 		{
 			if (it->first < 0 || it->first >= allNeuronsSize)
-				throw fS_Exception("Invalid neuron input", 1);
+				throw fS_Exception("Invalid neuron input", 0);
 		}
 	}
 }

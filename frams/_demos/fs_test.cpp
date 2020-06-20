@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <chrono>
+#include <common/nonstd_math.h>
 #include "frams/genetics/fS/fS_general.h"
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/fS_oper.h"
@@ -179,12 +180,9 @@ void testUsePartType()
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
 	operators.changePartType(geno, "R");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
-	operators.addPart(geno, "C");
-	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
-	operators.addPart(geno, "E");
-	assert(geno.getAllNodes()[2]->partType == Part::Shape::SHAPE_ELLIPSOID);
 	operators.addPart(geno, "R");
-	assert(geno.getAllNodes()[3]->partType == Part::Shape::SHAPE_CYLINDER);
+	cout<<geno.getGeno().c_str()<<endl;
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
 
 }
 
@@ -249,10 +247,20 @@ void testAllPartSizesValid()
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
-		assert(geno.allPartSizesValid() == false);
+		assert(geno.checkValidityOfPartSizes() != 0);
 	}
 }
 
+void testRandomModification(string test)
+{
+	GenoOper_fS operators;
+	for(int i=0; i<20; i++)
+	{
+		int index = rndUint(test.length());
+		test.insert(index, string(1, (char)rndUint(256)));
+		operators.checkValidity(test.c_str(), "");
+	}
+}
 
 void testOneGenotype(SString *test, int expectedPartCount)
 {
@@ -326,13 +334,8 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test add modifier
 	tmp = countModifiers(geno.getGeno());
-	if (operators.addModifier(geno))
-		assert(tmp + 1 == countModifiers(geno.getGeno()));
-
-	// Test remove modifier
-	tmp = countModifiers(geno.getGeno());
-	if (operators.removeModifier(geno))
-		assert(tmp == 1 + countModifiers(geno.getGeno()));
+	if (operators.changeModifier(geno))
+		assert(tmp != countModifiers(geno.getGeno()));
 
 	// Test add neuro
 	tmp = geno.getAllNeurons().size();
@@ -358,6 +361,8 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	tmp = geno.getAllNeurons().size();
 	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
+
+	testRandomModification(test->c_str());
 }
 
 void validationTest()
@@ -383,11 +388,15 @@ void validationTest()
 			"S:E[;;3]",    // Invalid neuron connection key
 	};
 	int errorIndexes[] = {
-			1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 3, 3, 11, 1, 1, 1
+			1, 3, 3, 3, 4,
+			4, 6, 6, 4, 4,
+			4, 4, 12, 1, 1,
+			1,
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
+//		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
 		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -541,7 +550,7 @@ int main(int argc, char *argv[])
 			},
 			{"S:EbE",                                             "p:sh=1\n"
 																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=2\n"}, // Carametrized joints
+																  "j:0, 1, sh=2\n"}, // Parametrized joints
 			{"S:CcC",                                             "p:sh=2\n"
 																  "p:2.0, sh=2\n"
 																  "j:0, 1, sh=3\n"}, // Many parametrized joints
@@ -563,7 +572,7 @@ int main(int argc, char *argv[])
 			{"M:E",                                               "p:sh=1\n"},  // Basic modifier mode
 			{"M:FE",                                              "p:sh=1, fr=0.44\n"},  // Friction modifier
 			{"M:fE",                                              "p:sh=1, fr=0.36\n"},  // Friction modifier
-			{"M:FFFFffE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
+			{"M:FFE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
 			{"S:E{f=0.3}E{f=0.5}",                                "p:sh=1, fr=0.3\n"
 																  "p:2.0, sh=1, fr=0.5\n"
 																  "j:0, 1, sh=1\n"},
@@ -631,11 +640,11 @@ int main(int argc, char *argv[])
 																  "j:0, 1, sh=1\n"},  // size modifiers
 			{"M:IE",                                              "p:sh=1, ing=0.28\n"},  // Ingestion modifier
 			{"M:iE",                                              "p:sh=1, ing=0.23\n"},  // Ingestion modifier
-			{"M:IIIIiiE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
+			{"M:IIE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
 			{"S:E{i=0.3}E{i=0.5}",                                "p:sh=1, ing=0.3\n"     // Ingestion param
 																  "p:2.0, sh=1, ing=0.5\n"
 																  "j:0, 1, sh=1\n"},
-			{"MS:IIIIiiE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+			{"MS:IIE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
 			// Test collisions
 			{"S:EE{ty=180.0;x=3.0}",                              "p:sh=1\n"
 																  "p:-3.99, sh=1, sx=3.0\n"
@@ -760,6 +769,7 @@ int main(int argc, char *argv[])
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 
+	fS_Genotype::precision = 2;
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		testOneGenotype(test_cases[i], expectedPartCount[i]);

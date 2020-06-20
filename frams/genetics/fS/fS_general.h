@@ -113,7 +113,7 @@ const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE a
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "ifs";
+const string MODIFIERS = "IFS";
 const char SIZE_MODIFIER = 's';
 const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							  JOINT_DISTANCE};
@@ -279,10 +279,7 @@ class fS_Neuron: public Neuro
 public:
 	std::map<int, double> inputs;
 
-	fS_Neuron(const char *str, int length);
-
-	fS_Neuron()
-	{};
+	fS_Neuron(const char *str, int start, int length);
 
 	bool acceptsInputs()
 	{
@@ -310,7 +307,7 @@ private:
 
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
-	vector<char> modifiers;     /// Vector of all modifiers
+	std::map<char, int> modifiers;     /// Vector of all modifiers
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
@@ -333,6 +330,8 @@ private:
 		}
 		return result;
 	}
+
+	void cleanUp();
 
 	Pt3D getRotation();
 
@@ -562,9 +561,10 @@ public:
 
 	/**
 	 * Check if sizes of all parts in genotype are valid
-	 * @return
+	\retval error_position 1-based
+	\retval 0 when all part sizes are valid
 	 */
-	bool allPartSizesValid();
+	int checkValidityOfPartSizes();
 
 	void validateNeuroInputs();
 
