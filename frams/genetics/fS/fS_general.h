@@ -112,6 +112,7 @@ const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE a
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
+const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "IFS";
 const char SIZE_MODIFIER = 's';
@@ -308,7 +309,6 @@ private:
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
-	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
@@ -418,6 +418,7 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
+	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 

@@ -477,7 +477,7 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 		// Rotate
 		state->rotate(getVectorRotation());
 
-		double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
+		double distance = getDistance(parentSize, size, state->v, parent->getRotation(), getRotation());
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)

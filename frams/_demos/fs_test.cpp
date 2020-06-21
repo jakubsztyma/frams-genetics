@@ -337,15 +337,18 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	if (operators.removePart(geno))
 		assert(tmp == 1 + geno.getNodeCount());
 
-	// Test add joint
-	tmp = countJoints(geno.getGeno());
-	if (operators.addJoint(geno))
-		assert(tmp + 1 == countJoints(geno.getGeno()));
-
-	// Test remove joint
-	tmp = countJoints(geno.getGeno());
-	if (operators.removeJoint(geno))
-		assert(tmp - 1 == countJoints(geno.getGeno()));
+	char firstJoint;
+	if(geno.getNodeCount() == 2)
+		firstJoint = geno.getAllNodes()[1]->joint;
+	// Test change joint
+	tmpStr = geno.getGeno();
+	if (operators.changeJoint(geno))
+	{
+		assert(tmpStr != geno.getGeno());
+		if(geno.getNodeCount() == 2)
+			// If there are only 2 nodes, we know which joint has been changed
+			assert(geno.getAllNodes()[1]->joint != firstJoint);
+	}
 
 	// Test add param
 	tmp = countParams(geno.getGeno());

@@ -14,8 +14,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
 				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
 				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
-				{"fS_mut_add_joint",        0, 0, "Add joint",                "f 0 100 10", FIELD(prob[FS_ADD_JOINT]),            "mutation: probability of adding a joint",},
-				{"fS_mut_rem_joint",        0, 0, "Remove joint",             "f 0 100 10", FIELD(prob[FS_REM_JOINT]),            "mutation: probability of removing a joint",},
+				{"fS_mut_change_joint",        0, 0, "Change joint",                "f 0 100 10", FIELD(prob[FS_CHANGE_JOINT]),            "mutation: probability of changing a joint",},
 				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
 				{"fS_mut_rem_param",        0, 0, "Remove param",             "f 0 100 10", FIELD(prob[FS_REM_PARAM]),            "mutation: probability of removing a parameter",},
 				{"fS_mut_mod_param",        0, 0, "Modify param",             "f 0 100 10", FIELD(prob[FS_MOD_PARAM]),            "mutation: probability of modifying a parameter",},
@@ -91,11 +90,8 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 		case FS_MOD_PART:
 			result = changePartType(genotype, availableTypes);
 			break;
-		case FS_ADD_JOINT:
-			result = addJoint(genotype);
-			break;
-		case FS_REM_JOINT:
-			result = removeJoint(genotype);
+		case FS_CHANGE_JOINT:
+			result = changeJoint(genotype);
 			break;
 		case FS_ADD_PARAM:
 			result = addParam(genotype);
@@ -404,43 +400,19 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 	return false;
 }
 
-bool GenoOper_fS::addJoint(fS_Genotype &geno)
+bool GenoOper_fS::changeJoint(fS_Genotype &geno)
 {
 	if (geno.startNode->children.empty())
 		return false;
 
-	Node *randomNode;
-	for (int i = 0; i < mutationTries; i++)
-	{
-		char randomJoint = JOINTS[rndUint(JOINT_COUNT)];
-		randomNode = geno.chooseNode(1);        // First part does not have joints
-		if (randomNode->joint == DEFAULT_JOINT)
-		{
-			randomNode->joint = randomJoint;
-			return true;
-		}
-	}
-	return false;
-}
+	Node *randomNode = geno.chooseNode(1);        // First part does not have joints
+	int jointLen  = ALL_JOINTS.length();
+	int index = rndUint(jointLen);
+	if (ALL_JOINTS[index] == randomNode->joint)
+		index = (index + 1 + rndUint(jointLen - 1)) % jointLen;
 
-
-bool GenoOper_fS::removeJoint(fS_Genotype &geno)
-{
-	// This operator may can lower success rate that others, as it does not work when there is only one node
-	if (geno.startNode->children.size() < 1) // Only one node; there are no joints
-		return false;
-
-	// Choose a node with joints
-	for (int i = 0; i < mutationTries; i++)
-	{
-		Node *randomNode = geno.chooseNode(1);    // First part does not have joints
-		if (randomNode->joint != DEFAULT_JOINT)
-		{
-			randomNode->joint = DEFAULT_JOINT;
-			return true;
-		}
-	}
-	return false;
+	randomNode->joint = ALL_JOINTS[index];
+	return true;
 }
 
 bool GenoOper_fS::addParam(fS_Genotype &geno)
