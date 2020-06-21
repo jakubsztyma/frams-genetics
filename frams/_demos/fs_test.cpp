@@ -191,6 +191,37 @@ void testUsePartType()
 
 }
 
+void testTurnWithRotation()
+{
+	GenoConv_fS0 converter = GenoConv_fS0();
+	fS_Genotype::TURN_WITH_ROTATION = true;
+	MultiMap map;
+	SString test_cases[][2]{
+			{"S:EE{ty=90.0}",                                     "p:sh=1\n"
+																  "p:z=2.0, sh=1, ry=1.5707963267948966\n"
+																  "j:0, 1, sh=1\n"},
+			{"S:EE{ty=45.0;ry=45.0}",                              "p:sh=1\n"
+																  "p:1.41, z=1.41, sh=1, ry=1.5707963267948966\n"
+																  "j:0, 1, sh=1\n"},
+			{"S:EE{tx=30;ty=90.0;tz=45}",                       "p:sh=1\n"
+																  "p:z=2.0, sh=1, rx=0.5235987755982988, 1.5707963267948966, 0.7853981633974483\n"
+																  "j:0, 1, sh=1\n"},
+	};
+
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		SString *test = test_cases[i];
+		SString genotype_str = test[0];
+		/// Test translate
+		cout << "Geno: " << test[0].c_str() << endl;
+		cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+		cout << "Expected: \n" << test[1].c_str() << endl << endl;
+		assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
+	}
+	fS_Genotype::TURN_WITH_ROTATION = false;
+
+}
+
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases will almost always work when crossoverTries is big enough
@@ -789,6 +820,7 @@ int main(int argc, char *argv[])
 	testAddPart();
 	testChangePartType();
 	testUsePartType();
+	testTurnWithRotation();
 	int operationCount;
 	if (argc > 1)
 		operationCount = std::stod(argv[1]);

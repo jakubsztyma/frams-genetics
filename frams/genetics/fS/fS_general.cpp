@@ -12,6 +12,7 @@
 
 
 int fS_Genotype::precision = 4;
+bool fS_Genotype::TURN_WITH_ROTATION = false;
 
 
 double round2(double var)
@@ -645,7 +646,9 @@ void Node::createPart()
 	part->scale.y = round2(size.y);
 	part->scale.z = round2(size.z);
 	Pt3D rotation = getRotation();
-	part->setRot(getRotation());
+	if(fS_Genotype::TURN_WITH_ROTATION)
+		rotation += getVectorRotation();
+	part->setRot(rotation);
 }
 
 void Node::addJointsToModel(Model &model, Node *parent)

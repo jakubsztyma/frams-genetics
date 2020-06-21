@@ -500,6 +500,7 @@ public:
 
 
 	static int precision;
+	static bool TURN_WITH_ROTATION;
 
 	/**
 	 * Build internal representation from fS format
