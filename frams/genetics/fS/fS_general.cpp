@@ -31,6 +31,10 @@ double fS_stod(const string&  str, int start, size_t* size)
 	{
 		throw fS_Exception("Invalid numeric value", start);
 	}
+	catch(const std::out_of_range& ex)
+	{
+		throw fS_Exception("Invalid numeric value", start);
+	}
 }
 
 State::State(State *_state)
@@ -427,6 +431,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	{
 		Pt3D currentVector = vector * currentDistance;
 		result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
+
 		if (result == DISJOINT)
 		{
 			maxDistance = currentDistance;
@@ -436,6 +441,9 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			minDistance = currentDistance;
 			currentDistance = avg(maxDistance, currentDistance);
 		}
+
+		if(maxDistance <= 0)
+			throw fS_Exception("Internal error; computing of distances failed", 0);
 		if (currentDistance > maxDistance)
 			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
 		if (currentDistance < minDistance)
@@ -835,29 +843,30 @@ void fS_Genotype::buildModel(Model &model)
 
 	buildNeuroConnections(model);
 
-	// Additional joints
-	vector<Node*> allNodes = getAllNodes();
-	for (int i = 0; i < int(allNodes.size()); i++)
-	{
-		Node *node = allNodes[i];
-		if (node->params.find(JOINT_DISTANCE) != node->params.end())
-		{
-			Node *otherNode = getNearestNode(allNodes, node);
-			if (otherNode != nullptr)
-			{
-				// If other node is close enough, add a joint
-				double distance = node->state->location.distanceTo(otherNode->state->location);
-				if (distance < node->params[JOINT_DISTANCE])
-				{
-					Joint *joint = new Joint();
-					joint->attachToParts(node->part, otherNode->part);
-
-					joint->shape = Joint::Shape::SHAPE_FIXED;
-					model.addJoint(joint);
-				}
-			}
-		}
-	}
+//	// Additional joints
+//	vector<Node*> allNodes = getAllNodes();
+//	for (int i = 0; i < int(allNodes.size()); i++)
+//	{
+//		Node *node = allNodes[i];
+//		if (node->params.find(JOINT_DISTANCE) != node->params.end())
+//		{
+//			Node *otherNode = getNearestNode(allNodes, node);
+//			if (otherNode != nullptr)
+//			{
+//				// If other node is close enough, add a joint
+//				double distance = node->state->location.distanceTo(otherNode->state->location);
+//				if (distance < node->params[JOINT_DISTANCE])
+//				{
+//					Joint *joint = new Joint();
+//					joint->attachToParts(node->part, otherNode->part);
+//
+//					joint->shape = Joint::Shape::SHAPE_FIXED;
+//					std::cout<<node<<" "<<otherNode<<std::endl;
+//					model.addJoint(joint);
+//				}
+//			}
+//		}
+//	}
 }
 
 

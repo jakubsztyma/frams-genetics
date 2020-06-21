@@ -287,7 +287,7 @@ void testAllPartSizesValid()
 	}
 }
 
-void testRandomModification(string test)
+void testRandomModifications(string test)
 {
 	GenoOper_fS operators;
 	for(int i=0; i<20; i++)
@@ -406,7 +406,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 
-	testRandomModification(test->c_str());
+	testRandomModifications(test->c_str());
 }
 
 void validationTest()
@@ -495,14 +495,15 @@ void evolutionTest(int operationCount)
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	GenoOper_fS operators;
+	int failCount = 0;
 	cout<<operators.getSimplest()<<endl;
 	assert(strcmp(operators.getSimplest(), "S:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
 	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
-	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=1.1}bRcR");
-	gens[3] = new SString("SMJ:R[1]{j=3.9;z=1.04}R[1]cRC[0;1]{x=1.03}");
+	gens[1] = new SString("SMJ:RcR[0]bR[0_1]");
+	gens[2] = new SString("SMJ:R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("SMJ:R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
 	gens[4] = new SString("SMJ:E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
@@ -521,8 +522,6 @@ void evolutionTest(int operationCount)
 		if (i % 100 == 0)
 		{
 			cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-			cout << gens[i1]->c_str() << endl;
-			cout << gens[i2]->c_str() << endl;
 		}
 
 		int method;
@@ -531,8 +530,12 @@ void evolutionTest(int operationCount)
 		char *arr1 = strdup(gens[i1]->c_str());
 		char *arr2 = strdup(gens[i2]->c_str());
 
+		testRandomModifications(arr1);
+		testRandomModifications(arr2);
+
 		if (operators.mutate(arr1, gp, method) == GENOPER_OK)
 			methodUsages[method]++;
+
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
 			methodUsages[method]++;
 
@@ -550,13 +553,18 @@ void evolutionTest(int operationCount)
 
 			// Check if genotypes convert correctly
 			MultiMap map;
-			converter.convert(*gens[i1], &map, false);
-			converter.convert(*gens[i2], &map, false);
+			assert(converter.convert(*gens[i1], &map, false) != "");
+			assert(converter.convert(*gens[i2], &map, false) != "");
+		}
+		else
+		{
+			failCount++;
 		}
 
 		free(arr1);
 		free(arr2);
 	}
+	cout<< "Fails: "<<failCount<<std::endl<<std::endl;
 	cout << "Method usages:" << endl;
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		cout << i << ": " << methodUsages[i] << endl;
@@ -653,7 +661,8 @@ int main(int argc, char *argv[])
 																  "p:4.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "j:1, 2, sh=1\n"
-																  "j:0, 2, sh=1\n"},
+//																  "j:0, 2, sh=1\n"
+																  },
 			{"S:E{j=3.9}EE",                                      "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "p:4.0, sh=1\n"
@@ -666,7 +675,8 @@ int main(int argc, char *argv[])
 																  "j:0, 1, sh=1\n"
 																  "j:1, 2, sh=1\n"
 																  "j:2, 3, sh=1\n"
-																  "j:0, 2, sh=1\n"},
+//																  "j:0, 2, sh=1\n"
+																  },
 			{"S:EE{x=3.0}",                                       "p:sh=1\n"
 																  "p:4.0, sh=1, sx=3.0\n"
 																  "j:0, 1, sh=1\n"},
