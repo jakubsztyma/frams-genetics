@@ -329,8 +329,12 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test change part
 	tmp = geno.getNodeCount();
+	tmpStr = geno.getGeno();
 	if (operators.changePartType(geno))
-		assert(tmp == geno.getNodeCount());
+	{
+		assert(geno.getNodeCount() == tmp);
+		assert(geno.getGeno() != tmpStr);
+	}
 
 	// Test remove part
 	tmp = geno.getNodeCount();
@@ -358,13 +362,14 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test change param
 	tmpStr = geno.getGeno();
 	tmp = countParams(geno.getGeno());
+	fS_Genotype::precision = 6;
 	if (operators.changeParam(geno))
 	{
 		SString resultGeno = geno.getGeno();
 		assert(tmp == countParams(resultGeno));
-		// TODO figure out how to test it. Param can be changed by very small value
-//		assert(tmpStr != resultGeno);
+		assert(tmpStr != resultGeno);
 	}
+	fS_Genotype::precision = 2;
 
 	// Test remove param
 	tmp = countParams(geno.getGeno());

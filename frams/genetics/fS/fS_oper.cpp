@@ -369,7 +369,7 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 		Node *randomNode = geno.chooseNode();
 		int index = rndUint(availTypesLength);
 		if (availTypes[index] == SHAPETYPE_TO_GENE.at(randomNode->partType))
-			index = (index + 1 + rndUint(availTypesLength)) % availTypesLength;
+			index = (index + 1 + rndUint(availTypesLength - 1)) % availTypesLength;
 		char newTypeChr = availTypes[index];
 
 		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
