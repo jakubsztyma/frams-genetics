@@ -51,7 +51,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 		if(errorPosition != 0)
 		{
 			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
-			return 1 + errorPosition;
+			return errorPosition;
 		}
 	}
 	catch (fS_Exception &e)
@@ -209,7 +209,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 
 const char* GenoOper_fS::getSimplest()
 {
-	return "S:C{x=0.80599;y=0.80599;z=0.80599}";
+	return "C{x=0.80599;y=0.80599;z=0.80599}";
 }
 
 uint32_t GenoOper_fS::style(const char *geno, int pos)
@@ -287,7 +287,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	char partType = availableTypes[rndUint(availableTypes.length())];
 
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode, node);
+	Node *newNode = new Node(substring, node);
 	// Add random rotation
 	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
 	if(strongAddPart)
@@ -422,9 +422,6 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	if (paramCount == int(PARAMS.size()))
 		return false;
 	string selectedParam = PARAMS[rndUint(PARAMS.size())];
-	// Not allow 'j' parameter when the cycle mode is not on
-	if (selectedParam == JOINT_DISTANCE && !geno.startNode->cycleMode)
-		return false;
 	if (randomNode->params.count(selectedParam) > 0)
 		return false;
 	// Do not allow invalid changes in part size

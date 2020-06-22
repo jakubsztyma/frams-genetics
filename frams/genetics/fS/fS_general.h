@@ -116,8 +116,7 @@ const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
 const string MODIFIERS = "IFS";
 const char SIZE_MODIFIER = 's';
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
-							  JOINT_DISTANCE};
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,};
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
@@ -301,7 +300,6 @@ class Node
 
 private:
 	Substring *partDescription = nullptr;
-	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
@@ -422,7 +420,7 @@ public:
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *parent);
+	Node(Substring &genotype, Node *parent);
 
 	~Node();
 

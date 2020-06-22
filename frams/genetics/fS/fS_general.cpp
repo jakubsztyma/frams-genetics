@@ -115,12 +115,9 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 	}
 }
 
-Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *_parent)
+Node::Node(Substring &restOfGeno, Node *_parent)
 {
 	parent = _parent;
-	modifierMode = _modifierMode;
-	paramMode = _paramMode;
-	cycleMode = _cycleMode;
 	partDescription = new Substring(restOfGeno);
 
 	try
@@ -497,7 +494,7 @@ void Node::getChildren(Substring &restOfGenotype)
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
-		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode, this));
+		children.push_back(new Node(branches[i], this));
 	}
 }
 
@@ -792,19 +789,8 @@ fS_Genotype::fS_Genotype(const string &genotype)
 	try
 	{
 		string geno = genotype.c_str();
-		// M - modifier mode, S - standard mode
-		size_t modeSeparatorIndex = geno.find(':');
-		if (modeSeparatorIndex == string::npos)
-			throw fS_Exception("No mode separator", 0);
-
-		string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
-		bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
-		bool paramMode = modeStr.find(PARAM_MODE) != string::npos;
-		bool cycleMode = modeStr.find(CYCLE_MODE) != string::npos;
-
-		int actualGenoStart = modeSeparatorIndex + 1;
-		Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
-		startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
+		Substring substring(geno.c_str(), 0, geno.length());
+		startNode = new Node(substring, nullptr);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
@@ -839,33 +825,7 @@ void fS_Genotype::buildModel(Model &model)
 {
 	getState();
 	startNode->buildModel(model, nullptr);
-
 	buildNeuroConnections(model);
-
-//	// Additional joints
-//	vector<Node*> allNodes = getAllNodes();
-//	for (int i = 0; i < int(allNodes.size()); i++)
-//	{
-//		Node *node = allNodes[i];
-//		if (node->params.find(JOINT_DISTANCE) != node->params.end())
-//		{
-//			Node *otherNode = getNearestNode(allNodes, node);
-//			if (otherNode != nullptr)
-//			{
-//				// If other node is close enough, add a joint
-//				double distance = node->state->location.distanceTo(otherNode->state->location);
-//				if (distance < node->params[JOINT_DISTANCE])
-//				{
-//					Joint *joint = new Joint();
-//					joint->attachToParts(node->part, otherNode->part);
-//
-//					joint->shape = Joint::Shape::SHAPE_FIXED;
-//					std::cout<<node<<" "<<otherNode<<std::endl;
-//					model.addJoint(joint);
-//				}
-//			}
-//		}
-//	}
 }
 
 
@@ -912,15 +872,6 @@ SString fS_Genotype::getGeno()
 {
 	SString geno;
 	geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
-
-	if (startNode->modifierMode)
-		geno += MODIFIER_MODE;
-	if (startNode->paramMode)
-		geno += PARAM_MODE;
-	if (startNode->cycleMode)
-		geno += CYCLE_MODE;
-
-	geno += ':';
 	startNode->getGeno(geno);
 	return geno;
 }
@@ -1017,7 +968,7 @@ int fS_Genotype::checkValidityOfPartSizes()
 	{
 		if (!nodes[i]->isPartSizeValid())
 		{
-			return nodes[i]->partDescription->start;
+			return 1 + nodes[i]->partDescription->start;
 		}
 	}
 	return 0;
