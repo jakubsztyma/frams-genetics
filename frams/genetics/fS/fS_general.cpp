@@ -608,7 +608,10 @@ Pt3D Node::getRotation()
 	double rx = Convert::toRadians(getParam(RX));
 	double ry = Convert::toRadians(getParam(RY));
 	double rz = Convert::toRadians(getParam(RZ));
-	return Pt3D(rx, ry, rz);
+	Pt3D rotation = Pt3D(rx, ry, rz);
+	if(fS_Genotype::TURN_WITH_ROTATION)
+		rotation += getVectorRotation();
+	return rotation;
 }
 
 void Node::buildModel(Model &model, Node *parent)
@@ -617,7 +620,6 @@ void Node::buildModel(Model &model, Node *parent)
 	model.addPart(part);
 	if (parent != nullptr)
 		addJointsToModel(model, parent);
-
 
 	for (int i = 0; i < int(neurons.size()); i++)
 	{
@@ -653,10 +655,7 @@ void Node::createPart()
 	part->scale.x = round2(size.x);
 	part->scale.y = round2(size.y);
 	part->scale.z = round2(size.z);
-	Pt3D rotation = getRotation();
-	if(fS_Genotype::TURN_WITH_ROTATION)
-		rotation += getVectorRotation();
-	part->setRot(rotation);
+	part->setRot(getRotation());
 }
 
 void Node::addJointsToModel(Model &model, Node *parent)
