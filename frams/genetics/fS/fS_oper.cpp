@@ -383,16 +383,12 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 		if (ensureCircleSection)
 		{
 			geno.getState();
-			if (randomNode->partType == Part::Shape::SHAPE_CUBOID
-				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newType == Part::Shape::SHAPE_ELLIPSOID))
-			{
-				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
-				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
-				double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
-				randomNode->params[SIZE_X] = newRelativeRadius;
-				randomNode->params[SIZE_Y] = newRelativeRadius;
-				randomNode->params[SIZE_Z] = newRelativeRadius;
-			}
+			double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+			double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+			double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
+			randomNode->params[SIZE_X] = newRelativeRadius;
+			randomNode->params[SIZE_Y] = newRelativeRadius;
+			randomNode->params[SIZE_Z] = newRelativeRadius;
 		}
 		randomNode->partType = newType;
 		return true;

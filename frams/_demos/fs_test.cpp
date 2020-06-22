@@ -150,10 +150,12 @@ void testChangePartType()
 	GenoOper_fS operators;
 	string test_cases[] = {
 			"C",
+			"E",
+			"R",
 			"SSSSC",
-			"sssssC",
+			"sssssE",
 			"sssssC{x=0.3;y=2.3;z=1.1}",
-			"SSSSSSC{x=0.3;y=2.3;z=1.1}",
+			"SSSSSSE{x=0.3;y=2.3;z=1.1}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -165,7 +167,7 @@ void testChangePartType()
 		operators.changePartType(geno, "CER");
 
 		geno.getState();
-		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
+//		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
 
