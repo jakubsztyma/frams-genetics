@@ -13,13 +13,6 @@
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
 
-/** @name Names of genotype modes */
-//@{
-#define MODIFIER_MODE 'M'
-#define PARAM_MODE 'S'
-#define CYCLE_MODE 'J'
-//@}
-
 /** @name Values of constants used in encoding */
 //@{
 #define BRANCH_START '('
@@ -44,9 +37,6 @@ enum class SHIFT
 
 /** @name Every modifier changes the underlying value by this multiplier */
 const double MODIFIER_MULTIPLIER = 1.1;
-/** @name In mutation parameters will be multiplied by at most this value */
-const double PARAM_MAX_MULTIPLIER = 1.5;
-
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -79,7 +69,6 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define RX "rx"
 #define RY "ry"
 #define RZ "rz"
-#define JOINT_DISTANCE "j"
 //@}
 /** @name Macros and values used in collision detection */
 //@{
@@ -132,8 +121,7 @@ const std::map<string, double> defaultParamValues = {
 		{SIZE,           1.0},
 		{SIZE_X,         1.0},
 		{SIZE_Y,         1.0},
-		{SIZE_Z,         1.0},
-		{JOINT_DISTANCE, 1.0}
+		{SIZE_Z,         1.0}
 };
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -450,7 +438,7 @@ public:
 	 * @param ensureCircleSection
 	 * @return True if the parameter value was change, false otherwise
 	 */
-	bool changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection);
+	bool changeSizeParam(string paramKey,  bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree
@@ -510,12 +498,6 @@ public:
 	~fS_Genotype();
 
 	void getState();
-
-	/**
-	 * Get a random multiplier for parameter mutation
-	 * @return Random parameter multiplier
-	 */
-	static double randomParamMultiplier();
 
 	/**
 	 * Get all existing nodes

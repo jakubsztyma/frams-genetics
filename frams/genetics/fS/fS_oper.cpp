@@ -328,9 +328,9 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	if (mutateSize)
 	{
 		geno.getState();
-		newNode->changeSizeParam(SIZE_X, fS_Genotype::randomParamMultiplier(), true);
-		newNode->changeSizeParam(SIZE_Y, fS_Genotype::randomParamMultiplier(), true);
-		newNode->changeSizeParam(SIZE_Z, fS_Genotype::randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_X, true);
+		newNode->changeSizeParam(SIZE_Y, true);
+		newNode->changeSizeParam(SIZE_Z, true);
 	}
 	return true;
 }
@@ -465,16 +465,13 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
 
-			double multiplier = fS_Genotype::randomParamMultiplier();
-
-
 			// Do not allow invalid changes in part size
 			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
 			{
-				it->second *= multiplier;
+				it->second = GenoOperators::mutateCreepNoLimit('f', it->second, 1.0, true);
 				return true;
 			} else
-				return randomNode->changeSizeParam(it->first, multiplier, ensureCircleSection);
+				return randomNode->changeSizeParam(it->first, ensureCircleSection);
 		}
 	}
 	return false;

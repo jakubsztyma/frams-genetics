@@ -9,7 +9,7 @@
 #include "common/Convert.h"
 #include "frams/util/rndutil.h"
 #include "frams/neuro/neurolibrary.h"
-
+#include "../genooperators.h"
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
@@ -757,15 +757,15 @@ void Node::getGeno(SString &result)
 }
 
 
-bool Node::changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection)
+bool Node::changeSizeParam(string key, bool ensureCircleSection)
 {
-	double oldValue = getParam(paramKey);
-	params[paramKey] = oldValue * multiplier;
+	double oldValue = getParam(key);
+	params[key] = GenoOperators::mutateCreepNoLimit('f', params[key], 1.0, true);
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
 	else
 	{
-		params[paramKey] = oldValue;
+		params[key] = oldValue;
 		return false;
 	}
 }
@@ -809,16 +809,6 @@ void fS_Genotype::getState()
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
 	startNode->getState(initialState, Pt3D(1.0));
-}
-
-double fS_Genotype::randomParamMultiplier()
-{
-	double multiplier = 1 + fabs(RndGen.GaussStd());
-	if (multiplier > PARAM_MAX_MULTIPLIER)
-		multiplier = PARAM_MAX_MULTIPLIER;
-	if (rndUint(2) == 0)
-		multiplier = 1.0 / multiplier;
-	return multiplier;
 }
 
 void fS_Genotype::buildModel(Model &model)
