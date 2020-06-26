@@ -417,12 +417,12 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	int paramCount = randomNode->params.size();
 	if (paramCount == int(PARAMS.size()))
 		return false;
-	string selectedParam = PARAMS[rndUint(PARAMS.size())];
-	if (randomNode->params.count(selectedParam) > 0)
+	string key = PARAMS[rndUint(PARAMS.size())];
+	if (randomNode->params.count(key) > 0)
 		return false;
 	// Do not allow invalid changes in part size
-	bool isRadiusOfBase = selectedParam == SIZE_X || selectedParam == SIZE_Y;
-	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
+	bool isRadiusOfBase = key == SIZE_X || key == SIZE_Y;
+	bool isRadius = isRadiusOfBase || key == SIZE_Z;
 	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
@@ -431,7 +431,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[selectedParam] = defaultValues.at(selectedParam);
+	randomNode->params[key] = mutateCreep('f', defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
 	return true;
 }
 
