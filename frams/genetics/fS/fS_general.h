@@ -112,6 +112,11 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
 static const Joint defJoint = Model::getDefJoint();
+const std::map<Part::Shape, double> volumeMultipliers = {
+		{Part::Shape::SHAPE_CUBOID, 8.0},
+		{Part::Shape::SHAPE_CYLINDER, 2.0 * M_PI},
+		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
+};
 const std::map<string, double> defaultValues = {
 		{INGESTION,      defPart.ingest},
 		{FRICTION,       defPart.friction},
@@ -335,26 +340,6 @@ private:
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	double getDistance();
-
-	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
-	{
-		double result;
-		switch (partType)
-		{
-			case Part::Shape::SHAPE_CUBOID:
-				result = std::cbrt(volume / 8.0);
-				break;
-			case Part::Shape::SHAPE_CYLINDER:
-				result = std::cbrt(volume / (2.0 * M_PI));
-				break;
-			case Part::Shape::SHAPE_ELLIPSOID:
-				result = std::cbrt(volume / ((4.0 / 3.0) * M_PI));
-				break;
-			default:
-				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
-		}
-		return result;
-	}
 
 	void cleanUp();
 

@@ -33,7 +33,7 @@ double fS_stod(const string&  str, int start, size_t* size)
 	}
 	catch(const std::out_of_range& ex)
 	{
-		throw fS_Exception("Invalid numeric value", start);
+		throw fS_Exception("Invalid numeric value; out of range", start);
 	}
 }
 

@@ -319,7 +319,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
 	double relativeVolume = volume / volumeMultiplier;    // Volume without applying modifiers
 
-	double newRadius = Node::calculateRadiusFromVolume(newNode->partType, relativeVolume);
+	double newRadius = std::cbrt(relativeVolume / volumeMultipliers.at(newNode->partType));
 	newNode->params[SIZE_X] = newRadius;
 	newNode->params[SIZE_Y] = newRadius;
 	newNode->params[SIZE_Z] = newRadius;
@@ -380,15 +380,34 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
-		if (ensureCircleSection)
+		geno.getState();
+		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+
+		if(!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
 		{
-			geno.getState();
-			double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
-			double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
-			double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
+			double radiusQuotient = std::cbrt(volumeMultipliers.at(randomNode->partType) / volumeMultipliers.at(newType));
+			randomNode->params[SIZE_X] = randomNode->getParam(SIZE_X) * radiusQuotient;
+			randomNode->params[SIZE_Y] = randomNode->getParam(SIZE_Y) * radiusQuotient;
+			randomNode->params[SIZE_Z] = randomNode->getParam(SIZE_Z) * radiusQuotient;
+		}
+		else if(randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
+		{
+			double newRadius = 0.5 * (randomNode->getParam(SIZE_X) + randomNode->getParam(SIZE_Y));
+			randomNode->params[SIZE_X] = newRadius;
+			randomNode->params[SIZE_Y] = newRadius;
+			randomNode->params[SIZE_Z] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
+		}
+		else if(newType == Part::Shape::SHAPE_ELLIPSOID)
+		{
+			double newRelativeRadius = cbrt(relativeVolume / volumeMultipliers.at(newType));
 			randomNode->params[SIZE_X] = newRelativeRadius;
 			randomNode->params[SIZE_Y] = newRelativeRadius;
 			randomNode->params[SIZE_Z] = newRelativeRadius;
+		}
+		else
+		{
+			throw fS_Exception("Invalid part type", 1);
 		}
 		randomNode->partType = newType;
 		return true;
