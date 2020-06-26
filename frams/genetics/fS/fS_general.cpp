@@ -43,6 +43,7 @@ State::State(State *_state)
 	v = Pt3D(_state->v);
 	fr = _state->fr;
 	s = _state->s;
+	stif = _state->stif;
 }
 
 State::State(Pt3D _location, Pt3D _v)
@@ -290,7 +291,7 @@ double Node::getParam(string key)
 	if (item != params.end())
 		return item->second;
 	else
-		return defaultParamValues.at(key);
+		return defaultValues.at(key);
 }
 
 double avg(double a, double b)
@@ -474,6 +475,8 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 			state->fr *= multiplier;
 		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
+		else if (mod == MODIFIERS[3])
+			state->stif *= multiplier;
 	}
 
 	Pt3D size = calculateSize();
@@ -658,6 +661,9 @@ void Node::createPart()
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
+	j->stif = round2(getParam(STIFFNESS) * state->stif);
+	j->rotstif = j->stif;
+
 	j->attachToParts(parent->part, part);
 	switch (joint)
 	{
@@ -760,7 +766,7 @@ void Node::getGeno(SString &result)
 bool Node::changeSizeParam(string key, bool ensureCircleSection)
 {
 	double oldValue = getParam(key);
-	params[key] = GenoOperators::mutateCreepNoLimit('f', params[key], 1.0, true);
+	params[key] = GenoOperators::mutateCreep('f', params[key], minValues.at(key), maxValues.at(key), true);
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
 	else

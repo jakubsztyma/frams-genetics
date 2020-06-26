@@ -37,7 +37,7 @@ int countParams(SString genotype)
 
 int countModifiers(SString genotype)
 {
-	return countChars(genotype, "IiFfSs", 6);
+	return countChars(genotype, "IiFfSsTt", 8);
 }
 
 int countNeuroConnections(fS_Genotype &geno)
@@ -788,6 +788,12 @@ int main(int argc, char *argv[])
 			{"SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",                  "p:sh=1, sx=0.99, sy=0.99, sz=0.99\n"
 																  "p:2.42, sh=1, sx=1.45, sy=1.21, sz=1.57\n"
 																  "j:0, 1, sh=1\n"},
+			{"ETTE{st=0.5}",                                 "p:sh=1\n"
+												  			"p:2.0, sh=1\n"
+														"j:0, 1, sh=1, stif=0.61, rotstif=0.61\n"},  // Stiffness param
+			{"EttE{st=0.5}",                                 "p:sh=1\n"
+															 "p:2.0, sh=1\n"
+															 "j:0, 1, sh=1, stif=0.41, rotstif=0.41\n"},  // Stiffness param
 	};
 	srand(time(NULL));
 
@@ -798,7 +804,8 @@ int main(int argc, char *argv[])
 			2, 1, 1, 1, 2, 2, 1,
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
-			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
+			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
+			2,2};
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 

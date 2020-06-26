@@ -431,7 +431,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[selectedParam] = defaultParamValues.at(selectedParam);
+	randomNode->params[selectedParam] = defaultValues.at(selectedParam);
 	return true;
 }
 
@@ -468,7 +468,7 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 			// Do not allow invalid changes in part size
 			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
 			{
-				it->second = GenoOperators::mutateCreepNoLimit('f', it->second, 1.0, true);
+				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
 				return true;
 			} else
 				return randomNode->changeSizeParam(it->first, ensureCircleSection);

@@ -59,6 +59,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 //@{
 #define INGESTION "i"
 #define FRICTION "f"
+#define STIFFNESS "st"
 #define SIZE "s"
 #define SIZE_X "x"
 #define SIZE_Y "y"
@@ -103,15 +104,18 @@ const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "IFS";
+const string MODIFIERS = "IFST";
 const char SIZE_MODIFIER = 's';
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,};
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
+							 STIFFNESS};
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
-const std::map<string, double> defaultParamValues = {
+static const Joint defJoint = Model::getDefJoint();
+const std::map<string, double> defaultValues = {
 		{INGESTION,      defPart.ingest},
 		{FRICTION,       defPart.friction},
+		{STIFFNESS,	 	 defJoint.stif},
 		{ROT_X,          0.0},
 		{ROT_Y,          0.0},
 		{ROT_Z,          0.0},
@@ -122,6 +126,38 @@ const std::map<string, double> defaultParamValues = {
 		{SIZE_X,         1.0},
 		{SIZE_Y,         1.0},
 		{SIZE_Z,         1.0}
+};
+
+const std::map<string, double> minValues = {
+		{INGESTION,      0},
+		{FRICTION,       0},
+		{STIFFNESS,	 0.0},
+		{ROT_X,          -180.0},
+		{ROT_Y,          -180.0},
+		{ROT_Z,          -180.0},
+		{RX,             -180.0},
+		{RY,             -180.0},
+		{RZ,             -180.0},
+		{SIZE,           0.01},
+		{SIZE_X,         0.01},
+		{SIZE_Y,         0.01},
+		{SIZE_Z,         0.01}
+};
+
+const std::map<string, double> maxValues = {
+		{INGESTION,      1.0},
+		{FRICTION,       1.0},
+		{STIFFNESS,	 0.0},
+		{ROT_X,          180.0},
+		{ROT_Y,          180.0},
+		{ROT_Z,          180.0},
+		{RX,             180.0},
+		{RY,             180.0},
+		{RZ,             180.0},
+		{SIZE,           100.0},
+		{SIZE_X,         100.0},
+		{SIZE_Y,         100.0},
+		{SIZE_Z,         100.0}
 };
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -239,6 +275,7 @@ public:
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
 	double s = 1.0;      /// Size multipliers
+	double stif = 1.0;	/// Stiffness multipliers
 
 	State(State *_state); /// Derive the state from parent
 
