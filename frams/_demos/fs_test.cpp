@@ -37,7 +37,7 @@ int countParams(SString genotype)
 
 int countModifiers(SString genotype)
 {
-	return countChars(genotype, "IiFfSs", 6);
+	return countChars(genotype, "IiFfSsTt", 8);
 }
 
 int countNeuroConnections(fS_Genotype &geno)
@@ -53,15 +53,15 @@ void testRearrangeBeforeCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"S:EE[]",                                   "S:EE[]"},
-			{"S:E[;;]E[;;]",                             "S:E[;;]E[;;]"},
-			{"S:E[;;]E[3;4_5;3]",                        "S:E[;;]E[;;]"},
-			{"S:E[3;4;]E[3;4_5;3]",                      "S:E[;;]E[;;]"},
-			{"S:E[1;2;0]E[;;]",                          "S:E[1;2;0]E[;;]"},
-			{"S:E[1_3;2_4;]E[3;4_5;3]",                  "S:E[1;2;]E[;;]"},
-			{"S:E[Sin;;G]E[Rnd;;T]",                     "S:E[Sin;;G]E[Rnd;;T]"},
-			{"S:E[1_3;2_4;](E[3;4_5;3],E[3;4_6_7])",     "S:E[1;2;](E[;;],E[;3_4])"},
-			{"S:E[1_3;2_4;](E[0_3;4_5;3_6],E[3;4_6_7])", "S:E[1;2;](E[0;;3],E[;3_4])"},
+			{"EE[]",                                   "EE[]"},
+			{"E[;;]E[;;]",                             "E[;;]E[;;]"},
+			{"E[;;]E[3;4_5;3]",                        "E[;;]E[;;]"},
+			{"E[3;4;]E[3;4_5;3]",                      "E[;;]E[;;]"},
+			{"E[1;2;0]E[;;]",                          "E[1;2;0]E[;;]"},
+			{"E[1_3;2_4;]E[3;4_5;3]",                  "E[1;2;]E[;;]"},
+			{"E[Sin;;G]E[Rnd;;T]",                     "E[Sin;;G]E[Rnd;;T]"},
+			{"E[1_3;2_4;](E[3;4_5;3],E[3;4_6_7])",     "E[1;2;](E[;;],E[;3_4])"},
+			{"E[1_3;2_4;](E[0_3;4_5;3_6],E[3;4_6_7])", "E[1;2;](E[0;;3],E[;3_4])"},
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -83,11 +83,11 @@ void testRearrangeAfterCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"S:E[0_1;0]E[]",                       "S:E[0_1;0]E[]"},
-			{"S:E[0_1;0]E[Rnd;;]",                  "S:E[0_1;0]E[Rnd;;]"},
-			{"S:E[0_1;0]E[Rnd;;]E[;]",              "S:E[0_1;0]E[Rnd;;]E[;]"},
-			{"S:E[0_1;0](E[Rnd;;],E[2_3;2])",       "S:E[0_1;0](E[Rnd;;],E[5_6;5])"},
-			{"S:E[0_1;0](E[Rnd;;],E[2_3;2]C[2_4])", "S:E[0_1;0](E[Rnd;;],E[5_6;5]C[5_7])"},
+			{"E[0_1;0]E[]",                       "E[0_1;0]E[]"},
+			{"E[0_1;0]E[Rnd;;]",                  "E[0_1;0]E[Rnd;;]"},
+			{"E[0_1;0]E[Rnd;;]E[;]",              "E[0_1;0]E[Rnd;;]E[;]"},
+			{"E[0_1;0](E[Rnd;;],E[2_3;2])",       "E[0_1;0](E[Rnd;;],E[5_6;5])"},
+			{"E[0_1;0](E[Rnd;;],E[2_3;2]C[2_4])", "E[0_1;0](E[Rnd;;],E[5_6;5]C[5_7])"},
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -114,13 +114,13 @@ void testAddPart()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"S:E",
-			"S:SE",
-			"S:sE",
-			"S:SSSSSSSE",
-			"S:sssssssE",
-			"S:SSSSSSSSSE",    // More than max
-			"S:sssssssssE", // Less than min
+			"E",
+			"SE",
+			"sE",
+			"SSSSSSSE",
+			"sssssssE",
+			"SSSSSSSSSE",    // More than max
+			"sssssssssE", // Less than min
 	};
 	double expectedVolume[] = {
 			4.19,
@@ -149,11 +149,13 @@ void testChangePartType()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"S:C",
-			"S:SSSSC",
-			"S:sssssC",
-			"S:sssssC{x=0.3;y=2.3;z=1.1}",
-			"S:SSSSSSC{x=0.3;y=2.3;z=1.1}",
+			"C",
+			"E",
+			"R",
+			"SSSSC",
+			"sssssE",
+			"sssssC{x=0.3;y=2.3;z=1.1}",
+			"SSSSSSE{x=0.3;y=2.3;z=1.1}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -165,7 +167,7 @@ void testChangePartType()
 		operators.changePartType(geno, "CER");
 
 		geno.getState();
-		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
+//		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
 
@@ -173,7 +175,7 @@ void testChangePartType()
 void testUsePartType()
 {
 	GenoOper_fS operators;
-	fS_Genotype geno("S:E");
+	fS_Genotype geno("E");
 	operators.changePartType(geno, "C");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
 	operators.changePartType(geno, "E");
@@ -181,8 +183,44 @@ void testUsePartType()
 	operators.changePartType(geno, "R");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
 	operators.addPart(geno, "R");
-	cout<<geno.getGeno().c_str()<<endl;
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
+	operators.removePart(geno);
+	operators.addPart(geno, "C");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
+	operators.removePart(geno);
+	operators.addPart(geno, "E");
+	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_ELLIPSOID);
+
+}
+
+void testTurnWithRotation()
+{
+	GenoConv_fS0 converter = GenoConv_fS0();
+	fS_Genotype::TURN_WITH_ROTATION = true;
+	MultiMap map;
+	SString test_cases[][2]{
+			{"EE{ty=90.0}",                                     "p:sh=1\n"
+																  "p:z=2.0, sh=1, ry=1.5707963267948966\n"
+																  "j:0, 1, sh=1\n"},
+			{"EE{ty=45.0;ry=45.0}",                              "p:sh=1\n"
+																  "p:1.41, z=1.41, sh=1, ry=1.5707963267948966\n"
+																  "j:0, 1, sh=1\n"},
+			{"EE{tx=30;ty=90.0;tz=45}",                       "p:sh=1\n"
+																  "p:z=2.0, sh=1, rx=0.5235987755982988, 1.5707963267948966, 0.7853981633974483\n"
+																  "j:0, 1, sh=1\n"},
+	};
+
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		SString *test = test_cases[i];
+		SString genotype_str = test[0];
+		/// Test translate
+		cout << "Geno: " << test[0].c_str() << endl;
+		cout << "Result:\n" << converter.convert(genotype_str, &map, false).c_str() << endl;
+		cout << "Expected: \n" << test[1].c_str() << endl << endl;
+		assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
+	}
+	fS_Genotype::TURN_WITH_ROTATION = false;
 
 }
 
@@ -194,14 +232,14 @@ void testCrossoverSimilarTrees()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"S:EE",
-			"S:E(E,E)",
-			"S:EEEE",
-			"S:ECRE",
-			"S:E(RE,CRE)",
-			"S:E(EEE,EEE,EEE)",
-			"S:E(CRE,CRE,CRE)",
-			"S:EEEEEECRE(CRE,CRE,CRE)",
+			"EE",
+			"E(E,E)",
+			"EEEE",
+			"ECRE",
+			"E(RE,CRE)",
+			"E(EEE,EEE,EEE)",
+			"E(CRE,CRE,CRE)",
+			"EEEEEECRE(CRE,CRE,CRE)",
 	};
 
 	float f1, f2;
@@ -226,22 +264,22 @@ void testCrossoverSimilarTrees()
 void testAllPartSizesValid()
 {
 	string test_cases[] = {
-			"S:C{x=2000.0}",    // Too big dimension
-			"S:C{y=2000.0}",
-			"S:C{z=2000.0}",
-			"S:C{x=0.0005}",    // Too small dimension
-			"S:C{y=0.0005}",
-			"S:C{z=0.0005}",
-			"S:E{x=1.1}",        // Invalid size params
-			"S:E{y=1.1}",
-			"S:E{z=1.1}",
-			"S:R{x=1.1;y=1.2}",
-			"S:R{x=1.1}",
-			"S:R{y=1.1}",
-			"S:SR{x=999.0}",
-			"S:C(R,E{z=1.1})",
-			"S:C{x=1.5;y=1.5;z=1.5}",    // Test volume
-			"S:C{x=1.8;y=1.8}",
+			"C{x=2000.0}",    // Too big dimension
+			"C{y=2000.0}",
+			"C{z=2000.0}",
+			"C{x=0.0005}",    // Too small dimension
+			"C{y=0.0005}",
+			"C{z=0.0005}",
+			"E{x=1.1}",        // Invalid size params
+			"E{y=1.1}",
+			"E{z=1.1}",
+			"R{x=1.1;y=1.2}",
+			"R{x=1.1}",
+			"R{y=1.1}",
+			"SR{x=999.0}",
+			"C(R,E{z=1.1})",
+			"C{x=1.5;y=1.5;z=1.5}",    // Test volume
+			"C{x=1.8;y=1.8}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -251,7 +289,7 @@ void testAllPartSizesValid()
 	}
 }
 
-void testRandomModification(string test)
+void testRandomModifications(string test)
 {
 	GenoOper_fS operators;
 	for(int i=0; i<20; i++)
@@ -293,23 +331,30 @@ void testOneGenotype(SString *test, int expectedPartCount)
 
 	// Test change part
 	tmp = geno.getNodeCount();
+	tmpStr = geno.getGeno();
 	if (operators.changePartType(geno))
-		assert(tmp == geno.getNodeCount());
+	{
+		assert(geno.getNodeCount() == tmp);
+		assert(geno.getGeno() != tmpStr);
+	}
 
 	// Test remove part
 	tmp = geno.getNodeCount();
 	if (operators.removePart(geno))
 		assert(tmp == 1 + geno.getNodeCount());
 
-	// Test add joint
-	tmp = countJoints(geno.getGeno());
-	if (operators.addJoint(geno))
-		assert(tmp + 1 == countJoints(geno.getGeno()));
-
-	// Test remove joint
-	tmp = countJoints(geno.getGeno());
-	if (operators.removeJoint(geno))
-		assert(tmp - 1 == countJoints(geno.getGeno()));
+	// Test change joint
+	char firstJoint;
+	if(geno.getNodeCount() == 2)
+		firstJoint = geno.getAllNodes()[1]->joint;
+	tmpStr = geno.getGeno();
+	if (operators.changeJoint(geno))
+	{
+		assert(tmpStr != geno.getGeno());
+		if(geno.getNodeCount() == 2)
+			// If there are only 2 nodes, we know which joint has been changed
+			assert(geno.getAllNodes()[1]->joint != firstJoint);
+	}
 
 	// Test add param
 	tmp = countParams(geno.getGeno());
@@ -319,13 +364,14 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test change param
 	tmpStr = geno.getGeno();
 	tmp = countParams(geno.getGeno());
+	fS_Genotype::precision = 6;
 	if (operators.changeParam(geno))
 	{
 		SString resultGeno = geno.getGeno();
 		assert(tmp == countParams(resultGeno));
-		// TODO figure out how to test it. Param can be changed by very small value
-//		assert(tmpStr != resultGeno);
+		assert(tmpStr != resultGeno);
 	}
+	fS_Genotype::precision = 2;
 
 	// Test remove param
 	tmp = countParams(geno.getGeno());
@@ -362,7 +408,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 
-	testRandomModification(test->c_str());
+	testRandomModifications(test->c_str());
 }
 
 void validationTest()
@@ -370,33 +416,31 @@ void validationTest()
 	GenoConv_fS0 converter = GenoConv_fS0();
 	GenoOper_fS operators;
 	SString invalidGenotypes[] = {
-			"EEE",      // No mode specifier
-			"S:FFF",    // No part type
-			"S:FFF{x=5.0}",    // No part type
-			"M:qqE",    // Invalid modifier
-			"S:E{f}",    // No equal sign
-			"S:E{qw=1.0}",    // Wrong param key
-			"S:E{f=}",    // Wrong param value
-			"S:E{f=fr}",    // Wrong param value
-			"S:E[G_w_2]",    // Invalid neuro connection key
-			"S:E[G_1:w_2]",    // Invalid neuro connection value
-			"S:E{",    // Lacking param end
-			"S:E[",    // Lacking neuro end
-			"S:E{x=1.5;y=0.0}",    // Lacking param end
-			"S:E[2]",    // Invalid neuron connection key
-			"S:E[-2]",    // Invalid neuron connection key
-			"S:E[;;3]",    // Invalid neuron connection key
+			"FFF",    // No part type
+			"FFF{x=5.0}",    // No part type
+			"qqE",    // Invalid modifier
+			"E{f}",    // No equal sign
+			"E{qw=1.0}",    // Wrong param key
+			"E{f=}",    // Wrong param value
+			"E{f=fr}",    // Wrong param value
+			"E[G_w_2]",    // Invalid neuro connection key
+			"E[G_1:w_2]",    // Invalid neuro connection value
+			"E{",    // Lacking param end
+			"E[",    // Lacking neuro end
+			"E{x=1.5;y=0.0}",    // Lacking param end
+			"E[2]",    // Invalid neuron connection key
+			"E[-2]",    // Invalid neuron connection key
+			"E[;;3]",    // Invalid neuron connection key
 	};
 	int errorIndexes[] = {
-			1, 3, 3, 3, 4,
-			4, 6, 6, 4, 4,
-			4, 4, 12, 1, 1,
+			1, 1, 1, 2,
+			2, 4, 4, 2, 2,
+			2, 2, 10, 1, 1,
 			1,
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
-//		cout<<operators.checkValidity(invalidGenotypes[i].c_str(), "")<<endl;
 		assert(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
 		assert(genes == "");
@@ -406,7 +450,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	const int size = 6;
-	string before = "MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -424,12 +468,12 @@ void testRearrangeInputs()
 			5
 	};
 	string after[size]{
-			"MSJ:E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[1_2]cRbC[T;G_0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2]cRbC[T;G_1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"MSJ:E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[1_2]cRbC[T;G_0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[2]cRbC[T;G_1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for (int i = 0; i < size; i++)
@@ -451,15 +495,16 @@ void evolutionTest(int operationCount)
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	GenoOper_fS operators;
+	int failCount = 0;
 	cout<<operators.getSimplest()<<endl;
-	assert(strcmp(operators.getSimplest(), "S:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
+	assert(strcmp(operators.getSimplest(), "C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("SMJ:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("SMJ:R{j=3.9}cR[0]bR[0_1]");
-	gens[2] = new SString("SMJ:R[0;0_1]{j=3.9;ty=2.1;tz=4.3;z=1.1}bRcR");
-	gens[3] = new SString("SMJ:R[1]{j=3.9;z=1.04}R[1]cRC[0;1]{x=1.03}");
-	gens[4] = new SString("SMJ:E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
+	gens[0] = new SString("EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[1] = new SString("RcR[0]bR[0_1]");
+	gens[2] = new SString("R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
+	gens[4] = new SString("E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -477,8 +522,6 @@ void evolutionTest(int operationCount)
 		if (i % 100 == 0)
 		{
 			cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-			cout << gens[i1]->c_str() << endl;
-			cout << gens[i2]->c_str() << endl;
 		}
 
 		int method;
@@ -487,8 +530,12 @@ void evolutionTest(int operationCount)
 		char *arr1 = strdup(gens[i1]->c_str());
 		char *arr2 = strdup(gens[i2]->c_str());
 
+		testRandomModifications(arr1);
+		testRandomModifications(arr2);
+
 		if (operators.mutate(arr1, gp, method) == GENOPER_OK)
 			methodUsages[method]++;
+
 		if (operators.mutate(arr2, gp, method) == GENOPER_OK)
 			methodUsages[method]++;
 
@@ -506,13 +553,18 @@ void evolutionTest(int operationCount)
 
 			// Check if genotypes convert correctly
 			MultiMap map;
-			converter.convert(*gens[i1], &map, false);
-			converter.convert(*gens[i2], &map, false);
+			assert(converter.convert(*gens[i1], &map, false) != "");
+			assert(converter.convert(*gens[i2], &map, false) != "");
+		}
+		else
+		{
+			failCount++;
 		}
 
 		free(arr1);
 		free(arr2);
 	}
+	cout<< "Fails: "<<failCount<<std::endl<<std::endl;
 	cout << "Method usages:" << endl;
 	for (int i = 0; i < FS_OPCOUNT; i++)
 		cout << i << ": " << methodUsages[i] << endl;
@@ -525,12 +577,12 @@ void evolutionTest(int operationCount)
 int main(int argc, char *argv[])
 {
 	SString test_cases[][2] = {
-			{"S:E",                                               "p:sh=1\n"},
-			{"S:C",                                               "p:sh=2\n"},
-			{"S:R",                                               "p:sh=3\n"},
-			{"S:EEE",                                             "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
-			{"S:E(E,E)",                                          "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
-			{"S:E(E(E,E),E,E(E,E),E)",                            "p:sh=1\n"
+			{"E",                                               "p:sh=1\n"},
+			{"C",                                               "p:sh=2\n"},
+			{"R",                                               "p:sh=3\n"},
+			{"EEE",                                             "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
+			{"E(E,E)",                                          "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
+			{"E(E(E,E),E,E(E,E),E)",                            "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "p:4.0, sh=1\n"
 																  "p:4.0, sh=1\n"
@@ -548,13 +600,13 @@ int main(int argc, char *argv[])
 																  "j:5, 7, sh=1\n"
 																  "j:0, 8, sh=1\n"
 			},
-			{"S:EbE",                                             "p:sh=1\n"
+			{"EbE",                                             "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=2\n"}, // Parametrized joints
-			{"S:CcC",                                             "p:sh=2\n"
+			{"CcC",                                             "p:sh=2\n"
 																  "p:2.0, sh=2\n"
 																  "j:0, 1, sh=3\n"}, // Many parametrized joints
-			{"S:ERbRcCRbCbE",                                     "p:sh=1\n"
+			{"ERbRcCRbCbE",                                     "p:sh=1\n"
 																  "p:2.0, sh=3\n"
 																  "p:4.0, sh=3\n"
 																  "p:6.0, sh=2\n"
@@ -569,27 +621,27 @@ int main(int argc, char *argv[])
 																  "j:5, 6, sh=2\n"
 			},
 // Modifier mode
-			{"M:E",                                               "p:sh=1\n"},  // Basic modifier mode
-			{"M:FE",                                              "p:sh=1, fr=0.44\n"},  // Friction modifier
-			{"M:fE",                                              "p:sh=1, fr=0.36\n"},  // Friction modifier
-			{"M:FFE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
-			{"S:E{f=0.3}E{f=0.5}",                                "p:sh=1, fr=0.3\n"
+			{"E",                                               "p:sh=1\n"},  // Basic modifier mode
+			{"FE",                                              "p:sh=1, fr=0.44\n"},  // Friction modifier
+			{"fE",                                              "p:sh=1, fr=0.36\n"},  // Friction modifier
+			{"FFE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
+			{"E{f=0.3}E{f=0.5}",                                "p:sh=1, fr=0.3\n"
 																  "p:2.0, sh=1, fr=0.5\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ty=90.0}",                                     "p:sh=1\n"
+			{"EE{ty=90.0}",                                     "p:sh=1\n"
 																  "p:z=2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{tz=90.0}",                                     "p:sh=1\n"
+			{"EE{tz=90.0}",                                     "p:sh=1\n"
 																  "p:y=2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"},  // Z rotation
-			{"S:EE{tz=90.0}E{tx=90.0}E{ty=90.0}",                 "p:sh=1\n"
+			{"EE{tz=90.0}E{tx=90.0}E{ty=90.0}",                 "p:sh=1\n"
 																  "p:y=2.0, sh=1\n"
 																  "p:y=2.0, 2.0, sh=1\n"
 																  "p:-1.99, 2.0, 2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "j:1, 2, sh=1\n"
 																  "j:2, 3, sh=1\n"},  // All rotations
-			{"S:EE{tz=45.0}E{tx=45.0}E{ty=45.0}",                 "p:sh=1\n"
+			{"EE{tz=45.0}E{tx=45.0}E{ty=45.0}",                 "p:sh=1\n"
 																  "p:1.41, 1.41, sh=1\n"
 																  "p:2.83, 2.41, 1.0, sh=1\n"
 																  "p:3.12, 3.41, 2.71, sh=1\n"
@@ -597,112 +649,93 @@ int main(int argc, char *argv[])
 																  "j:1, 2, sh=1\n"
 																  "j:2, 3, sh=1\n"
 			},  // Acute angle rotations
-			{"S:EE{tz=-90.0}E{tx=-90.0}E{ty=-90.0}",              "p:sh=1\n"
+			{"EE{tz=-90.0}E{tx=-90.0}E{ty=-90.0}",              "p:sh=1\n"
 																  "p:y=-1.99, sh=1\n"
 																  "p:y=-1.99, 2.0, sh=1\n"
 																  "p:2.0, -1.99, 2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "j:1, 2, sh=1\n"
 																  "j:2, 3, sh=1\n"},   // Negative rotations
-			{"S:E{j=4.1}EE",                                      "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:0, 2, sh=1\n"},
-			{"S:E{j=3.9}EE",                                      "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"},
-			{"S:E{j=4.1}EEE",                                     "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "p:6.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:2, 3, sh=1\n"
-																  "j:0, 2, sh=1\n"},
-			{"S:EE{x=3.0}",                                       "p:sh=1\n"
+			{"EE{x=3.0}",                                       "p:sh=1\n"
 																  "p:4.0, sh=1, sx=3.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{x=3.0;y=3.0;z=3.0}",                           "p:sh=1\n"
+			{"EE{x=3.0;y=3.0;z=3.0}",                           "p:sh=1\n"
 																  "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"M:SSE",                                             "p:sh=1, sx=1.21, sy=1.21, sz=1.21\n"},  // sx modifier
-			{"M:ssE",                                             "p:sh=1, sx=0.83, sy=0.83, sz=0.83\n"},  // sx modifier
-			{"M:SSSE",                                            "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"},  // size modifiers
-			{"M:ESSSE",                                           "p:sh=1\n"
+			{"SSE",                                             "p:sh=1, sx=1.21, sy=1.21, sz=1.21\n"},  // sx modifier
+			{"ssE",                                             "p:sh=1, sx=0.83, sy=0.83, sz=0.83\n"},  // sx modifier
+			{"SSSE",                                            "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"},  // size modifiers
+			{"ESSSE",                                           "p:sh=1\n"
 																  "p:2.33, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
 																  "j:0, 1, sh=1\n"},  // size modifiers
-			{"M:SSSEE",                                           "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"
+			{"SSSEE",                                           "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"
 																  "p:2.66, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
 																  "j:0, 1, sh=1\n"},  // size modifiers
-			{"M:IE",                                              "p:sh=1, ing=0.28\n"},  // Ingestion modifier
-			{"M:iE",                                              "p:sh=1, ing=0.23\n"},  // Ingestion modifier
-			{"M:IIE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
-			{"S:E{i=0.3}E{i=0.5}",                                "p:sh=1, ing=0.3\n"     // Ingestion param
+			{"IE",                                              "p:sh=1, ing=0.28\n"},  // Ingestion modifier
+			{"iE",                                              "p:sh=1, ing=0.23\n"},  // Ingestion modifier
+			{"IIE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
+			{"E{i=0.3}E{i=0.5}",                                "p:sh=1, ing=0.3\n"     // Ingestion param
 																  "p:2.0, sh=1, ing=0.5\n"
 																  "j:0, 1, sh=1\n"},
-			{"MS:IIE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
+			{"IIE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
 			// Test collisions
-			{"S:EE{ty=180.0;x=3.0}",                              "p:sh=1\n"
+			{"EE{ty=180.0;x=3.0}",                              "p:sh=1\n"
 																  "p:-3.99, sh=1, sx=3.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ty=90.0;z=5.0}",                               "p:sh=1\n"
+			{"EE{ty=90.0;z=5.0}",                               "p:sh=1\n"
 																  "p:z=6.0, sh=1, sz=5.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:E{x=1.5;z=2.0}E{tz=90.0;x=2.0;y=5.0;z=3.0}",      "p:sh=1, sx=1.5, sz=2.0\n"
+			{"E{x=1.5;z=2.0}E{tz=90.0;x=2.0;y=5.0;z=3.0}",      "p:sh=1, sx=1.5, sz=2.0\n"
 																  "p:y=5.99, sh=1, sx=2.0, sy=5.0, sz=3.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:E{y=3.0;z=4.0}E{y=4.0;z=5.0}",                    "p:sh=1, sy=3.0, sz=4.0\n"
+			{"E{y=3.0;z=4.0}E{y=4.0;z=5.0}",                    "p:sh=1, sy=3.0, sz=4.0\n"
 																  "p:1.99, sh=1, sy=4.0, sz=5.0\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",            "p:sh=1, sy=399.0, sz=599.0\n"
+			{"E{y=399.0;z=599.0}E{y=799.0;z=999.0}",            "p:sh=1, sy=399.0, sz=599.0\n"
 																  "p:53.06, sh=1, sy=799.0, sz=999.0\n"
 																  "j:0, 1, sh=1\n"},  // Test a lot of spheres
-			{"S:EE{ty=45.0}",                                     "p:sh=1\n"
+			{"EE{ty=45.0}",                                     "p:sh=1\n"
 																  "p:1.41, z=1.41, sh=1\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ty=120.0}",                                    "p:sh=1\n"
+			{"EE{ty=120.0}",                                    "p:sh=1\n"
 																  "p:-0.99, z=1.73, sh=1\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ry=90.0;z=2.0}",                               "p:sh=1\n"
-																  "p:3.0, sh=1, sz=2.0, ry=90.0\n"
+			{"EE{ry=90.0;z=2.0}",                               "p:sh=1\n"
+																  "p:3.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:E{ry=90.0;z=2.0}E{ry=90.0;z=2.0}",                "p:sh=1, sz=2.0, ry=90.0\n"
-																  "p:4.0, sh=1, sz=2.0, ry=90.0\n"
+			{"E{ry=90.0;z=2.0}E{ry=90.0;z=2.0}",                "p:sh=1, sz=2.0, ry=1.5707963267948966\n"
+																  "p:4.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ry=45.0;z=2.0}",                               "p:sh=1\n"
-																  "p:2.57, sh=1, sz=2.0, ry=45.0\n"
+			{"EE{ry=45.0;z=2.0}",                               "p:sh=1\n"
+																  "p:2.57, sh=1, sz=2.0, ry=0.7853981633974483\n"
 																  "j:0, 1, sh=1\n"},
-			{"S:EE{ry=30.0;z=2.0}",                               "p:sh=1\n"
-																  "p:2.3, sh=1, sz=2.0, ry=30.0\n"
+			{"EE{ry=30.0;z=2.0}",                               "p:sh=1\n"
+																  "p:2.3, sh=1, sz=2.0, ry=0.5235987755982988\n"
 																  "j:0, 1, sh=1\n"},
 
-			{"S:E[]",                                             "p:sh=1\n"
+			{"E[]",                                             "p:sh=1\n"
 																  "n:p=0\n"},
-			{"S:E[;]",                                            "p:sh=1\n"
+			{"E[;]",                                            "p:sh=1\n"
 																  "n:p=0\n"
 																  "n:p=0\n"},
-			{"S:E[]E[]",                                          "p:sh=1\n"
+			{"E[]E[]",                                          "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"},
-			{"S:E[T]",                                            "p:sh=1\n"
+			{"E[T]",                                            "p:sh=1\n"
 																  "n:p=0, d=T\n"},
-			{"S:E[]E[0]",                                         "p:sh=1\n"
+			{"E[]E[0]",                                         "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"
 																  "c:1, 0\n"},
-			{"S:E[Sin;T_0]",                                        "p:sh=1\n"
+			{"E[Sin;T_0]",                                        "p:sh=1\n"
 																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "c:1, 0\n"},
-			{"S:E[Sin_2;T_0;T_0_1]",                                "p:sh=1\n"
+			{"E[Sin_2;T_0;T_0_1]",                                "p:sh=1\n"
 																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
@@ -710,8 +743,8 @@ int main(int argc, char *argv[])
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[Sin_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=90.0\n"
-																  "p:4.0, sh=1, sz=2.0, ry=90.0\n"
+			{"E[Sin_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=1.5707963267948966\n"
+																  "p:4.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
@@ -720,7 +753,7 @@ int main(int argc, char *argv[])
 																  "c:1, 0\n"
 																  "c:2, 0\n"
 																  "c:2, 1\n"},
-			{"S:E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
+			{"E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
 																  "n:p=0, d=Sin\n"
 																  "n:p=0, d=T\n"
 																  "n:p=0, d=T\n"
@@ -728,19 +761,19 @@ int main(int argc, char *argv[])
 																  "c:1, 0, 3.0\n"
 																  "c:2, 0, 4.0\n"
 																  "c:2, 1, 5.0\n"},
-			{"S:E[]E[G_0]",                                       "p:sh=1\n"
+			{"E[]E[G_0]",                                       "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:j=0, d=G\n"
 																  "c:1, 0\n"},
-			{"S:E[]E[Rnd_0]",                                     "p:sh=1\n"
+			{"E[]E[Rnd_0]",                                     "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1, d=Rnd\n"
 																  "c:1, 0\n"},
-			{"S:E[Rnd]E[Rnd_0_1;Sin_0]",                          "p:sh=1\n"
+			{"E[Rnd]E[Rnd_0_1;Sin_0]",                          "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0, d=Rnd\n"
@@ -750,22 +783,29 @@ int main(int argc, char *argv[])
 																  "c:1, 1\n"
 																  "c:2, 0\n"
 			},
-			{"S:E{s=1.5}",                                        "p:sh=1, sx=1.5, sy=1.5, sz=1.5\n"},
-			{"MS:SE{s=1.1;x=1.2;z=1.3}",                          "p:sh=1, sx=1.45, sy=1.21, sz=1.57\n"},
-			{"MS:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",                  "p:sh=1, sx=0.99, sy=0.99, sz=0.99\n"
+			{"E{s=1.5}",                                        "p:sh=1, sx=1.5, sy=1.5, sz=1.5\n"},
+			{"SE{s=1.1;x=1.2;z=1.3}",                          "p:sh=1, sx=1.45, sy=1.21, sz=1.57\n"},
+			{"SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",                  "p:sh=1, sx=0.99, sy=0.99, sz=0.99\n"
 																  "p:2.42, sh=1, sx=1.45, sy=1.21, sz=1.57\n"
 																  "j:0, 1, sh=1\n"},
+			{"ETTE{st=0.5}",                                 "p:sh=1\n"
+												  			"p:2.0, sh=1\n"
+														"j:0, 1, sh=1, stif=0.61, rotstif=0.61\n"},  // Stiffness param
+			{"EttE{st=0.5}",                                 "p:sh=1\n"
+															 "p:2.0, sh=1\n"
+															 "j:0, 1, sh=1, stif=0.41, rotstif=0.41\n"},  // Stiffness param
 	};
 	srand(time(NULL));
 
 
 	int expectedPartCount[] = {
 			1, 1, 1, 3, 3, 9, 2, 2, 7, 1,
-			1, 1, 1, 2, 2, 2, 4, 4, 4, 3,
-			3, 4, 2, 2, 1, 1, 1, 2, 2, 1,
+			1, 1, 1, 2, 2, 2, 4, 4, 4, 2,
+			2, 1, 1, 1, 2, 2, 1,
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
-			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,};
+			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
+			2,2};
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 
@@ -784,6 +824,7 @@ int main(int argc, char *argv[])
 	testAddPart();
 	testChangePartType();
 	testUsePartType();
+	testTurnWithRotation();
 	int operationCount;
 	if (argc > 1)
 		operationCount = std::stod(argv[1]);

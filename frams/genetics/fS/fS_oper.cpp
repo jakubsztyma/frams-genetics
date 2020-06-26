@@ -14,8 +14,7 @@ static ParamEntry GENOfSparam_tab[] =
 				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
 				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
 				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
-				{"fS_mut_add_joint",        0, 0, "Add joint",                "f 0 100 10", FIELD(prob[FS_ADD_JOINT]),            "mutation: probability of adding a joint",},
-				{"fS_mut_rem_joint",        0, 0, "Remove joint",             "f 0 100 10", FIELD(prob[FS_REM_JOINT]),            "mutation: probability of removing a joint",},
+				{"fS_mut_change_joint",        0, 0, "Change joint",                "f 0 100 10", FIELD(prob[FS_CHANGE_JOINT]),            "mutation: probability of changing a joint",},
 				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
 				{"fS_mut_rem_param",        0, 0, "Remove param",             "f 0 100 10", FIELD(prob[FS_REM_PARAM]),            "mutation: probability of removing a parameter",},
 				{"fS_mut_mod_param",        0, 0, "Modify param",             "f 0 100 10", FIELD(prob[FS_MOD_PARAM]),            "mutation: probability of modifying a parameter",},
@@ -52,7 +51,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 		if(errorPosition != 0)
 		{
 			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
-			return 1 + errorPosition;
+			return errorPosition;
 		}
 	}
 	catch (fS_Exception &e)
@@ -91,11 +90,8 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 		case FS_MOD_PART:
 			result = changePartType(genotype, availableTypes);
 			break;
-		case FS_ADD_JOINT:
-			result = addJoint(genotype);
-			break;
-		case FS_REM_JOINT:
-			result = removeJoint(genotype);
+		case FS_CHANGE_JOINT:
+			result = changeJoint(genotype);
 			break;
 		case FS_ADD_PARAM:
 			result = addParam(genotype);
@@ -213,7 +209,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 
 const char* GenoOper_fS::getSimplest()
 {
-	return "S:C{x=0.80599;y=0.80599;z=0.80599}";
+	return "C{x=0.80599;y=0.80599;z=0.80599}";
 }
 
 uint32_t GenoOper_fS::style(const char *geno, int pos)
@@ -291,7 +287,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	char partType = availableTypes[rndUint(availableTypes.length())];
 
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, node->modifierMode, node->paramMode, node->cycleMode, node);
+	Node *newNode = new Node(substring, node);
 	// Add random rotation
 	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
 	if(strongAddPart)
@@ -332,9 +328,9 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	if (mutateSize)
 	{
 		geno.getState();
-		newNode->changeSizeParam(SIZE_X, fS_Genotype::randomParamMultiplier(), true);
-		newNode->changeSizeParam(SIZE_Y, fS_Genotype::randomParamMultiplier(), true);
-		newNode->changeSizeParam(SIZE_Z, fS_Genotype::randomParamMultiplier(), true);
+		newNode->changeSizeParam(SIZE_X, true);
+		newNode->changeSizeParam(SIZE_Y, true);
+		newNode->changeSizeParam(SIZE_Z, true);
 	}
 	return true;
 }
@@ -373,7 +369,7 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 		Node *randomNode = geno.chooseNode();
 		int index = rndUint(availTypesLength);
 		if (availTypes[index] == SHAPETYPE_TO_GENE.at(randomNode->partType))
-			index = (index + 1 + rndUint(availTypesLength)) % availTypesLength;
+			index = (index + 1 + rndUint(availTypesLength - 1)) % availTypesLength;
 		char newTypeChr = availTypes[index];
 
 		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
@@ -387,16 +383,12 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 		if (ensureCircleSection)
 		{
 			geno.getState();
-			if (randomNode->partType == Part::Shape::SHAPE_CUBOID
-				|| (randomNode->partType == Part::Shape::SHAPE_CYLINDER && newType == Part::Shape::SHAPE_ELLIPSOID))
-			{
-				double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
-				double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
-				double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
-				randomNode->params[SIZE_X] = newRelativeRadius;
-				randomNode->params[SIZE_Y] = newRelativeRadius;
-				randomNode->params[SIZE_Z] = newRelativeRadius;
-			}
+			double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+			double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+			double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
+			randomNode->params[SIZE_X] = newRelativeRadius;
+			randomNode->params[SIZE_Y] = newRelativeRadius;
+			randomNode->params[SIZE_Z] = newRelativeRadius;
 		}
 		randomNode->partType = newType;
 		return true;
@@ -404,43 +396,19 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 	return false;
 }
 
-bool GenoOper_fS::addJoint(fS_Genotype &geno)
+bool GenoOper_fS::changeJoint(fS_Genotype &geno)
 {
 	if (geno.startNode->children.empty())
 		return false;
 
-	Node *randomNode;
-	for (int i = 0; i < mutationTries; i++)
-	{
-		char randomJoint = JOINTS[rndUint(JOINT_COUNT)];
-		randomNode = geno.chooseNode(1);        // First part does not have joints
-		if (randomNode->joint == DEFAULT_JOINT)
-		{
-			randomNode->joint = randomJoint;
-			return true;
-		}
-	}
-	return false;
-}
+	Node *randomNode = geno.chooseNode(1);        // First part does not have joints
+	int jointLen  = ALL_JOINTS.length();
+	int index = rndUint(jointLen);
+	if (ALL_JOINTS[index] == randomNode->joint)
+		index = (index + 1 + rndUint(jointLen - 1)) % jointLen;
 
-
-bool GenoOper_fS::removeJoint(fS_Genotype &geno)
-{
-	// This operator may can lower success rate that others, as it does not work when there is only one node
-	if (geno.startNode->children.size() < 1) // Only one node; there are no joints
-		return false;
-
-	// Choose a node with joints
-	for (int i = 0; i < mutationTries; i++)
-	{
-		Node *randomNode = geno.chooseNode(1);    // First part does not have joints
-		if (randomNode->joint != DEFAULT_JOINT)
-		{
-			randomNode->joint = DEFAULT_JOINT;
-			return true;
-		}
-	}
-	return false;
+	randomNode->joint = ALL_JOINTS[index];
+	return true;
 }
 
 bool GenoOper_fS::addParam(fS_Genotype &geno)
@@ -449,15 +417,12 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	int paramCount = randomNode->params.size();
 	if (paramCount == int(PARAMS.size()))
 		return false;
-	string selectedParam = PARAMS[rndUint(PARAMS.size())];
-	// Not allow 'j' parameter when the cycle mode is not on
-	if (selectedParam == JOINT_DISTANCE && !geno.startNode->cycleMode)
-		return false;
-	if (randomNode->params.count(selectedParam) > 0)
+	string key = PARAMS[rndUint(PARAMS.size())];
+	if (randomNode->params.count(key) > 0)
 		return false;
 	// Do not allow invalid changes in part size
-	bool isRadiusOfBase = selectedParam == SIZE_X || selectedParam == SIZE_Y;
-	bool isRadius = isRadiusOfBase || selectedParam == SIZE_Z;
+	bool isRadiusOfBase = key == SIZE_X || key == SIZE_Y;
+	bool isRadius = isRadiusOfBase || key == SIZE_Z;
 	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
@@ -466,7 +431,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[selectedParam] = defaultParamValues.at(selectedParam);
+	randomNode->params[key] = mutateCreep('f', defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
 	return true;
 }
 
@@ -500,16 +465,13 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
 
-			double multiplier = fS_Genotype::randomParamMultiplier();
-
-
 			// Do not allow invalid changes in part size
 			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
 			{
-				it->second *= multiplier;
+				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
 				return true;
 			} else
-				return randomNode->changeSizeParam(it->first, multiplier, ensureCircleSection);
+				return randomNode->changeSizeParam(it->first, ensureCircleSection);
 		}
 	}
 	return false;

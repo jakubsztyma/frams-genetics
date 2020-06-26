@@ -13,13 +13,6 @@
 #include "frams/model/model.h"
 #include "frams/util/multirange.h"
 
-/** @name Names of genotype modes */
-//@{
-#define MODIFIER_MODE 'M'
-#define PARAM_MODE 'S'
-#define CYCLE_MODE 'J'
-//@}
-
 /** @name Values of constants used in encoding */
 //@{
 #define BRANCH_START '('
@@ -44,9 +37,6 @@ enum class SHIFT
 
 /** @name Every modifier changes the underlying value by this multiplier */
 const double MODIFIER_MULTIPLIER = 1.1;
-/** @name In mutation parameters will be multiplied by at most this value */
-const double PARAM_MAX_MULTIPLIER = 1.5;
-
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -69,6 +59,7 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 //@{
 #define INGESTION "i"
 #define FRICTION "f"
+#define STIFFNESS "st"
 #define SIZE "s"
 #define SIZE_X "x"
 #define SIZE_Y "y"
@@ -79,7 +70,6 @@ const double SPHERE_DISTANCE_TOLERANCE = 0.99;
 #define RX "rx"
 #define RY "ry"
 #define RZ "rz"
-#define JOINT_DISTANCE "j"
 //@}
 /** @name Macros and values used in collision detection */
 //@{
@@ -112,17 +102,20 @@ const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE a
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
+const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "IFS";
+const string MODIFIERS = "IFST";
 const char SIZE_MODIFIER = 's';
 const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
-							  JOINT_DISTANCE};
+							 STIFFNESS};
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
-const std::map<string, double> defaultParamValues = {
+static const Joint defJoint = Model::getDefJoint();
+const std::map<string, double> defaultValues = {
 		{INGESTION,      defPart.ingest},
 		{FRICTION,       defPart.friction},
+		{STIFFNESS,	 	 defJoint.stif},
 		{ROT_X,          0.0},
 		{ROT_Y,          0.0},
 		{ROT_Z,          0.0},
@@ -132,8 +125,39 @@ const std::map<string, double> defaultParamValues = {
 		{SIZE,           1.0},
 		{SIZE_X,         1.0},
 		{SIZE_Y,         1.0},
-		{SIZE_Z,         1.0},
-		{JOINT_DISTANCE, 1.0}
+		{SIZE_Z,         1.0}
+};
+
+const std::map<string, double> minValues = {
+		{INGESTION,      0},
+		{FRICTION,       0},
+		{STIFFNESS,	 0.0},
+		{ROT_X,          -180.0},
+		{ROT_Y,          -180.0},
+		{ROT_Z,          -180.0},
+		{RX,             -180.0},
+		{RY,             -180.0},
+		{RZ,             -180.0},
+		{SIZE,           0.01},
+		{SIZE_X,         0.01},
+		{SIZE_Y,         0.01},
+		{SIZE_Z,         0.01}
+};
+
+const std::map<string, double> maxValues = {
+		{INGESTION,      1.0},
+		{FRICTION,       1.0},
+		{STIFFNESS,	 0.0},
+		{ROT_X,          180.0},
+		{ROT_Y,          180.0},
+		{ROT_Z,          180.0},
+		{RX,             180.0},
+		{RY,             180.0},
+		{RZ,             180.0},
+		{SIZE,           100.0},
+		{SIZE_X,         100.0},
+		{SIZE_Y,         100.0},
+		{SIZE_Z,         100.0}
 };
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -251,6 +275,7 @@ public:
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
 	double s = 1.0;      /// Size multipliers
+	double stif = 1.0;	/// Stiffness multipliers
 
 	State(State *_state); /// Derive the state from parent
 
@@ -300,7 +325,6 @@ class Node
 
 private:
 	Substring *partDescription = nullptr;
-	bool cycleMode, modifierMode, paramMode; /// Possible modes
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
@@ -308,8 +332,9 @@ private:
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
-	char joint = DEFAULT_JOINT;           /// Set of all joints
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
+
+	double getDistance();
 
 	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
 	{
@@ -383,7 +408,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state, const Pt3D &parentSize);
+	void getState(State *_state);
 
 	/**
 	 * Build children internal representations from fS genotype
@@ -418,10 +443,11 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
+	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(Substring &genotype, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *parent);
+	Node(Substring &genotype, Node *parent);
 
 	~Node();
 
@@ -451,7 +477,7 @@ public:
 	 * @param ensureCircleSection
 	 * @return True if the parameter value was change, false otherwise
 	 */
-	bool changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection);
+	bool changeSizeParam(string paramKey,  bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree
@@ -500,6 +526,7 @@ public:
 
 
 	static int precision;
+	static bool TURN_WITH_ROTATION;
 
 	/**
 	 * Build internal representation from fS format
@@ -510,12 +537,6 @@ public:
 	~fS_Genotype();
 
 	void getState();
-
-	/**
-	 * Get a random multiplier for parameter mutation
-	 * @return Random parameter multiplier
-	 */
-	static double randomParamMultiplier();
 
 	/**
 	 * Get all existing nodes

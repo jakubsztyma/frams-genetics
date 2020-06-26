@@ -9,9 +9,10 @@
 #include "common/Convert.h"
 #include "frams/util/rndutil.h"
 #include "frams/neuro/neurolibrary.h"
-
+#include "../genooperators.h"
 
 int fS_Genotype::precision = 4;
+bool fS_Genotype::TURN_WITH_ROTATION = false;
 
 
 double round2(double var)
@@ -30,6 +31,10 @@ double fS_stod(const string&  str, int start, size_t* size)
 	{
 		throw fS_Exception("Invalid numeric value", start);
 	}
+	catch(const std::out_of_range& ex)
+	{
+		throw fS_Exception("Invalid numeric value", start);
+	}
 }
 
 State::State(State *_state)
@@ -38,6 +43,7 @@ State::State(State *_state)
 	v = Pt3D(_state->v);
 	fr = _state->fr;
 	s = _state->s;
+	stif = _state->stif;
 }
 
 State::State(Pt3D _location, Pt3D _v)
@@ -54,11 +60,7 @@ void State::addVector(const double length)
 void rotateVector(Pt3D &vector, const Pt3D &rotation)
 {
 	Orient rotmatrix = Orient_1;
-	rotmatrix.rotate(Pt3D(
-			Convert::toRadians(rotation.x),
-			Convert::toRadians(rotation.y),
-			Convert::toRadians(rotation.z)
-	));
+	rotmatrix.rotate(rotation);
 	vector = rotmatrix.transform(vector);
 }
 
@@ -114,12 +116,9 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 	}
 }
 
-Node::Node(Substring &restOfGeno, bool _modifierMode, bool _paramMode, bool _cycleMode, Node *_parent)
+Node::Node(Substring &restOfGeno, Node *_parent)
 {
 	parent = _parent;
-	modifierMode = _modifierMode;
-	paramMode = _paramMode;
-	cycleMode = _cycleMode;
 	partDescription = new Substring(restOfGeno);
 
 	try
@@ -292,7 +291,7 @@ double Node::getParam(string key)
 	if (item != params.end())
 		return item->second;
 	else
-		return defaultParamValues.at(key);
+		return defaultValues.at(key);
 }
 
 double avg(double a, double b)
@@ -414,22 +413,27 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
 		return DISJOINT;
 }
 
-double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParent, Pt3D rotation)
+double Node::getDistance()
 {
+	Pt3D size = calculateSize();
+	Pt3D parentSize = parent->calculateSize();	// Here we are sure that parent is not nullptr
 	int parentSphereCount, sphereCount;
 	double parentSphereRadius, sphereRadius;
-	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent, rotationParent);
-	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii, rotation);
+	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
+	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, size, getRotation());
 
 	double distanceThreshold = sphereRadius + parentSphereRadius;
 	double minDistance = 0.0;
-	double maxDistance = 2 * (max3(radiiParent) + max3(radii));
+	double maxDistance = 2 * (max3(parentSize) + max3(size));
 	double currentDistance = avg(maxDistance, minDistance);
 	int result = -1;
+	int iterationNo = 0;
 	while (result != ADJACENT)
 	{
-		Pt3D currentVector = vector * currentDistance;
+		iterationNo++;
+		Pt3D currentVector = state->v * currentDistance;
 		result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
+
 		if (result == DISJOINT)
 		{
 			maxDistance = currentDistance;
@@ -439,8 +443,14 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			minDistance = currentDistance;
 			currentDistance = avg(maxDistance, currentDistance);
 		}
+
+		if(maxDistance <= 0 || iterationNo > 1000)
+			throw fS_Exception("Computing of distances between parts failed", 0);
 		if (currentDistance > maxDistance)
+		{
+			std::cout<<partDescription->str<<std::endl;
 			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
+		}
 		if (currentDistance < minDistance)
 			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
 
@@ -451,7 +461,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	return round2(currentDistance);
 }
 
-void Node::getState(State *_state, const Pt3D &parentSize)
+void Node::getState(State *_state)
 {
 	if (state != nullptr)
 		delete state;
@@ -472,19 +482,20 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 			state->fr *= multiplier;
 		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
+		else if (mod == MODIFIERS[3])
+			state->stif *= multiplier;
 	}
 
-	Pt3D size = calculateSize();
 	if (parent != nullptr)
 	{
 		// Rotate
 		state->rotate(getVectorRotation());
 
-		double distance = getDistance(parentSize, size, state->v, getRotation(), getRotation());
+		double distance = getDistance();
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
-		children[i]->getState(state, size);
+		children[i]->getState(state);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
@@ -492,7 +503,7 @@ void Node::getChildren(Substring &restOfGenotype)
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
-		children.push_back(new Node(branches[i], modifierMode, paramMode, cycleMode, this));
+		children.push_back(new Node(branches[i], this));
 	}
 }
 
@@ -592,18 +603,21 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	double rx = getParam(ROT_X);
-	double ry = getParam(ROT_Y);
-	double rz = getParam(ROT_Z);
+	double rx = Convert::toRadians(getParam(ROT_X));
+	double ry = Convert::toRadians(getParam(ROT_Y));
+	double rz = Convert::toRadians(getParam(ROT_Z));
 	return Pt3D(rx, ry, rz);
 }
 
 Pt3D Node::getRotation()
 {
-	double rx = getParam(RX);
-	double ry = getParam(RY);
-	double rz = getParam(RZ);
-	return Pt3D(rx, ry, rz);
+	double rx = Convert::toRadians(getParam(RX));
+	double ry = Convert::toRadians(getParam(RY));
+	double rz = Convert::toRadians(getParam(RZ));
+	Pt3D rotation = Pt3D(rx, ry, rz);
+	if(fS_Genotype::TURN_WITH_ROTATION)
+		rotation += getVectorRotation();
+	return rotation;
 }
 
 void Node::buildModel(Model &model, Node *parent)
@@ -612,7 +626,6 @@ void Node::buildModel(Model &model, Node *parent)
 	model.addPart(part);
 	if (parent != nullptr)
 		addJointsToModel(model, parent);
-
 
 	for (int i = 0; i < int(neurons.size()); i++)
 	{
@@ -654,6 +667,9 @@ void Node::createPart()
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
+	j->stif = round2(getParam(STIFFNESS) * state->stif);
+	j->rotstif = j->stif;
+
 	j->attachToParts(parent->part, part);
 	switch (joint)
 	{
@@ -753,15 +769,15 @@ void Node::getGeno(SString &result)
 }
 
 
-bool Node::changeSizeParam(string paramKey, double multiplier, bool ensureCircleSection)
+bool Node::changeSizeParam(string key, bool ensureCircleSection)
 {
-	double oldValue = getParam(paramKey);
-	params[paramKey] = oldValue * multiplier;
+	double oldValue = getParam(key);
+	params[key] = GenoOperators::mutateCreep('f', params[key], minValues.at(key), maxValues.at(key), true);
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
 	else
 	{
-		params[paramKey] = oldValue;
+		params[key] = oldValue;
 		return false;
 	}
 }
@@ -785,19 +801,8 @@ fS_Genotype::fS_Genotype(const string &genotype)
 	try
 	{
 		string geno = genotype.c_str();
-		// M - modifier mode, S - standard mode
-		size_t modeSeparatorIndex = geno.find(':');
-		if (modeSeparatorIndex == string::npos)
-			throw fS_Exception("No mode separator", 0);
-
-		string modeStr = geno.substr(0, modeSeparatorIndex).c_str();
-		bool modifierMode = modeStr.find(MODIFIER_MODE) != string::npos;
-		bool paramMode = modeStr.find(PARAM_MODE) != string::npos;
-		bool cycleMode = modeStr.find(CYCLE_MODE) != string::npos;
-
-		int actualGenoStart = modeSeparatorIndex + 1;
-		Substring substring(geno.c_str(), actualGenoStart, geno.length() - actualGenoStart);
-		startNode = new Node(substring, modifierMode, paramMode, cycleMode, nullptr);
+		Substring substring(geno.c_str(), 0, geno.length());
+		startNode = new Node(substring, nullptr);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
@@ -815,49 +820,14 @@ fS_Genotype::~fS_Genotype()
 void fS_Genotype::getState()
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-	startNode->getState(initialState, Pt3D(1.0));
-}
-
-double fS_Genotype::randomParamMultiplier()
-{
-	double multiplier = 1 + fabs(RndGen.GaussStd());
-	if (multiplier > PARAM_MAX_MULTIPLIER)
-		multiplier = PARAM_MAX_MULTIPLIER;
-	if (rndUint(2) == 0)
-		multiplier = 1.0 / multiplier;
-	return multiplier;
+	startNode->getState(initialState);
 }
 
 void fS_Genotype::buildModel(Model &model)
 {
 	getState();
 	startNode->buildModel(model, nullptr);
-
 	buildNeuroConnections(model);
-
-	// Additional joints
-	vector<Node*> allNodes = getAllNodes();
-	for (int i = 0; i < int(allNodes.size()); i++)
-	{
-		Node *node = allNodes[i];
-		if (node->params.find(JOINT_DISTANCE) != node->params.end())
-		{
-			Node *otherNode = getNearestNode(allNodes, node);
-			if (otherNode != nullptr)
-			{
-				// If other node is close enough, add a joint
-				double distance = node->state->location.distanceTo(otherNode->state->location);
-				if (distance < node->params[JOINT_DISTANCE])
-				{
-					Joint *joint = new Joint();
-					joint->attachToParts(node->part, otherNode->part);
-
-					joint->shape = Joint::Shape::SHAPE_FIXED;
-					model.addJoint(joint);
-				}
-			}
-		}
-	}
 }
 
 
@@ -904,15 +874,6 @@ SString fS_Genotype::getGeno()
 {
 	SString geno;
 	geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
-
-	if (startNode->modifierMode)
-		geno += MODIFIER_MODE;
-	if (startNode->paramMode)
-		geno += PARAM_MODE;
-	if (startNode->cycleMode)
-		geno += CYCLE_MODE;
-
-	geno += ':';
 	startNode->getGeno(geno);
 	return geno;
 }
@@ -1009,7 +970,7 @@ int fS_Genotype::checkValidityOfPartSizes()
 	{
 		if (!nodes[i]->isPartSizeValid())
 		{
-			return nodes[i]->partDescription->start;
+			return 1 + nodes[i]->partDescription->start;
 		}
 	}
 	return 0;
