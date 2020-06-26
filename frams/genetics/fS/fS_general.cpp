@@ -413,21 +413,25 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
 		return DISJOINT;
 }
 
-double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParent, Pt3D rotation)
+double Node::getDistance()
 {
+	Pt3D size = calculateSize();
+	Pt3D parentSize = parent->calculateSize();	// Here we are sure that parent is not nullptr
 	int parentSphereCount, sphereCount;
 	double parentSphereRadius, sphereRadius;
-	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, radiiParent, rotationParent);
-	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, radii, rotation);
+	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
+	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, size, getRotation());
 
 	double distanceThreshold = sphereRadius + parentSphereRadius;
 	double minDistance = 0.0;
-	double maxDistance = 2 * (max3(radiiParent) + max3(radii));
+	double maxDistance = 2 * (max3(parentSize) + max3(size));
 	double currentDistance = avg(maxDistance, minDistance);
 	int result = -1;
+	int iterationNo = 0;
 	while (result != ADJACENT)
 	{
-		Pt3D currentVector = vector * currentDistance;
+		iterationNo++;
+		Pt3D currentVector = state->v * currentDistance;
 		result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
 
 		if (result == DISJOINT)
@@ -440,10 +444,13 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 			currentDistance = avg(maxDistance, currentDistance);
 		}
 
-		if(maxDistance <= 0)
-			throw fS_Exception("Internal error; computing of distances failed", 0);
+		if(maxDistance <= 0 || iterationNo > 1000)
+			throw fS_Exception("Computing of distances between parts failed", 0);
 		if (currentDistance > maxDistance)
+		{
+			std::cout<<partDescription->str<<std::endl;
 			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
+		}
 		if (currentDistance < minDistance)
 			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
 
@@ -454,7 +461,7 @@ double getDistance(Pt3D radiiParent, Pt3D radii, Pt3D vector, Pt3D rotationParen
 	return round2(currentDistance);
 }
 
-void Node::getState(State *_state, const Pt3D &parentSize)
+void Node::getState(State *_state)
 {
 	if (state != nullptr)
 		delete state;
@@ -479,17 +486,16 @@ void Node::getState(State *_state, const Pt3D &parentSize)
 			state->stif *= multiplier;
 	}
 
-	Pt3D size = calculateSize();
 	if (parent != nullptr)
 	{
 		// Rotate
 		state->rotate(getVectorRotation());
 
-		double distance = getDistance(parentSize, size, state->v, parent->getRotation(), getRotation());
+		double distance = getDistance();
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
-		children[i]->getState(state, size);
+		children[i]->getState(state);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
@@ -814,7 +820,7 @@ fS_Genotype::~fS_Genotype()
 void fS_Genotype::getState()
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-	startNode->getState(initialState, Pt3D(1.0));
+	startNode->getState(initialState);
 }
 
 void fS_Genotype::buildModel(Model &model)

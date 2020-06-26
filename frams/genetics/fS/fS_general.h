@@ -334,6 +334,8 @@ private:
 	std::map<char, int> modifiers;     /// Vector of all modifiers
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
+	double getDistance();
+
 	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
 	{
 		double result;
@@ -406,7 +408,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state, const Pt3D &parentSize);
+	void getState(State *_state);
 
 	/**
 	 * Build children internal representations from fS genotype
