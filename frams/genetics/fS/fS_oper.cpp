@@ -228,11 +228,11 @@ uint32_t GenoOper_fS::style(const char *geno, int pos)
 	{
 		style = GENSTYLE_RGBS(0, 200, 0, GENSTYLE_NONE);
 	}
-	else if (isdigit(ch) || strchr(".=", ch)) // Numerical value
+	else if (isdigit(ch) || strchr(".", ch)) // Numerical value
 	{
 		style = GENSTYLE_RGBS(200, 0, 0, GENSTYLE_NONE);
 	}
-	else if(strchr("()_;[],", ch))
+	else if(strchr("()_;[],=", ch))
 	{
 		style = GENSTYLE_CS(0, GENSTYLE_BOLD); // Important char
 	}
