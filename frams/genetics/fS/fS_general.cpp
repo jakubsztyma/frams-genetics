@@ -448,7 +448,6 @@ double Node::getDistance()
 			throw fS_Exception("Computing of distances between parts failed", 0);
 		if (currentDistance > maxDistance)
 		{
-			std::cout<<partDescription->str<<std::endl;
 			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
 		}
 		if (currentDistance < minDistance)
@@ -713,12 +712,11 @@ void Node::getGeno(SString &result)
 			fS_Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->getClassName() != "N")
-			{
-				result += n->getDetails();
-				if (!n->inputs.empty())
-					result += NEURON_INTERNAL_SEPARATOR;
-			}
+
+			result += n->getDetails();
+			if (!n->inputs.empty())
+				result += NEURON_INTERNAL_SEPARATOR;
+
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{
 				if (it != n->inputs.begin())
@@ -729,7 +727,6 @@ void Node::getGeno(SString &result)
 					result += NEURON_I_W_SEPARATOR;
 					result += SString::valueOf(it->second);
 				}
-
 			}
 		}
 		result += NEURON_END;

@@ -587,7 +587,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second = GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
+			it->second = GenoOperators::mutateNeuronProperty(it->second, selectedNeuron, -1);
 			return true;
 		}
 	}
@@ -653,28 +653,5 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 		return false;
 
 	fS_Neuron *neu = neurons[rndUint(neurons.size())];
-	SyntParam par = neu->classProperties();
-
-	if (par.getPropCount() > 0)
-	{
-		int i = rndUint(par.getPropCount());
-		if (*par.type(i) == 'f')
-		{
-			double change = GenoOperators::mutateNeuProperty(par.getDouble(i), neu, 100 + i);
-			par.setDouble(i, change);
-		}
-		SString line;
-		int tmp = 0;
-		par.update(&line);
-		SString props;
-		line.getNextToken(tmp, props, '\n'); // removal of newline character
-		if (props != "")
-		{
-			SString det = neu->getClass()->name + ": " + props;
-			neu->setDetails(det);
-			return true;
-		}
-	}
-
-	return false;
+	return GenoOperators::mutateRandomNeuronOrNeuroclassProperty(neu);
 }

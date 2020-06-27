@@ -53,15 +53,15 @@ void testRearrangeBeforeCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"EE[]",                                   "EE[]"},
-			{"E[;;]E[;;]",                             "E[;;]E[;;]"},
-			{"E[;;]E[3;4_5;3]",                        "E[;;]E[;;]"},
-			{"E[3;4;]E[3;4_5;3]",                      "E[;;]E[;;]"},
-			{"E[1;2;0]E[;;]",                          "E[1;2;0]E[;;]"},
-			{"E[1_3;2_4;]E[3;4_5;3]",                  "E[1;2;]E[;;]"},
-			{"E[Sin;;G]E[Rnd;;T]",                     "E[Sin;;G]E[Rnd;;T]"},
-			{"E[1_3;2_4;](E[3;4_5;3],E[3;4_6_7])",     "E[1;2;](E[;;],E[;3_4])"},
-			{"E[1_3;2_4;](E[0_3;4_5;3_6],E[3;4_6_7])", "E[1;2;](E[0;;3],E[;3_4])"},
+			{"EE[N]",                                   "EE[N]"},
+			{"E[N;N;N]E[N;N;N]",                             "E[N;N;N]E[N;N;N]"},
+			{"E[N;N;N]E[N_3;N_4_5;N_3]",                        "E[N;N;N]E[N;N;N]"},
+			{"E[N_3;4;]E[N_3;N_4_5;N_3]",                      "E[N;N;N]E[N;N;N]"},
+			{"E[N_1;2;0]E[N;N;N]",                          "E[N_1;N_2;N_0]E[N;N;N]"},
+			{"E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",                  "E[N_1;N_2;N]E[N;N;N]"},
+			{"E[Sin;N;G]E[Rnd;N;T]",                     "E[Sin;N;G]E[Rnd;N;T]"},
+			{"E[N_1_3;N_2_4;N](E[N_3;N_4_5;N_3]^E[N_3;N_4_6_7])",     "E[N_1;N_2;N](E[N;N;N]^E[N;N_3_4])"},
+			{"E[N_1_3;N_2_4;N](E[N_0_3;N_4_5;N_3_6]^E[N_3;N_4_6_7])", "E[N_1;N_2;N](E[N_0;N;N_3]^E[N;N_3_4])"},
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -83,11 +83,11 @@ void testRearrangeAfterCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"E[0_1;0]E[]",                       "E[0_1;0]E[]"},
-			{"E[0_1;0]E[Rnd;;]",                  "E[0_1;0]E[Rnd;;]"},
-			{"E[0_1;0]E[Rnd;;]E[;]",              "E[0_1;0]E[Rnd;;]E[;]"},
-			{"E[0_1;0](E[Rnd;;],E[2_3;2])",       "E[0_1;0](E[Rnd;;],E[5_6;5])"},
-			{"E[0_1;0](E[Rnd;;],E[2_3;2]C[2_4])", "E[0_1;0](E[Rnd;;],E[5_6;5]C[5_7])"},
+			{"E[N_0_1;N_0]E[N]",                       "E[N_0_1;N_0]E[N]"},
+			{"E[N_0_1;N_0]E[Rnd;N;N]",                  "E[N_0_1;N_0]E[Rnd;N;N]"},
+			{"E[N_0_1;N_0]E[Rnd;N;N]E[N;N]",              "E[N_0_1;N_0]E[Rnd;N;N]E[N;N]"},
+			{"E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2])",       "E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5])"},
+			{"E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2]C[N_2_4])", "E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5]C[N_5_7])"},
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -99,6 +99,7 @@ void testRearrangeAfterCrossover()
 
 		operators.rearrangeConnectionsAfterCrossover(&geno, subtree, subStart[i]);
 
+		std::cout<<geno.getGeno().c_str()<<" "<<test_cases[i][1]<<std::endl;
 		assert(geno.getGeno().c_str() == test_cases[i][1]);
 	}
 }
@@ -233,13 +234,13 @@ void testCrossoverSimilarTrees()
 	GenoOper_fS operators;
 	string test_cases[] = {
 			"EE",
-			"E(E,E)",
+			"E(E^E)",
 			"EEEE",
 			"ECRE",
-			"E(RE,CRE)",
-			"E(EEE,EEE,EEE)",
-			"E(CRE,CRE,CRE)",
-			"EEEEEECRE(CRE,CRE,CRE)",
+			"E(RE^CRE)",
+			"E(EEE^EEE^EEE)",
+			"E(CRE^CRE^CRE)",
+			"EEEEEECRE(CRE^CRE^CRE)",
 	};
 
 	float f1, f2;
@@ -277,7 +278,7 @@ void testAllPartSizesValid()
 			"R{x=1.1}",
 			"R{y=1.1}",
 			"SR{x=999.0}",
-			"C(R,E{z=1.1})",
+			"C(R^E{z=1.1})",
 			"C{x=1.5;y=1.5;z=1.5}",    // Test volume
 			"C{x=1.8;y=1.8}",
 	};
@@ -408,6 +409,14 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	if (operators.removeNeuro(geno))
 		assert(tmp - 1 == int(geno.getAllNeurons().size()));
 
+	// Test change neuro params
+	tmpStr = geno.getGeno();
+	if(operators.changeNeuroParam(geno))
+	{
+		cout<<tmpStr.c_str()<<" "<<geno.getGeno().c_str()<<endl;
+		assert(tmpStr != geno.getGeno());
+	}
+
 	testRandomModifications(test->c_str());
 }
 
@@ -450,7 +459,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	const int size = 6;
-	string before = "E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -468,12 +477,12 @@ void testRearrangeInputs()
 			5
 	};
 	string after[size]{
-			"E[T]bE[3_4]cRbC[T;G_2_3]bE[2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[3_4]cRbC[T;G_1_3]bE[1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[1_2]cRbC[T;G_0_1]bE[0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[2]cRbC[T;G_1]bE[1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[2_3]cRbC[T;G_1_2]bE[1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"E[T]bE[N_3_4]cRbC[T;G_2_3]bE[N_2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[N_3_4]cRbC[T;G_1_3]bE[N_1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[N_1_2]cRbC[T;G_0_1]bE[N_0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[N_2]cRbC[T;G_1]bE[N_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for (int i = 0; i < size; i++)
@@ -501,10 +510,10 @@ void evolutionTest(int operationCount)
 
 	SString **gens = new SString *[gen_size];
 	gens[0] = new SString("EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("RcR[0]bR[0_1]");
+	gens[1] = new SString("RcR[N_0]bR[0_1]");
 	gens[2] = new SString("R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
 	gens[3] = new SString("R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
-	gens[4] = new SString("E(cE(bE[T;T_1_2],cE,bC[0],cR),bE[0_2;0_2],cE(bcE,bcE[;0_1_2]),E)");
+	gens[4] = new SString("E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[0_2;0_2]^cE(bcE^bcE[;0_1_2])^E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -581,8 +590,8 @@ int main(int argc, char *argv[])
 			{"C",                                               "p:sh=2\n"},
 			{"R",                                               "p:sh=3\n"},
 			{"EEE",                                             "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
-			{"E(E,E)",                                          "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
-			{"E(E(E,E),E,E(E,E),E)",                            "p:sh=1\n"
+			{"E(E^E)",                                          "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
+			{"E(E(E^E)^E^E(E^E)^E)",                            "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "p:4.0, sh=1\n"
 																  "p:4.0, sh=1\n"
@@ -713,19 +722,19 @@ int main(int argc, char *argv[])
 																  "p:2.3, sh=1, sz=2.0, ry=0.5235987755982988\n"
 																  "j:0, 1, sh=1\n"},
 
-			{"E[]",                                             "p:sh=1\n"
+			{"E[N]",                                             "p:sh=1\n"
 																  "n:p=0\n"},
-			{"E[;]",                                            "p:sh=1\n"
+			{"E[N;N]",                                            "p:sh=1\n"
 																  "n:p=0\n"
 																  "n:p=0\n"},
-			{"E[]E[]",                                          "p:sh=1\n"
+			{"E[N]E[N]",                                          "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:p=1\n"},
 			{"E[T]",                                            "p:sh=1\n"
 																  "n:p=0, d=T\n"},
-			{"E[]E[0]",                                         "p:sh=1\n"
+			{"E[N]E[N_0]",                                         "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
@@ -761,13 +770,13 @@ int main(int argc, char *argv[])
 																  "c:1, 0, 3.0\n"
 																  "c:2, 0, 4.0\n"
 																  "c:2, 1, 5.0\n"},
-			{"E[]E[G_0]",                                       "p:sh=1\n"
+			{"E[N]E[G_0]",                                       "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
 																  "n:j=0, d=G\n"
 																  "c:1, 0\n"},
-			{"E[]E[Rnd_0]",                                     "p:sh=1\n"
+			{"E[N]E[Rnd_0]",                                     "p:sh=1\n"
 																  "p:2.0, sh=1\n"
 																  "j:0, 1, sh=1\n"
 																  "n:p=0\n"
