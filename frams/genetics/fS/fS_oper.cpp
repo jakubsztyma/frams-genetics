@@ -293,23 +293,23 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	if(strongAddPart)
 	{
 		for(int i=0; i < 3; i++)
-			newNode->params[rotationParams[i]] = RndGen.Uni(-90, 90);
+			newNode->params[rotationParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	else
 	{
 		string selectedParam = rotationParams[rndUint(3)];
-		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	string rParams[]{RX, RY, RZ};
 	if(strongAddPart)
 	{
 		for(int i=0; i < 3; i++)
-			newNode->params[rParams[i]] = RndGen.Uni(-90, 90);
+			newNode->params[rParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	else
 	{
 		string selectedParam = rParams[rndUint(3)];
-		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	// Assign part size to default value
 	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);

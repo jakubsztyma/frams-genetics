@@ -99,7 +99,6 @@ void testRearrangeAfterCrossover()
 
 		operators.rearrangeConnectionsAfterCrossover(&geno, subtree, subStart[i]);
 
-//		std::cout<<geno.getGeno().c_str()<<" "<<test_cases[i][1]<<std::endl;
 		assert(geno.getGeno().c_str() == test_cases[i][1]);
 	}
 }
@@ -168,7 +167,6 @@ void testChangePartType()
 		operators.changePartType(geno, "CER");
 
 		geno.getState();
-//		std::cout << geno.getGeno().c_str() << " " << geno.startNode->calculateVolume() << " " << oldVolume << std::endl;
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
 
@@ -199,27 +197,17 @@ void testTurnWithRotation()
 	GenoConv_fS0 converter = GenoConv_fS0();
 	fS_Genotype::TURN_WITH_ROTATION = true;
 	MultiMap map;
-	SString test_cases[][2]{
-			{"EE{ty=90.0}",                                     "p:sh=1\n"
-																  "p:z=2.0, sh=1, ry=1.5707963267948966\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ty=45.0;ry=45.0}",                              "p:sh=1\n"
-																  "p:1.41, z=1.41, sh=1, ry=1.5707963267948966\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{tx=30;ty=90.0;tz=45}",                       "p:sh=1\n"
-																  "p:z=2.0, sh=1, rx=0.5235987755982988, 1.5707963267948966, 0.7853981633974483\n"
-																  "j:0, 1, sh=1\n"},
+	SString test_cases[]{
+			"EE{ty=1.56}",
+			"EE{ty=0.78;ry=0.78}",
+			"EE{tx=30;ty=1.56;tz=45}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
-		SString *test = test_cases[i];
-		SString genotype_str = test[0];
+		SString genotype_str = test_cases[i];
 		/// Test translate
-//		cout << "Geno: " << test[0].c_str() << endl;
 		cout << converter.convert(genotype_str, &map, false).c_str() << endl;
-//		cout << "Expected: \n" << test[1].c_str() << endl << endl;
-//		assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
 	}
 	fS_Genotype::TURN_WITH_ROTATION = false;
 
@@ -254,7 +242,6 @@ void testCrossoverSimilarTrees()
 
 			operators.crossOver(arr1, arr2, f1, f2);
 
-//			cout<<arr1<<" "<<test_cases[i].c_str()<<endl;
 			assert(strcmp(arr1, test_cases[i].c_str()) == 0);
 			free(arr1);
 			free(arr2);
@@ -301,25 +288,20 @@ void testRandomModifications(string test)
 	}
 }
 
-void testOneGenotype(SString *test, int expectedPartCount)
+void testOneGenotype(SString test, int expectedPartCount)
 {
 	GenoOper_fS operators;
 	GenoConv_fS0 converter = GenoConv_fS0();
 	MultiMap map;
 	int tmp = -1;
 	SString tmpStr;
-	SString genotype_str = test[0];
 
 	/// Test get geno
-	fS_Genotype geno(test[0].c_str());
+	fS_Genotype geno(test.c_str());
 	cout << geno.getGeno().c_str() << endl;
-//	assert(geno.getGeno() == test[0]);
 
 	/// Test translate
-//	cout << "Geno: " << test[0].c_str() << endl;
-	cout << converter.convert(genotype_str, &map, false).c_str() << endl;
-//	cout << "Expected: \n" << test[1].c_str() << endl << endl;
-//	assert(test[1] == converter.convert(genotype_str, &map, false).c_str());
+	cout << converter.convert(test, &map, false).c_str() << endl;
 
 	////Test operations
 	// Test part count
@@ -397,7 +379,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	// Test change neuro connection
 	tmpStr = geno.getGeno();
 	if (operators.changeNeuroConnection(geno))
-		assert(genotype_str != geno.getGeno());
+		assert(test != geno.getGeno());
 
 	// Test remove neuro connections
 	tmp = countNeuroConnections(geno);
@@ -414,7 +396,7 @@ void testOneGenotype(SString *test, int expectedPartCount)
 	if(operators.changeNeuroParam(geno))
 		assert(tmpStr != geno.getGeno());
 
-	testRandomModifications(test->c_str());
+	testRandomModifications(test.c_str());
 }
 
 void validationTest()
@@ -581,224 +563,66 @@ void evolutionTest(int operationCount)
 
 int main(int argc, char *argv[])
 {
-	SString test_cases[][2] = {
-			{"E",                                               "p:sh=1\n"},
-			{"C",                                               "p:sh=2\n"},
-			{"R",                                               "p:sh=3\n"},
-			{"EEE",                                             "p:sh=1\np:2.0, sh=1\np:4.0, sh=1\nj:0, 1, sh=1\nj:1, 2, sh=1\n"},
-			{"E(E^E)",                                          "p:sh=1\np:2.0, sh=1\np:2.0, sh=1\nj:0, 1, sh=1\nj:0, 2, sh=1\n"},
-			{"E(E(E^E)^E^E(E^E)^E)",                            "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "p:4.0, sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:1, 3, sh=1\n"
-																  "j:0, 4, sh=1\n"
-																  "j:0, 5, sh=1\n"
-																  "j:5, 6, sh=1\n"
-																  "j:5, 7, sh=1\n"
-																  "j:0, 8, sh=1\n"
-			},
-			{"EbE",                                             "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=2\n"}, // Parametrized joints
-			{"CcC",                                             "p:sh=2\n"
-																  "p:2.0, sh=2\n"
-																  "j:0, 1, sh=3\n"}, // Many parametrized joints
-			{"ERbRcCRbCbE",                                     "p:sh=1\n"
-																  "p:2.0, sh=3\n"
-																  "p:4.0, sh=3\n"
-																  "p:6.0, sh=2\n"
-																  "p:8.0, sh=3\n"
-																  "p:10.0, sh=2\n"
-																  "p:12.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=2\n"
-																  "j:2, 3, sh=3\n"
-																  "j:3, 4, sh=1\n"
-																  "j:4, 5, sh=2\n"
-																  "j:5, 6, sh=2\n"
-			},
-// Modifier mode
-			{"E",                                               "p:sh=1\n"},  // Basic modifier mode
-			{"FE",                                              "p:sh=1, fr=0.44\n"},  // Friction modifier
-			{"fE",                                              "p:sh=1, fr=0.36\n"},  // Friction modifier
-			{"FFE",                                         "p:sh=1, fr=0.48\n"},  // Friction modifier
-			{"E{f=0.3}E{f=0.5}",                                "p:sh=1, fr=0.3\n"
-																  "p:2.0, sh=1, fr=0.5\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ty=90.0}",                                     "p:sh=1\n"
-																  "p:z=2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{tz=90.0}",                                     "p:sh=1\n"
-																  "p:y=2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"},  // Z rotation
-			{"EE{tz=90.0}E{tx=90.0}E{ty=90.0}",                 "p:sh=1\n"
-																  "p:y=2.0, sh=1\n"
-																  "p:y=2.0, 2.0, sh=1\n"
-																  "p:-1.99, 2.0, 2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:2, 3, sh=1\n"},  // All rotations
-			{"EE{tz=45.0}E{tx=45.0}E{ty=45.0}",                 "p:sh=1\n"
-																  "p:1.41, 1.41, sh=1\n"
-																  "p:2.83, 2.41, 1.0, sh=1\n"
-																  "p:3.12, 3.41, 2.71, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:2, 3, sh=1\n"
-			},  // Acute angle rotations
-			{"EE{tz=-90.0}E{tx=-90.0}E{ty=-90.0}",              "p:sh=1\n"
-																  "p:y=-1.99, sh=1\n"
-																  "p:y=-1.99, 2.0, sh=1\n"
-																  "p:2.0, -1.99, 2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "j:1, 2, sh=1\n"
-																  "j:2, 3, sh=1\n"},   // Negative rotations
-			{"EE{x=3.0}",                                       "p:sh=1\n"
-																  "p:4.0, sh=1, sx=3.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{x=3.0;y=3.0;z=3.0}",                           "p:sh=1\n"
-																  "p:4.0, sh=1, sx=3.0, sy=3.0, sz=3.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"SSE",                                             "p:sh=1, sx=1.21, sy=1.21, sz=1.21\n"},  // sx modifier
-			{"ssE",                                             "p:sh=1, sx=0.83, sy=0.83, sz=0.83\n"},  // sx modifier
-			{"SSSE",                                            "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"},  // size modifiers
-			{"ESSSE",                                           "p:sh=1\n"
-																  "p:2.33, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
-																  "j:0, 1, sh=1\n"},  // size modifiers
-			{"SSSEE",                                           "p:sh=1, sx=1.33, sy=1.33, sz=1.33\n"
-																  "p:2.66, sh=1, sx=1.33, sy=1.33, sz=1.33\n"
-																  "j:0, 1, sh=1\n"},  // size modifiers
-			{"IE",                                              "p:sh=1, ing=0.28\n"},  // Ingestion modifier
-			{"iE",                                              "p:sh=1, ing=0.23\n"},  // Ingestion modifier
-			{"IIE",                                         "p:sh=1, ing=0.3\n"},  // Ingestion modifier
-			{"E{i=0.3}E{i=0.5}",                                "p:sh=1, ing=0.3\n"     // Ingestion param
-																  "p:2.0, sh=1, ing=0.5\n"
-																  "j:0, 1, sh=1\n"},
-			{"IIE{i=0.5}",                                 "p:sh=1, ing=0.61\n"},  // Ingestion modifier and param
-			// Test collisions
-			{"EE{ty=180.0;x=3.0}",                              "p:sh=1\n"
-																  "p:-3.99, sh=1, sx=3.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ty=90.0;z=5.0}",                               "p:sh=1\n"
-																  "p:z=6.0, sh=1, sz=5.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"E{x=1.5;z=2.0}E{tz=90.0;x=2.0;y=5.0;z=3.0}",      "p:sh=1, sx=1.5, sz=2.0\n"
-																  "p:y=5.99, sh=1, sx=2.0, sy=5.0, sz=3.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"E{y=3.0;z=4.0}E{y=4.0;z=5.0}",                    "p:sh=1, sy=3.0, sz=4.0\n"
-																  "p:1.99, sh=1, sy=4.0, sz=5.0\n"
-																  "j:0, 1, sh=1\n"},
-			{"E{y=399.0;z=599.0}E{y=799.0;z=999.0}",            "p:sh=1, sy=399.0, sz=599.0\n"
-																  "p:53.06, sh=1, sy=799.0, sz=999.0\n"
-																  "j:0, 1, sh=1\n"},  // Test a lot of spheres
-			{"EE{ty=45.0}",                                     "p:sh=1\n"
-																  "p:1.41, z=1.41, sh=1\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ty=120.0}",                                    "p:sh=1\n"
-																  "p:-0.99, z=1.73, sh=1\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ry=90.0;z=2.0}",                               "p:sh=1\n"
-																  "p:3.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
-																  "j:0, 1, sh=1\n"},
-			{"E{ry=90.0;z=2.0}E{ry=90.0;z=2.0}",                "p:sh=1, sz=2.0, ry=1.5707963267948966\n"
-																  "p:4.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ry=45.0;z=2.0}",                               "p:sh=1\n"
-																  "p:2.57, sh=1, sz=2.0, ry=0.7853981633974483\n"
-																  "j:0, 1, sh=1\n"},
-			{"EE{ry=30.0;z=2.0}",                               "p:sh=1\n"
-																  "p:2.3, sh=1, sz=2.0, ry=0.5235987755982988\n"
-																  "j:0, 1, sh=1\n"},
-
-			{"E[N]",                                             "p:sh=1\n"
-																  "n:p=0\n"},
-			{"E[N;N]",                                            "p:sh=1\n"
-																  "n:p=0\n"
-																  "n:p=0\n"},
-			{"E[N]E[N]",                                          "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0\n"
-																  "n:p=1\n"},
-			{"E[T]",                                            "p:sh=1\n"
-																  "n:p=0, d=T\n"},
-			{"E[N]E[N_0]",                                         "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0\n"
-																  "n:p=1\n"
-																  "c:1, 0\n"},
-			{"E[Sin;T_0]",                                        "p:sh=1\n"
-																  "n:p=0, d=Sin\n"
-																  "n:p=0, d=T\n"
-																  "c:1, 0\n"},
-			{"E[Sin_2;T_0;T_0_1]",                                "p:sh=1\n"
-																  "n:p=0, d=Sin\n"
-																  "n:p=0, d=T\n"
-																  "n:p=0, d=T\n"
-																  "c:0, 2\n"
-																  "c:1, 0\n"
-																  "c:2, 0\n"
-																  "c:2, 1\n"},
-			{"E[Sin_2;T_0;T_0_1]{ry=90.0;z=2.0}E{ry=90.0;z=2.0}", "p:sh=1, sz=2.0, ry=1.5707963267948966\n"
-																  "p:4.0, sh=1, sz=2.0, ry=1.5707963267948966\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0, d=Sin\n"
-																  "n:p=0, d=T\n"
-																  "n:p=0, d=T\n"
-																  "c:0, 2\n"
-																  "c:1, 0\n"
-																  "c:2, 0\n"
-																  "c:2, 1\n"},
-			{"E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",                "p:sh=1\n"
-																  "n:p=0, d=Sin\n"
-																  "n:p=0, d=T\n"
-																  "n:p=0, d=T\n"
-																  "c:0, 2, 2.0\n"
-																  "c:1, 0, 3.0\n"
-																  "c:2, 0, 4.0\n"
-																  "c:2, 1, 5.0\n"},
-			{"E[N]E[G_0]",                                       "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0\n"
-																  "n:j=0, d=G\n"
-																  "c:1, 0\n"},
-			{"E[N]E[Rnd_0]",                                     "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0\n"
-																  "n:p=1, d=Rnd\n"
-																  "c:1, 0\n"},
-			{"E[Rnd]E[Rnd_0_1;Sin_0]",                          "p:sh=1\n"
-																  "p:2.0, sh=1\n"
-																  "j:0, 1, sh=1\n"
-																  "n:p=0, d=Rnd\n"
-																  "n:p=1, d=Rnd\n"
-																  "n:p=1, d=Sin\n"
-																  "c:1, 0\n"
-																  "c:1, 1\n"
-																  "c:2, 0\n"
-			},
-			{"E{s=1.5}",                                        "p:sh=1, sx=1.5, sy=1.5, sz=1.5\n"},
-			{"SE{s=1.1;x=1.2;z=1.3}",                          "p:sh=1, sx=1.45, sy=1.21, sz=1.57\n"},
-			{"SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",                  "p:sh=1, sx=0.99, sy=0.99, sz=0.99\n"
-																  "p:2.42, sh=1, sx=1.45, sy=1.21, sz=1.57\n"
-																  "j:0, 1, sh=1\n"},
-			{"ETTE{st=0.5}",                                 "p:sh=1\n"
-												  			"p:2.0, sh=1\n"
-														"j:0, 1, sh=1, stif=0.61, rotstif=0.61\n"},  // Stiffness param
-			{"EttE{st=0.5}",                                 "p:sh=1\n"
-															 "p:2.0, sh=1\n"
-															 "j:0, 1, sh=1, stif=0.41, rotstif=0.41\n"},  // Stiffness param
+	SString test_cases[] = {
+			"E",
+			"C",
+			"R",
+			"EEE",
+			"E(E^E)",
+			"E(E(E^E)^E^E(E^E)^E)",
+			"EbE",
+			"CcC",
+			"ERbRcCRbCbE",
+			"E",
+			"FE",
+			"fE",
+			"FFE",
+			"E{f=0.3}E{f=0.5}",
+			"EE{ty=1.56}",
+			"EE{tz=1.56}",
+			"EE{tz=1.56}E{tx=1.56}E{ty=1.56}",
+			"EE{tz=0.78}E{tx=0.78}E{ty=0.78}",
+			"EE{tz=-1.56}E{tx=-1.56}E{ty=-1.56}",
+			"EE{x=3.0}",
+			"EE{x=3.0;y=3.0;z=3.0}",
+			"SSE",
+			"ssE",
+			"SSSE",
+			"ESSSE",
+			"SSSEE",
+			"IE",
+			"iE",
+			"IIE",
+			"E{i=0.3}E{i=0.5}",
+			"IIE{i=0.5}",
+			"EE{ty=180.0;x=3.0}",
+			"EE{ty=1.56;z=5.0}",
+			"E{x=1.5;z=2.0}E{tz=1.56;x=2.0;y=5.0;z=3.0}",
+			"E{y=3.0;z=4.0}E{y=4.0;z=5.0}",
+			"E{y=399.0;z=599.0}E{y=799.0;z=999.0}",
+			"EE{ty=0.78}",
+			"EE{ty=1.56}",
+			"EE{ry=1.56;z=2.0}",
+			"E{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"EE{ry=0.78;z=2.0}",
+			"EE{ry=0.52;z=2.0}",
+			"E[N]",
+			"E[N;N]",
+			"E[N]E[N]",
+			"E[T]",
+			"E[N]E[N_0]",
+			"E[Sin;T_0]",
+			"E[Sin_2;T_0;T_0_1]",
+			"E[Sin_2;T_0;T_0_1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",
+			"E[N]E[G_0]",
+			"E[N]E[Rnd_0]",
+			"E[Rnd]E[Rnd_0_1;Sin_0]",
+			"E{s=1.5}",
+			"SE{s=1.1;x=1.2;z=1.3}",
+			"SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
+			"ETTE{st=0.5}",
+			"EttE{st=0.5}",
 	};
 	srand(time(NULL));
 

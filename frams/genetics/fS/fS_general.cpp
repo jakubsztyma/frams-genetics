@@ -596,18 +596,12 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	double rx = Convert::toRadians(getParam(ROT_X));
-	double ry = Convert::toRadians(getParam(ROT_Y));
-	double rz = Convert::toRadians(getParam(ROT_Z));
-	return Pt3D(rx, ry, rz);
+	return Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z));
 }
 
 Pt3D Node::getRotation()
 {
-	double rx = Convert::toRadians(getParam(RX));
-	double ry = Convert::toRadians(getParam(RY));
-	double rz = Convert::toRadians(getParam(RZ));
-	Pt3D rotation = Pt3D(rx, ry, rz);
+	Pt3D rotation = Pt3D(getParam(RX), getParam(RY), getParam(RZ));
 	if(fS_Genotype::TURN_WITH_ROTATION)
 		rotation += getVectorRotation();
 	return rotation;
