@@ -15,12 +15,6 @@ int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
 
 
-double round2(double var)
-{
-	double value = (int) (var * 100 + .5);
-	return (double) value / 100;
-}
-
 double fS_stod(const string&  str, int start, size_t* size)
 {
 	try
@@ -457,7 +451,7 @@ double Node::getDistance()
 
 	delete[] centersParent;
 	delete[] centers;
-	return round2(currentDistance);
+	return currentDistance;
 }
 
 void Node::getState(State *_state)
@@ -650,23 +644,23 @@ void Node::buildModel(Model &model, Node *parent)
 void Node::createPart()
 {
 	part = new Part(partType);
-	part->p = Pt3D(round2(state->location.x),
-				   round2(state->location.y),
-				   round2(state->location.z));
+	part->p = Pt3D(state->location.x,
+				   state->location.y,
+				   state->location.z);
 
-	part->friction = round2(getParam(FRICTION) * state->fr);
-	part->ingest = round2(getParam(INGESTION) * state->ing);
+	part->friction = getParam(FRICTION) * state->fr;
+	part->ingest = getParam(INGESTION) * state->ing;
 	Pt3D size = calculateSize();
-	part->scale.x = round2(size.x);
-	part->scale.y = round2(size.y);
-	part->scale.z = round2(size.z);
+	part->scale.x = size.x;
+	part->scale.y = size.y;
+	part->scale.z = size.z;
 	part->setRot(getRotation());
 }
 
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
-	j->stif = round2(getParam(STIFFNESS) * state->stif);
+	j->stif = getParam(STIFFNESS) * state->stif;
 	j->rotstif = j->stif;
 
 	j->attachToParts(parent->part, part);
