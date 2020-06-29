@@ -587,7 +587,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second = GenoOperators::mutateNeuronProperty(it->second, selectedNeuron, -1);
+			it->second = GenoOperators::getMutatedNeuroClassProperty(it->second, NULL, -1);
 			return true;
 		}
 	}
@@ -653,5 +653,5 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 		return false;
 
 	fS_Neuron *neu = neurons[rndUint(neurons.size())];
-	return GenoOperators::mutateRandomNeuronOrNeuroclassProperty(neu);
+	return GenoOperators::mutateRandomNeuroClassProperty(neu);
 }

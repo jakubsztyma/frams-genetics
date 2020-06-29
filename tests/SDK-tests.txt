@@ -44,11 +44,3 @@ arg:X
 out:*INSERTPLATFORMDEPENDENTFILE*:full_props_x
 RUNTEST
 
-####
-
-exe:fs_test
-
-TESTNAME:fS
-arg:10
-out:*INSERTPLATFORMDEPENDENTFILE*:fS_goals/fS
-RUNTEST
