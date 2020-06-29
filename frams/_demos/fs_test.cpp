@@ -53,15 +53,15 @@ void testRearrangeBeforeCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"EE[N]",                                   "EE[N]"},
-			{"E[N;N;N]E[N;N;N]",                             "E[N;N;N]E[N;N;N]"},
-			{"E[N;N;N]E[N_3;N_4_5;N_3]",                        "E[N;N;N]E[N;N;N]"},
-			{"E[N_3;4;]E[N_3;N_4_5;N_3]",                      "E[N;N;N]E[N;N;N]"},
-			{"E[N_1;2;0]E[N;N;N]",                          "E[N_1;N_2;N_0]E[N;N;N]"},
-			{"E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",                  "E[N_1;N_2;N]E[N;N;N]"},
-			{"E[Sin;N;G]E[Rnd;N;T]",                     "E[Sin;N;G]E[Rnd;N;T]"},
-			{"E[N_1_3;N_2_4;N](E[N_3;N_4_5;N_3]^E[N_3;N_4_6_7])",     "E[N_1;N_2;N](E[N;N;N]^E[N;N_3_4])"},
-			{"E[N_1_3;N_2_4;N](E[N_0_3;N_4_5;N_3_6]^E[N_3;N_4_6_7])", "E[N_1;N_2;N](E[N_0;N;N_3]^E[N;N_3_4])"},
+			{"1.1:EE[N]",                                   "1.1:EE[N]"},
+			{"1.1:E[N;N;N]E[N;N;N]",                             "1.1:E[N;N;N]E[N;N;N]"},
+			{"1.1:E[N;N;N]E[N_3;N_4_5;N_3]",                        "1.1:E[N;N;N]E[N;N;N]"},
+			{"1.1:E[N_3;4;]E[N_3;N_4_5;N_3]",                      "1.1:E[N;N;N]E[N;N;N]"},
+			{"1.1:E[N_1;2;0]E[N;N;N]",                          "1.1:E[N_1;N_2;N_0]E[N;N;N]"},
+			{"1.1:E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",                  "1.1:E[N_1;N_2;N]E[N;N;N]"},
+			{"1.1:E[Sin;N;G]E[Rnd;N;T]",                     "1.1:E[Sin;N;G]E[Rnd;N;T]"},
+			{"1.1:E[N_1_3;N_2_4;N](E[N_3;N_4_5;N_3]^E[N_3;N_4_6_7])",     "1.1:E[N_1;N_2;N](E[N;N;N]^E[N;N_3_4])"},
+			{"1.1:E[N_1_3;N_2_4;N](E[N_0_3;N_4_5;N_3_6]^E[N_3;N_4_6_7])", "1.1:E[N_1;N_2;N](E[N_0;N;N_3]^E[N;N_3_4])"},
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -83,11 +83,11 @@ void testRearrangeAfterCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[][2] = {
-			{"E[N_0_1;N_0]E[N]",                       "E[N_0_1;N_0]E[N]"},
-			{"E[N_0_1;N_0]E[Rnd;N;N]",                  "E[N_0_1;N_0]E[Rnd;N;N]"},
-			{"E[N_0_1;N_0]E[Rnd;N;N]E[N;N]",              "E[N_0_1;N_0]E[Rnd;N;N]E[N;N]"},
-			{"E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2])",       "E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5])"},
-			{"E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2]C[N_2_4])", "E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5]C[N_5_7])"},
+			{"1.1:E[N_0_1;N_0]E[N]",                       "1.1:E[N_0_1;N_0]E[N]"},
+			{"1.1:E[N_0_1;N_0]E[Rnd;N;N]",                  "1.1:E[N_0_1;N_0]E[Rnd;N;N]"},
+			{"1.1:E[N_0_1;N_0]E[Rnd;N;N]E[N;N]",              "1.1:E[N_0_1;N_0]E[Rnd;N;N]E[N;N]"},
+			{"1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2])",       "1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5])"},
+			{"1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2]C[N_2_4])", "1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_5_6;N_5]C[N_5_7])"},
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -114,13 +114,13 @@ void testAddPart()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"E",
-			"SE",
-			"sE",
-			"SSSSSSSE",
-			"sssssssE",
-			"SSSSSSSSSE",    // More than max
-			"sssssssssE", // Less than min
+			"1.1:E",
+			"1.1:SE",
+			"1.1:sE",
+			"1.1:SSSSSSSE",
+			"1.1:sssssssE",
+			"1.1:SSSSSSSSSE",    // More than max
+			"1.1:sssssssssE", // Less than min
 	};
 	double expectedVolume[] = {
 			4.19,
@@ -149,13 +149,13 @@ void testChangePartType()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"C",
-			"E",
-			"R",
-			"SSSSC",
-			"sssssE",
-			"sssssC{x=0.3;y=2.3;z=1.1}",
-			"SSSSSSE{x=0.3;y=2.3;z=1.1}",
+			"1.1:C",
+			"1.1:E",
+			"1.1:R",
+			"1.1:SSSSC",
+			"1.1:sssssE",
+			"1.1:sssssC{x=0.3;y=2.3;z=1.1}",
+			"1.1:SSSSSSE{x=0.3;y=2.3;z=1.1}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -174,7 +174,7 @@ void testChangePartType()
 void testUsePartType()
 {
 	GenoOper_fS operators;
-	fS_Genotype geno("E");
+	fS_Genotype geno("1.1:E");
 	operators.changePartType(geno, "C");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
 	operators.changePartType(geno, "E");
@@ -198,9 +198,9 @@ void testTurnWithRotation()
 	fS_Genotype::TURN_WITH_ROTATION = true;
 	MultiMap map;
 	SString test_cases[]{
-			"EE{ty=1.56}",
-			"EE{ty=0.78;ry=0.78}",
-			"EE{tx=30;ty=1.56;tz=45}",
+			"1.1:EE{ty=1.56}",
+			"1.1:EE{ty=0.78;ry=0.78}",
+			"1.1:EE{tx=30;ty=1.56;tz=45}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -221,14 +221,14 @@ void testCrossoverSimilarTrees()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"EE",
-			"E(E^E)",
-			"EEEE",
-			"ECRE",
-			"E(RE^CRE)",
-			"E(EEE^EEE^EEE)",
-			"E(CRE^CRE^CRE)",
-			"EEEEEECRE(CRE^CRE^CRE)",
+			"1.1:EE",
+			"1.1:E(E^E)",
+			"1.1:EEEE",
+			"1.1:ECRE",
+			"1.1:E(RE^CRE)",
+			"1.1:E(EEE^EEE^EEE)",
+			"1.1:E(CRE^CRE^CRE)",
+			"1.1:EEEEEECRE(CRE^CRE^CRE)",
 	};
 
 	float f1, f2;
@@ -252,22 +252,22 @@ void testCrossoverSimilarTrees()
 void testAllPartSizesValid()
 {
 	string test_cases[] = {
-			"C{x=2000.0}",    // Too big dimension
-			"C{y=2000.0}",
-			"C{z=2000.0}",
-			"C{x=0.0005}",    // Too small dimension
-			"C{y=0.0005}",
-			"C{z=0.0005}",
-			"E{x=1.1}",        // Invalid size params
-			"E{y=1.1}",
-			"E{z=1.1}",
-			"R{x=1.1;y=1.2}",
-			"R{x=1.1}",
-			"R{y=1.1}",
-			"SR{x=999.0}",
-			"C(R^E{z=1.1})",
-			"C{x=1.5;y=1.5;z=1.5}",    // Test volume
-			"C{x=1.8;y=1.8}",
+			"1.1:C{x=2000.0}",    // Too big dimension
+			"1.1:C{y=2000.0}",
+			"1.1:C{z=2000.0}",
+			"1.1:C{x=0.0005}",    // Too small dimension
+			"1.1:C{y=0.0005}",
+			"1.1:C{z=0.0005}",
+			"1.1:E{x=1.1}",        // Invalid size params
+			"1.1:E{y=1.1}",
+			"1.1:E{z=1.1}",
+			"1.1:R{x=1.1;y=1.2}",
+			"1.1:R{x=1.1}",
+			"1.1:R{y=1.1}",
+			"1.1:SR{x=999.0}",
+			"1.1:C(R^E{z=1.1})",
+			"1.1:C{x=1.5;y=1.5;z=1.5}",    // Test volume
+			"1.1:C{x=1.8;y=1.8}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -404,26 +404,26 @@ void validationTest()
 	GenoConv_fS0 converter = GenoConv_fS0();
 	GenoOper_fS operators;
 	SString invalidGenotypes[] = {
-			"FFF",    // No part type
-			"FFF{x=5.0}",    // No part type
-			"qqE",    // Invalid modifier
-			"E{f}",    // No equal sign
-			"E{qw=1.0}",    // Wrong param key
-			"E{f=}",    // Wrong param value
-			"E{f=fr}",    // Wrong param value
-			"E[G_w_2]",    // Invalid neuro connection key
-			"E[G_1:w_2]",    // Invalid neuro connection value
-			"E{",    // Lacking param end
-			"E[",    // Lacking neuro end
-			"E{x=1.5;y=0.0}",    // Lacking param end
-			"E[2]",    // Invalid neuron connection key
-			"E[-2]",    // Invalid neuron connection key
-			"E[;;3]",    // Invalid neuron connection key
+			"1.1:FFF",    // No part type
+			"1.1:FFF{x=5.0}",    // No part type
+			"1.1:qqE",    // Invalid modifier
+			"1.1:E{f}",    // No equal sign
+			"1.1:E{qw=1.0}",    // Wrong param key
+			"1.1:E{f=}",    // Wrong param value
+			"1.1:E{f=fr}",    // Wrong param value
+			"1.1:E[G_w_2]",    // Invalid neuro connection key
+			"1.1:E[G_1:w_2]",    // Invalid neuro connection value
+			"1.1:E{",    // Lacking param end
+			"1.1:E[",    // Lacking neuro end
+			"1.1:E{x=1.5;y=0.0}",    // Lacking param end
+			"1.1:E[2]",    // Invalid neuron connection key
+			"1.1:E[-2]",    // Invalid neuron connection key
+			"1.1:E[;;3]",    // Invalid neuron connection key
 	};
 	int errorIndexes[] = {
-			1, 1, 1, 2,
-			2, 4, 4, 2, 2,
-			2, 2, 10, 1, 1,
+			5, 5, 5, 6,
+			6, 8, 8, 6, 6,
+			6, 6, 14, 1, 1,
 			1,
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
@@ -438,7 +438,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	const int size = 6;
-	string before = "E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "1.1:E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -456,12 +456,12 @@ void testRearrangeInputs()
 			5
 	};
 	string after[size]{
-			"E[T]bE[N_3_4]cRbC[T;G_2_3]bE[N_2_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[N_3_4]cRbC[T;G_1_3]bE[N_1_3_4;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[N_1_2]cRbC[T;G_0_1]bE[N_0_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[N_2]cRbC[T;G_1]bE[N_1_2;T]{x=3.0;y=3.0;z=3.0}",
-			"E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}"
+			"1.1:E[T]bE[N_3_4]cRbC[T;G_2_3]bE[N_2_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"1.1:E[T]bE[N_3_4]cRbC[T;G_1_3]bE[N_1_3_4;T]{x=3.0;y=3.0;z=3.0}",
+			"1.1:E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}",
+			"1.1:E[T]bE[N_1_2]cRbC[T;G_0_1]bE[N_0_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"1.1:E[T]bE[N_2]cRbC[T;G_1]bE[N_1_2;T]{x=3.0;y=3.0;z=3.0}",
+			"1.1:E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}"
 	};
 
 	for (int i = 0; i < size; i++)
@@ -487,11 +487,11 @@ void evolutionTest(int operationCount)
 	assert(strcmp(operators.getSimplest(), "C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("RcR[N_0]bR[0_1]");
-	gens[2] = new SString("R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
-	gens[3] = new SString("R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
-	gens[4] = new SString("E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[0_2;0_2]^cE(bcE^bcE[;0_1_2])^E)");
+	gens[0] = new SString("1.1:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[1] = new SString("1.1:RcR[N_0]bR[0_1]");
+	gens[2] = new SString("1.1:R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("1.1:R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
+	gens[4] = new SString("1.1:E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[0_2;0_2]^cE(bcE^bcE[;0_1_2])^E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -564,65 +564,66 @@ void evolutionTest(int operationCount)
 int main(int argc, char *argv[])
 {
 	SString test_cases[] = {
-			"E",
-			"C",
-			"R",
-			"EEE",
-			"E(E^E)",
-			"E(E(E^E)^E^E(E^E)^E)",
-			"EbE",
-			"CcC",
-			"ERbRcCRbCbE",
-			"E",
-			"FE",
-			"fE",
-			"FFE",
-			"E{f=0.3}E{f=0.5}",
-			"EE{ty=1.56}",
-			"EE{tz=1.56}",
-			"EE{tz=1.56}E{tx=1.56}E{ty=1.56}",
-			"EE{tz=0.78}E{tx=0.78}E{ty=0.78}",
-			"EE{tz=-1.56}E{tx=-1.56}E{ty=-1.56}",
-			"EE{x=3.0}",
-			"EE{x=3.0;y=3.0;z=3.0}",
-			"SSE",
-			"ssE",
-			"SSSE",
-			"ESSSE",
-			"SSSEE",
-			"IE",
-			"iE",
-			"IIE",
-			"E{i=0.3}E{i=0.5}",
-			"IIE{i=0.5}",
-			"EE{ty=180.0;x=3.0}",
-			"EE{ty=1.56;z=5.0}",
-			"E{x=1.5;z=2.0}E{tz=1.56;x=2.0;y=5.0;z=3.0}",
-			"E{y=3.0;z=4.0}E{y=4.0;z=5.0}",
-			"E{y=399.0;z=599.0}E{y=799.0;z=999.0}",
-			"EE{ty=0.78}",
-			"EE{ty=1.56}",
-			"EE{ry=1.56;z=2.0}",
-			"E{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
-			"EE{ry=0.78;z=2.0}",
-			"EE{ry=0.52;z=2.0}",
-			"E[N]",
-			"E[N;N]",
-			"E[N]E[N]",
-			"E[T]",
-			"E[N]E[N_0]",
-			"E[Sin;T_0]",
-			"E[Sin_2;T_0;T_0_1]",
-			"E[Sin_2;T_0;T_0_1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
-			"E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",
-			"E[N]E[G_0]",
-			"E[N]E[Rnd_0]",
-			"E[Rnd]E[Rnd_0_1;Sin_0]",
-			"E{s=1.5}",
-			"SE{s=1.1;x=1.2;z=1.3}",
-			"SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
-			"ETTE{st=0.5}",
-			"EttE{st=0.5}",
+			"1.1:E",
+			"1.1:C",
+			"1.1:R",
+			"1.1:EEE",
+			"1.1:E(E^E)",
+			"1.1:E(E(E^E)^E^E(E^E)^E)",
+			"1.1:EbE",
+			"1.1:CcC",
+			"1.1:ERbRcCRbCbE",
+			"1.1:E",
+			"1.1:FE",
+			"1.1:fE",
+			"1.1:FFE",
+			"1.1:E{f=0.3}E{f=0.5}",
+			"1.1:EE{ty=1.56}",
+			"1.1:EE{tz=1.56}",
+			"1.1:EE{tz=1.56}E{tx=1.56}E{ty=1.56}",
+			"1.1:EE{tz=0.78}E{tx=0.78}E{ty=0.78}",
+			"1.1:EE{tz=-1.56}E{tx=-1.56}E{ty=-1.56}",
+			"1.1:EE{x=3.0}",
+			"1.1:EE{x=3.0;y=3.0;z=3.0}",
+			"1.1:SSE",
+			"1.1:ssE",
+			"1.1:SSSE",
+			"1.1:ESSSE",
+			"1.1:SSSEE",
+			"1.1:IE",
+			"1.1:iE",
+			"1.1:IIE",
+			"1.1:E{i=0.3}E{i=0.5}",
+			"1.1:IIE{i=0.5}",
+			"1.1:EE{ty=180.0;x=3.0}",
+			"1.1:EE{ty=1.56;z=5.0}",
+			"1.1:E{x=1.5;z=2.0}E{tz=1.56;x=2.0;y=5.0;z=3.0}",
+			"1.1:E{y=3.0;z=4.0}E{y=4.0;z=5.0}",
+			"1.1:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",
+			"1.1:EE{ty=0.78}",
+			"1.1:EE{ty=1.56}",
+			"1.1:EE{ry=1.56;z=2.0}",
+			"1.1:E{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"1.1:EE{ry=0.78;z=2.0}",
+			"1.1:EE{ry=0.52;z=2.0}",
+			"1.1:E[N]",
+			"1.1:E[N;N]",
+			"1.1:E[N]E[N]",
+			"1.1:E[T]",
+			"1.1:E[N]E[N_0]",
+			"1.1:E[Sin;T_0]",
+			"1.1:E[Sin_2;T_0;T_0_1]",
+			"1.1:E[Sin_2;T_0;T_0_1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"1.1:E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",
+			"1.1:E[N]E[G_0]",
+			"1.1:E[N]E[Rnd_0]",
+			"1.1:E[Rnd]E[Rnd_0_1;Sin_0]",
+			"1.1:E{s=1.5}",
+			"1.1:SE{s=1.1;x=1.2;z=1.3}",
+			"1.1:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
+			"1.1:ETTE{st=0.5}",
+			"1.1:EttE{st=0.5}",
+			"1.3:SE",
 	};
 	srand(time(NULL));
 
@@ -634,7 +635,7 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			2,2};
+			2, 2, 1};
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 

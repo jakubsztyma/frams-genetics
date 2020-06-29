@@ -110,10 +110,11 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 	}
 }
 
-Node::Node(Substring &restOfGeno, Node *_parent)
+Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 {
-	parent = _parent;
 	partDescription = new Substring(restOfGeno);
+	genotypeParams = _genotypeParams;
+	parent = _parent;
 
 	try
 	{
@@ -468,7 +469,7 @@ void Node::getState(State *_state)
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 	{
 		char mod = it->first;
-		double multiplier = pow(MODIFIER_MULTIPLIER, it->second);
+		double multiplier = pow(genotypeParams.modifierMultiplier, it->second);
 		if (mod == MODIFIERS[0])
 			state->ing *= multiplier;
 		else if (mod == MODIFIERS[1])
@@ -496,7 +497,7 @@ void Node::getChildren(Substring &restOfGenotype)
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
-		children.push_back(new Node(branches[i], this));
+		children.push_back(new Node(branches[i], this, genotypeParams));
 	}
 }
 
@@ -781,13 +782,22 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const string &genotype)
+fS_Genotype::fS_Genotype(const string &geno)
 {
 	try
 	{
-		string geno = genotype.c_str();
-		Substring substring(geno.c_str(), 0, geno.length());
-		startNode = new Node(substring, nullptr);
+		GenotypeParams genotypeParams;
+		genotypeParams.modifierMultiplier = 1.1;
+
+		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
+		if (modeSeparatorIndex == string::npos)
+			throw fS_Exception("Genotype parameters missing", 0);
+
+		genotypeParams.modifierMultiplier = fS_stod(geno, 0, &modeSeparatorIndex);
+
+		int genoStart = modeSeparatorIndex + 1;
+		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
+		startNode = new Node(substring, nullptr, genotypeParams);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
@@ -859,6 +869,9 @@ SString fS_Genotype::getGeno()
 {
 	SString geno;
 	geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
+
+	geno += SString::sprintf("%.1f",startNode->genotypeParams.modifierMultiplier) + MODE_SEPARATOR;
+
 	startNode->getGeno(geno);
 	return geno;
 }

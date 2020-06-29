@@ -15,6 +15,7 @@
 
 /** @name Values of constants used in encoding */
 //@{
+#define MODE_SEPARATOR ':'
 #define BRANCH_START '('
 #define BRANCH_END ')'
 #define BRANCH_SEPARATOR '^'
@@ -35,8 +36,6 @@ enum class SHIFT
 	RIGHT = 1
 };
 
-/** @name Every modifier changes the underlying value by this multiplier */
-const double MODIFIER_MULTIPLIER = 1.1;
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -317,6 +316,10 @@ public:
 	}
 };
 
+struct GenotypeParams{
+	double modifierMultiplier;	// Every modifier changes the underlying value by this multiplier
+};
+
 /**
  * Represents a node in the graph that represents a genotype.
  * A node corresponds to a single part.
@@ -333,6 +336,8 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
+	GenotypeParams genotypeParams;
+
 
 	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
@@ -432,7 +437,7 @@ public:
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 
-	Node(Substring &genotype, Node *parent);
+	Node(Substring &genotype, Node *parent, GenotypeParams genotypeParams);
 
 	~Node();
 
@@ -487,6 +492,7 @@ class fS_Genotype
 	friend class GenoOper_fS;
 
 private:
+
 	/**
 	 * Draws a node that has an index greater that specified
 	 * @param fromIndex minimal index of the node

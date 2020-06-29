@@ -287,7 +287,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	char partType = availableTypes[rndUint(availableTypes.length())];
 
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, node);
+	Node *newNode = new Node(substring, node, node->genotypeParams);
 	// Add random rotation
 	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
 	if(strongAddPart)
