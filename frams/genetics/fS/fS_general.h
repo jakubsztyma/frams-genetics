@@ -17,7 +17,7 @@
 //@{
 #define BRANCH_START '('
 #define BRANCH_END ')'
-#define BRANCH_SEPARATOR ','
+#define BRANCH_SEPARATOR '^'
 #define PARAM_START '{'
 #define PARAM_END '}'
 const char PARAM_SEPARATOR = ';';
@@ -112,6 +112,11 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
 static const Joint defJoint = Model::getDefJoint();
+const std::map<Part::Shape, double> volumeMultipliers = {
+		{Part::Shape::SHAPE_CUBOID, 8.0},
+		{Part::Shape::SHAPE_CYLINDER, 2.0 * M_PI},
+		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
+};
 const std::map<string, double> defaultValues = {
 		{INGESTION,      defPart.ingest},
 		{FRICTION,       defPart.friction},
@@ -132,12 +137,12 @@ const std::map<string, double> minValues = {
 		{INGESTION,      0},
 		{FRICTION,       0},
 		{STIFFNESS,	 0.0},
-		{ROT_X,          -180.0},
-		{ROT_Y,          -180.0},
-		{ROT_Z,          -180.0},
-		{RX,             -180.0},
-		{RY,             -180.0},
-		{RZ,             -180.0},
+		{ROT_X,          -M_PI},
+		{ROT_Y,          -M_PI},
+		{ROT_Z,          -M_PI},
+		{RX,             -M_PI},
+		{RY,             -M_PI},
+		{RZ,             -M_PI},
 		{SIZE,           0.01},
 		{SIZE_X,         0.01},
 		{SIZE_Y,         0.01},
@@ -148,12 +153,12 @@ const std::map<string, double> maxValues = {
 		{INGESTION,      1.0},
 		{FRICTION,       1.0},
 		{STIFFNESS,	 0.0},
-		{ROT_X,          180.0},
-		{ROT_Y,          180.0},
-		{ROT_Z,          180.0},
-		{RX,             180.0},
-		{RY,             180.0},
-		{RZ,             180.0},
+		{ROT_X,          M_PI},
+		{ROT_Y,          M_PI},
+		{ROT_Z,          M_PI},
+		{RX,             M_PI},
+		{RY,             M_PI},
+		{RZ,             M_PI},
 		{SIZE,           100.0},
 		{SIZE_X,         100.0},
 		{SIZE_Y,         100.0},
@@ -335,26 +340,6 @@ private:
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	double getDistance();
-
-	static double calculateRadiusFromVolume(Part::Shape partType, double volume)
-	{
-		double result;
-		switch (partType)
-		{
-			case Part::Shape::SHAPE_CUBOID:
-				result = std::cbrt(volume / 8.0);
-				break;
-			case Part::Shape::SHAPE_CYLINDER:
-				result = std::cbrt(volume / (2.0 * M_PI));
-				break;
-			case Part::Shape::SHAPE_ELLIPSOID:
-				result = std::cbrt(volume / ((4.0 / 3.0) * M_PI));
-				break;
-			default:
-				logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
-		}
-		return result;
-	}
 
 	void cleanUp();
 

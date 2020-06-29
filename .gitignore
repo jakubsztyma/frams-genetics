@@ -3,7 +3,9 @@
 
 *
 !frams
+!tests
 frams/*
+tests/*
 !frams/_demos
 !frams/genetics
 frams/_demos/*
@@ -14,3 +16,4 @@ frams/genetics/*
 !frams/Makefile-SDK-files
 !frams/genetics/fs
 !frams/genetics/fS
+!tests/SDK-tests.txt

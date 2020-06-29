@@ -228,11 +228,11 @@ uint32_t GenoOper_fS::style(const char *geno, int pos)
 	{
 		style = GENSTYLE_RGBS(0, 200, 0, GENSTYLE_NONE);
 	}
-	else if (isdigit(ch) || strchr(".=", ch)) // Numerical value
+	else if (isdigit(ch) || strchr(".", ch)) // Numerical value
 	{
 		style = GENSTYLE_RGBS(200, 0, 0, GENSTYLE_NONE);
 	}
-	else if(strchr("()_;[],", ch))
+	else if(strchr("()_;[],=", ch))
 	{
 		style = GENSTYLE_CS(0, GENSTYLE_BOLD); // Important char
 	}
@@ -293,23 +293,23 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	if(strongAddPart)
 	{
 		for(int i=0; i < 3; i++)
-			newNode->params[rotationParams[i]] = RndGen.Uni(-90, 90);
+			newNode->params[rotationParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	else
 	{
 		string selectedParam = rotationParams[rndUint(3)];
-		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	string rParams[]{RX, RY, RZ};
 	if(strongAddPart)
 	{
 		for(int i=0; i < 3; i++)
-			newNode->params[rParams[i]] = RndGen.Uni(-90, 90);
+			newNode->params[rParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	else
 	{
 		string selectedParam = rParams[rndUint(3)];
-		newNode->params[selectedParam] = RndGen.Uni(-90, 90);
+		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
 	// Assign part size to default value
 	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);
@@ -319,7 +319,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
 	double relativeVolume = volume / volumeMultiplier;    // Volume without applying modifiers
 
-	double newRadius = Node::calculateRadiusFromVolume(newNode->partType, relativeVolume);
+	double newRadius = std::cbrt(relativeVolume / volumeMultipliers.at(newNode->partType));
 	newNode->params[SIZE_X] = newRadius;
 	newNode->params[SIZE_Y] = newRadius;
 	newNode->params[SIZE_Z] = newRadius;
@@ -380,15 +380,34 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
-		if (ensureCircleSection)
+		geno.getState();
+		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
+		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+
+		if(!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
 		{
-			geno.getState();
-			double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
-			double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
-			double newRelativeRadius = Node::calculateRadiusFromVolume(newType, relativeVolume);
+			double radiusQuotient = std::cbrt(volumeMultipliers.at(randomNode->partType) / volumeMultipliers.at(newType));
+			randomNode->params[SIZE_X] = randomNode->getParam(SIZE_X) * radiusQuotient;
+			randomNode->params[SIZE_Y] = randomNode->getParam(SIZE_Y) * radiusQuotient;
+			randomNode->params[SIZE_Z] = randomNode->getParam(SIZE_Z) * radiusQuotient;
+		}
+		else if(randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
+		{
+			double newRadius = 0.5 * (randomNode->getParam(SIZE_X) + randomNode->getParam(SIZE_Y));
+			randomNode->params[SIZE_X] = newRadius;
+			randomNode->params[SIZE_Y] = newRadius;
+			randomNode->params[SIZE_Z] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
+		}
+		else if(newType == Part::Shape::SHAPE_ELLIPSOID)
+		{
+			double newRelativeRadius = cbrt(relativeVolume / volumeMultipliers.at(newType));
 			randomNode->params[SIZE_X] = newRelativeRadius;
 			randomNode->params[SIZE_Y] = newRelativeRadius;
 			randomNode->params[SIZE_Z] = newRelativeRadius;
+		}
+		else
+		{
+			throw fS_Exception("Invalid part type", 1);
 		}
 		randomNode->partType = newType;
 		return true;
@@ -568,7 +587,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second = GenoOperators::mutateNeuProperty(it->second, selectedNeuron, -1);
+			it->second = GenoOperators::getMutatedNeuroClassProperty(it->second, NULL, -1);
 			return true;
 		}
 	}
@@ -634,28 +653,5 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 		return false;
 
 	fS_Neuron *neu = neurons[rndUint(neurons.size())];
-	SyntParam par = neu->classProperties();
-
-	if (par.getPropCount() > 0)
-	{
-		int i = rndUint(par.getPropCount());
-		if (*par.type(i) == 'f')
-		{
-			double change = GenoOperators::mutateNeuProperty(par.getDouble(i), neu, 100 + i);
-			par.setDouble(i, change);
-		}
-		SString line;
-		int tmp = 0;
-		par.update(&line);
-		SString props;
-		line.getNextToken(tmp, props, '\n'); // removal of newline character
-		if (props != "")
-		{
-			SString det = neu->getClass()->name + ": " + props;
-			neu->setDetails(det);
-			return true;
-		}
-	}
-
-	return false;
+	return GenoOperators::mutateRandomNeuroClassProperty(neu);
 }

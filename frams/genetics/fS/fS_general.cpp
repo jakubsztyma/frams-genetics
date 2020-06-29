@@ -15,12 +15,6 @@ int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
 
 
-double round2(double var)
-{
-	double value = (int) (var * 100 + .5);
-	return (double) value / 100;
-}
-
 double fS_stod(const string&  str, int start, size_t* size)
 {
 	try
@@ -33,7 +27,7 @@ double fS_stod(const string&  str, int start, size_t* size)
 	}
 	catch(const std::out_of_range& ex)
 	{
-		throw fS_Exception("Invalid numeric value", start);
+		throw fS_Exception("Invalid numeric value; out of range", start);
 	}
 }
 
@@ -448,7 +442,6 @@ double Node::getDistance()
 			throw fS_Exception("Computing of distances between parts failed", 0);
 		if (currentDistance > maxDistance)
 		{
-			std::cout<<partDescription->str<<std::endl;
 			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
 		}
 		if (currentDistance < minDistance)
@@ -458,7 +451,7 @@ double Node::getDistance()
 
 	delete[] centersParent;
 	delete[] centers;
-	return round2(currentDistance);
+	return currentDistance;
 }
 
 void Node::getState(State *_state)
@@ -603,18 +596,12 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	double rx = Convert::toRadians(getParam(ROT_X));
-	double ry = Convert::toRadians(getParam(ROT_Y));
-	double rz = Convert::toRadians(getParam(ROT_Z));
-	return Pt3D(rx, ry, rz);
+	return Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z));
 }
 
 Pt3D Node::getRotation()
 {
-	double rx = Convert::toRadians(getParam(RX));
-	double ry = Convert::toRadians(getParam(RY));
-	double rz = Convert::toRadians(getParam(RZ));
-	Pt3D rotation = Pt3D(rx, ry, rz);
+	Pt3D rotation = Pt3D(getParam(RX), getParam(RY), getParam(RZ));
 	if(fS_Genotype::TURN_WITH_ROTATION)
 		rotation += getVectorRotation();
 	return rotation;
@@ -651,23 +638,23 @@ void Node::buildModel(Model &model, Node *parent)
 void Node::createPart()
 {
 	part = new Part(partType);
-	part->p = Pt3D(round2(state->location.x),
-				   round2(state->location.y),
-				   round2(state->location.z));
+	part->p = Pt3D(state->location.x,
+				   state->location.y,
+				   state->location.z);
 
-	part->friction = round2(getParam(FRICTION) * state->fr);
-	part->ingest = round2(getParam(INGESTION) * state->ing);
+	part->friction = getParam(FRICTION) * state->fr;
+	part->ingest = getParam(INGESTION) * state->ing;
 	Pt3D size = calculateSize();
-	part->scale.x = round2(size.x);
-	part->scale.y = round2(size.y);
-	part->scale.z = round2(size.z);
+	part->scale.x = size.x;
+	part->scale.y = size.y;
+	part->scale.z = size.z;
 	part->setRot(getRotation());
 }
 
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
-	j->stif = round2(getParam(STIFFNESS) * state->stif);
+	j->stif = getParam(STIFFNESS) * state->stif;
 	j->rotstif = j->stif;
 
 	j->attachToParts(parent->part, part);
@@ -713,12 +700,11 @@ void Node::getGeno(SString &result)
 			fS_Neuron *n = neurons[i];
 			if (i != 0)
 				result += NEURON_SEPARATOR;
-			if (n->getClassName() != "N")
-			{
-				result += n->getDetails();
-				if (!n->inputs.empty())
-					result += NEURON_INTERNAL_SEPARATOR;
-			}
+
+			result += n->getDetails();
+			if (!n->inputs.empty())
+				result += NEURON_INTERNAL_SEPARATOR;
+
 			for (auto it = n->inputs.begin(); it != n->inputs.end(); ++it)
 			{
 				if (it != n->inputs.begin())
@@ -729,7 +715,6 @@ void Node::getGeno(SString &result)
 					result += NEURON_I_W_SEPARATOR;
 					result += SString::valueOf(it->second);
 				}
-
 			}
 		}
 		result += NEURON_END;
