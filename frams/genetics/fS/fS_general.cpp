@@ -584,7 +584,7 @@ bool Node::isPartSizeValid()
 	if (partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
 		// When not all radii have different values
 		return false;
-	if (partType == Part::Shape::SHAPE_CYLINDER && size.x != size.y)
+	if (partType == Part::Shape::SHAPE_CYLINDER && size.y != size.z)
 		// If base radii have different values
 		return false;
 	return true;
