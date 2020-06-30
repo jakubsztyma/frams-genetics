@@ -110,6 +110,8 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
+static const Part minPart = Model::getMinPart();
+static const Part maxPart = Model::getMaxPart();
 static const Joint defJoint = Model::getDefJoint();
 const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_CUBOID, 8.0},
@@ -126,10 +128,10 @@ const std::map<string, double> defaultValues = {
 		{RX,             0.0},
 		{RY,             0.0},
 		{RZ,             0.0},
-		{SIZE,           1.0},
-		{SIZE_X,         1.0},
-		{SIZE_Y,         1.0},
-		{SIZE_Z,         1.0}
+		{SIZE,           defPart.scale.x},
+		{SIZE_X,         defPart.scale.x},
+		{SIZE_Y,         defPart.scale.y},
+		{SIZE_Z,         defPart.scale.z}
 };
 
 const std::map<string, double> minValues = {
@@ -142,10 +144,10 @@ const std::map<string, double> minValues = {
 		{RX,             -M_PI},
 		{RY,             -M_PI},
 		{RZ,             -M_PI},
-		{SIZE,           0.01},
-		{SIZE_X,         0.01},
-		{SIZE_Y,         0.01},
-		{SIZE_Z,         0.01}
+		{SIZE,           minPart.scale.x},
+		{SIZE_X,         minPart.scale.x},
+		{SIZE_Y,         minPart.scale.y},
+		{SIZE_Z,         minPart.scale.z}
 };
 
 const std::map<string, double> maxValues = {
@@ -158,10 +160,10 @@ const std::map<string, double> maxValues = {
 		{RX,             M_PI},
 		{RY,             M_PI},
 		{RZ,             M_PI},
-		{SIZE,           100.0},
-		{SIZE_X,         100.0},
-		{SIZE_Y,         100.0},
-		{SIZE_Z,         100.0}
+		{SIZE,           maxPart.scale.x},
+		{SIZE_X,         maxPart.scale.x},
+		{SIZE_Y,         maxPart.scale.y},
+		{SIZE_Z,         maxPart.scale.z}
 };
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
