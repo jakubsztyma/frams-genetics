@@ -51,7 +51,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
 /**
  * The tolerance of the value of distance between parts
  */
-const double SPHERE_DISTANCE_TOLERANCE = 0.99;
+const double SPHERE_DISTANCE_TOLERANCE = 0.96;
 
 
 /** @name Names of node parameters and modifiers*/
@@ -137,7 +137,7 @@ const std::map<string, double> defaultValues = {
 const std::map<string, double> minValues = {
 		{INGESTION,      0},
 		{FRICTION,       0},
-		{STIFFNESS,	 0.0},
+		{STIFFNESS,	 0.9},
 		{ROT_X,          -M_PI},
 		{ROT_Y,          -M_PI},
 		{ROT_Z,          -M_PI},

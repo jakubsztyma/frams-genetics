@@ -624,6 +624,9 @@ int main(int argc, char *argv[])
 			"1.1:ETTE{st=0.5}",
 			"1.1:EttE{st=0.5}",
 			"1.3:SE",
+			"1.1:EC{ry=0.78}",
+			"1.1:EC{ry=0.78;rx=0.78}",
+			"1.1:C{ry=0.78;rx=0.78}C{ry=0.78;rx=0.78}",
 	};
 	srand(time(NULL));
 
@@ -635,7 +638,7 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			2, 2, 1};
+			2, 2, 1, 2, 2, 2};
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 

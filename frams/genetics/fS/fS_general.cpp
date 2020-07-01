@@ -321,21 +321,23 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 	return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
 }
 
-Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
+Pt3D *findSphereCenters(Part::Shape shape, int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
 {
 	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 	double minRadius = min3(radii);
 	if(minRadius <= 0)
 	    throw fS_Exception("Invalid part size", 0);
 	double maxRadius = max3(radii);
-	if (MAX_DIAMETER_QUOTIENT > maxRadius / minRadius)
-		sphereRadius = minRadius;
-	else
+	sphereRadius = 0.5 * minRadius;
+	if (MAX_DIAMETER_QUOTIENT < maxRadius / sphereRadius)
 	{
-		// When max radius is much bigger than min radius
+		// When max radius is much bigger than sphereRadius and there are to many spheresZ
 		sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
 		sphereRadius = maxRadius / MAX_DIAMETER_QUOTIENT;
 	}
+	else if(shape == Part::Shape::SHAPE_ELLIPSOID)
+		sphereRadius = minRadius;
+
 	double sphereDiameter = 2 * sphereRadius;
 
 	double *diameters = new double[3] {2 * radii.x, 2 * radii.y, 2 * radii.z};
@@ -373,8 +375,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D &vector,
 				double distanceThreshold)
 {
-	double upperThreshold = distanceThreshold;
-	double lowerThreshold = SPHERE_DISTANCE_TOLERANCE * distanceThreshold;
+	double upperThreshold = distanceThreshold * distanceThreshold;
+	double lowerThreshold = pow(SPHERE_DISTANCE_TOLERANCE * distanceThreshold, 2);
 	double distance;
 	double dx, dy, dz;
 	bool existsAdjacent = false;
@@ -389,7 +391,7 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
 			dx = shiftedSphere.x - tmpPoint->x;
 			dy = shiftedSphere.y - tmpPoint->y;
 			dz = shiftedSphere.z - tmpPoint->z;
-			distance = sqrt(dx * dx + dy * dy + dz * dz);
+			distance = dx * dx + dy * dy + dz * dz;
 
 			if (distance <= upperThreshold)
 			{
@@ -414,8 +416,8 @@ double Node::getDistance()
 	Pt3D parentSize = parent->calculateSize();	// Here we are sure that parent is not nullptr
 	int parentSphereCount, sphereCount;
 	double parentSphereRadius, sphereRadius;
-	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
-	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, size, getRotation());
+	Pt3D *centersParent = findSphereCenters(parent->partType, parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
+	Pt3D *centers = findSphereCenters(partType, sphereCount, sphereRadius, size, getRotation());
 
 	double distanceThreshold = sphereRadius + parentSphereRadius;
 	double minDistance = 0.0;
