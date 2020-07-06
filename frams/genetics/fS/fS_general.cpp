@@ -735,7 +735,6 @@ void Node::getGeno(SString &result)
 
 			result += it->first.c_str();                    // Add parameter key to string
 			result += PARAM_KEY_VALUE_SEPARATOR;
-			string value_text = std::to_string(it->second);
 			// Round the value to two decimal places and add to string
 			char buffer[20];
 			doubleToString(it->second, fS_Genotype::precision, buffer, 20);
@@ -760,10 +759,27 @@ void Node::getGeno(SString &result)
 }
 
 
-bool Node::changeSizeParam(string key, bool ensureCircleSection)
+bool Node::mutateSizeParam(string key, bool ensureCircleSection)
 {
 	double oldValue = getParam(key);
-	params[key] = GenoOperators::mutateCreep('f', params[key], minValues.at(key), maxValues.at(key), true);
+	double volume = calculateVolume();
+	double valueAtMinVolume, valueAtMaxVolume;
+	if(key == SIZE)
+	{
+		valueAtMinVolume = oldValue * std::cbrt(Model::getMinPart().volume / volume);
+		valueAtMaxVolume = oldValue * std::cbrt(Model::getMaxPart().volume / volume);
+	}
+	else
+	{
+		valueAtMinVolume = oldValue * Model::getMinPart().volume / volume;
+		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
+	}
+
+	double min = std::max(minValues.at(key), valueAtMinVolume);
+	double max = std::min(maxValues.at(key), valueAtMaxVolume);
+
+	params[key] = GenoOperators::mutateCreep('f', params[key], min, max, true);
+
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
 	else

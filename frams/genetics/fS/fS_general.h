@@ -107,6 +107,7 @@ const string MODIFIERS = "IFST";
 const char SIZE_MODIFIER = 's';
 const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							 STIFFNESS};
+const vector<string> SIZE_PARAMS {SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
@@ -341,7 +342,6 @@ private:
 	GenotypeParams genotypeParams;
 
 
-	std::map<string, double> params; /// The map of all the node params
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
@@ -438,6 +438,7 @@ public:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
+	std::map<string, double> params; /// The map of all the node params
 
 	Node(Substring &genotype, Node *parent, GenotypeParams genotypeParams);
 
@@ -469,7 +470,7 @@ public:
 	 * @param ensureCircleSection
 	 * @return True if the parameter value was change, false otherwise
 	 */
-	bool changeSizeParam(string paramKey,  bool ensureCircleSection);
+	bool mutateSizeParam(string paramKey,  bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree

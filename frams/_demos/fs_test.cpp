@@ -560,6 +560,40 @@ void evolutionTest(int operationCount)
 	fclose(pFile);
 }
 
+void testmutateSizeParam()
+{
+	double minVolume = Model::getMinPart().volume;
+	double maxVolume = Model::getMaxPart().volume;
+	double minRadius = Model::getMinPart().scale.x;
+	double maxRadius = Model::getMaxPart().scale.x;
+	string test_cases[] = {
+			"1.1:C{x=2.4}",
+			"1.1:E{x=4.9}",
+			"1.1:R{x=3.3}",
+			"1.1:C{x=4.9;y=0.5}",
+			"1.1:C{x=4.9;y=0.25;z=2.0}",
+			"1.1:C{x=999.0;y=0.05;z=0.05}",
+	};
+
+	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+	{
+		for(int j=0; j<SIZE_PARAMS.size(); j++)
+		{
+			fS_Genotype geno(test_cases[i]);
+			geno.getState();
+
+			bool result = geno.startNode->mutateSizeParam(SIZE_PARAMS[j], false);
+
+			geno.getState();
+			double volume = geno.startNode->calculateVolume();
+			Pt3D size = geno.startNode->calculateSize();
+			assert(result);
+			assert(minVolume < volume && volume < maxVolume);
+			assert(minRadius < size.x && size.x < maxRadius);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	SString test_cases[] = {
@@ -657,6 +691,7 @@ int main(int argc, char *argv[])
 	testChangePartType();
 	testUsePartType();
 	testTurnWithRotation();
+	testmutateSizeParam();
 	int operationCount;
 	if (argc > 1)
 		operationCount = std::stod(argv[1]);
