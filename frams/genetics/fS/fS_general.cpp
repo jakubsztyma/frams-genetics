@@ -10,6 +10,7 @@
 #include "frams/util/rndutil.h"
 #include "frams/neuro/neurolibrary.h"
 #include "../genooperators.h"
+#include "common/nonstd_math.h"
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
@@ -98,12 +99,12 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 		double value;
 		if (separatorIndex == -1)
 		{
-			keyLength = keyValue.len();
+			keyLength = keyValue.length();
 			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		} else
 		{
 			keyLength = separatorIndex;
-			size_t valueLength = keyValue.len() - (separatorIndex);
+			size_t valueLength = keyValue.length() - (separatorIndex);
 			value = fS_stod(buffer + separatorIndex + 1, start, &valueLength);
 		}
 		inputs[fS_stod(buffer, start, &keyLength)] = value;
@@ -736,7 +737,9 @@ void Node::getGeno(SString &result)
 			result += PARAM_KEY_VALUE_SEPARATOR;
 			string value_text = std::to_string(it->second);
 			// Round the value to two decimal places and add to string
-			result += value_text.substr(0, value_text.find(".") + fS_Genotype::precision).c_str();
+			char buffer[20];
+			doubleToString(it->second, fS_Genotype::precision, buffer, 20);
+			result += buffer;
 		}
 		result += PARAM_END;
 	}
@@ -869,10 +872,7 @@ Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node)
 
 SString fS_Genotype::getGeno()
 {
-	SString geno;
-	geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
-
-	geno += SString::sprintf("%.1f",startNode->genotypeParams.modifierMultiplier) + MODE_SEPARATOR;
+	SString geno = SString::sprintf("%.1f",startNode->genotypeParams.modifierMultiplier) + MODE_SEPARATOR;
 
 	startNode->getGeno(geno);
 	return geno;
