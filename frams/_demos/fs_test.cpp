@@ -110,6 +110,11 @@ bool doubleCompare(double a, double b)
 	return fabs(a - b) < EPSILON;
 }
 
+vector<Part::Shape> availablePartShapes{
+		Part::Shape::SHAPE_ELLIPSOID,
+		Part::Shape::SHAPE_CUBOID,
+		Part::Shape::SHAPE_CYLINDER,
+};
 void testAddPart()
 {
 	GenoOper_fS operators;
@@ -137,7 +142,7 @@ void testAddPart()
 	{
 		fS_Genotype geno(test_cases[i]);
 
-		operators.addPart(geno, "ECR", false);
+		operators.addPart(geno, availablePartShapes, false);
 
 		geno.getState();
 		Node *newNode = geno.getAllNodes()[1];
@@ -164,7 +169,7 @@ void testChangePartType()
 		geno.getState();
 		double oldVolume = geno.startNode->calculateVolume();
 
-		operators.changePartType(geno, "CER");
+		operators.changePartType(geno, availablePartShapes);
 
 		geno.getState();
 		assert(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
@@ -174,20 +179,24 @@ void testChangePartType()
 void testUsePartType()
 {
 	GenoOper_fS operators;
+	vector<Part::Shape> cuboid;
+	cuboid.push_back(Part::Shape::SHAPE_CUBOID);
+	vector<Part::Shape> ellipsoid;
+	ellipsoid.push_back(Part::Shape::SHAPE_ELLIPSOID);
+	vector<Part::Shape> cylinder;
+	cylinder.push_back(Part::Shape::SHAPE_CYLINDER);
+
 	fS_Genotype geno("1.1:E");
-	operators.changePartType(geno, "C");
-	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CUBOID);
-	operators.changePartType(geno, "E");
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
-	operators.changePartType(geno, "R");
+	operators.changePartType(geno, cylinder);
 	assert(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
-	operators.addPart(geno, "R");
+	operators.addPart(geno, cylinder);
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
 	operators.removePart(geno);
-	operators.addPart(geno, "C");
+	operators.addPart(geno, cuboid);
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
 	operators.removePart(geno);
-	operators.addPart(geno, "E");
+	operators.addPart(geno, ellipsoid);
 	assert(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_ELLIPSOID);
 
 }
@@ -309,13 +318,13 @@ void testOneGenotype(SString test, int expectedPartCount)
 
 	// Test add part
 	tmp = geno.getNodeCount();
-	operators.addPart(geno);
+	operators.addPart(geno, availablePartShapes);
 	assert(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
 	tmp = geno.getNodeCount();
 	tmpStr = geno.getGeno();
-	if (operators.changePartType(geno))
+	if (operators.changePartType(geno, availablePartShapes))
 	{
 		assert(geno.getNodeCount() == tmp);
 		assert(geno.getGeno() != tmpStr);
