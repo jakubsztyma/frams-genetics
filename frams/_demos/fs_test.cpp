@@ -58,7 +58,7 @@ void testRearrangeBeforeCrossover()
 			"1.1:E[N;N;N]E[N_3;N_4_5;N_3]",
 			"1.1:E[N_3;4;]E[N_3;N_4_5;N_3]",
 			"1.1:E[N_1;2;0]E[N;N;N]",
-			"1.1:E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",     
+			"1.1:E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",
 			"1.1:E[Sin;N;G]E[Rnd;N;T]",
 			"1.1:E[N_1_3;N_2_4;N](E[N_3;N_4_5;N_3]^E[N_3;N_4_6_7])",
 			"1.1:E[N_1_3;N_2_4;N](E[N_0_3;N_4_5;N_3_6]^E[N_3;N_4_6_7])",
@@ -505,10 +505,10 @@ void evolutionTest(int operationCount)
 		if (i2 == i1)
 			i2 = (i1 + 1) % gen_size;
 
-		if (i % 100 == 0)
-		{
-//			cout << i << " out of " << operationCount << " Length: " << gens[i1]->len() + gens[i2]->len() << endl;
-		}
+//		if (i % 10 == 0)
+//		{
+//			cout << i << " out of " << operationCount << " Length: " << gens[i1]->length() + gens[i2]->length() << endl;
+//		}
 
 		int method;
 		float f1, f2, gp;
@@ -660,6 +660,12 @@ int main(int argc, char *argv[])
 			"1.1:EC{ry=0.78}",
 			"1.1:EC{ry=0.78;rx=0.78}",
 			"1.1:C{ry=0.78;rx=0.78}C{ry=0.78;rx=0.78}",
+			"1.1:E{rx=0.78}E{tz=1.57;rx=0.78}",
+			"1.1:R{rx=0.78}R{tz=1.57;rx=0.78}",
+			"1.1:C{rx=0.78}C{tz=1.57;rx=0.78}",
+			"1.1:C{rx=0.78}R{tz=1.57;rx=0.78}",
+			"1.1:C{rx=0.78}E{tz=1.57;rx=0.78}",
+			"1.1:R{rx=0.78}E{tz=1.57;rx=0.78}",
 	};
 	srand(time(NULL));
 
@@ -671,7 +677,8 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			2, 2, 1, 2, 2, 2};
+			2, 2, 1, 2, 2, 2, 2, 2, 2, 2,
+			2, 2};
 	auto start = std::chrono::steady_clock::now();
 	PreconfiguredGenetics genetics;
 

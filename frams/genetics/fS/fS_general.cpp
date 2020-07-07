@@ -11,6 +11,7 @@
 #include "frams/neuro/neurolibrary.h"
 #include "../genooperators.h"
 #include "common/nonstd_math.h"
+#include "distance.h"
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
@@ -50,13 +51,6 @@ State::State(Pt3D _location, Pt3D _v)
 void State::addVector(const double length)
 {
 	location += v * length;
-}
-
-void rotateVector(Pt3D &vector, const Pt3D &rotation)
-{
-	Orient rotmatrix = Orient_1;
-	rotmatrix.rotate(rotation);
-	vector = rotmatrix.transform(vector);
 }
 
 void State::rotate(const Pt3D &rotation)
@@ -290,173 +284,6 @@ double Node::getParam(string key)
 		return defaultValues.at(key);
 }
 
-double avg(double a, double b)
-{
-	return 0.5 * (a + b);
-}
-
-double min3(Pt3D p)
-{
-	double tmp = p.x;
-	if (p.y < tmp)
-		tmp = p.y;
-	if (p.z < tmp)
-		tmp = p.z;
-	return tmp;
-}
-
-double max3(Pt3D p)
-{
-	double tmp = p.x;
-	if (p.y > tmp)
-		tmp = p.y;
-	if (p.z > tmp)
-		tmp = p.z;
-	return tmp;
-}
-
-double getSphereCoordinate(double dimension, double sphereDiameter, double index, int count)
-{
-	if (count == 1)
-		return 0;
-	return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
-}
-
-Pt3D *findSphereCenters(Part::Shape shape, int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
-{
-	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
-	double minRadius = min3(radii);
-	if(minRadius <= 0)
-	    throw fS_Exception("Invalid part size", 0);
-	double maxRadius = max3(radii);
-	sphereRadius = 0.5 * minRadius;
-	if (MAX_DIAMETER_QUOTIENT < maxRadius / sphereRadius)
-	{
-		// When max radius is much bigger than sphereRadius and there are to many spheresZ
-		sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
-		sphereRadius = maxRadius / MAX_DIAMETER_QUOTIENT;
-	}
-	else if(shape == Part::Shape::SHAPE_ELLIPSOID)
-		sphereRadius = minRadius;
-
-	double sphereDiameter = 2 * sphereRadius;
-
-	double *diameters = new double[3] {2 * radii.x, 2 * radii.y, 2 * radii.z};
-	int counts[3];
-	for (int i = 0; i < 3; i++)
-	{
-		counts[i] = 1;
-		if (diameters[i] > sphereDiameter)
-			counts[i] += ceil((diameters[i] - sphereDiameter) / sphereDiameter / sphereRelativeDistance);
-	}
-
-	sphereCount = counts[0] * counts[1] * counts[2];
-	double x, y, z;
-	int totalCount = 0;
-	Pt3D *centers = new Pt3D[sphereCount];
-	for (double xi = 0; xi < counts[0]; xi++)
-	{
-		x = getSphereCoordinate(diameters[0], sphereDiameter, xi, counts[0]);
-		for (double yi = 0; yi < counts[1]; yi++)
-		{
-			y = getSphereCoordinate(diameters[1], sphereDiameter, yi, counts[1]);
-			for (double zi = 0; zi < counts[2]; zi++)
-			{
-				z = getSphereCoordinate(diameters[2], sphereDiameter, zi, counts[2]);
-				centers[totalCount] = Pt3D(x, y, z);
-				rotateVector(centers[totalCount], rotations);
-				totalCount++;
-			}
-		}
-	}
-	delete[] diameters;
-	return centers;
-}
-
-int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D &vector,
-				double distanceThreshold)
-{
-	double upperThreshold = distanceThreshold * distanceThreshold;
-	double lowerThreshold = pow(SPHERE_DISTANCE_TOLERANCE * distanceThreshold, 2);
-	double distance;
-	double dx, dy, dz;
-	bool existsAdjacent = false;
-	Pt3D *tmpPoint;
-	for (int sc = 0; sc < sphereCount; sc++)
-	{
-		Pt3D shiftedSphere = Pt3D(centers[sc]);
-		shiftedSphere += vector;
-		for (int psc = 0; psc < parentSphereCount; psc++)
-		{
-			tmpPoint = &centersParent[psc];
-			dx = shiftedSphere.x - tmpPoint->x;
-			dy = shiftedSphere.y - tmpPoint->y;
-			dz = shiftedSphere.z - tmpPoint->z;
-			distance = dx * dx + dy * dy + dz * dz;
-
-			if (distance <= upperThreshold)
-			{
-				if (distance >= lowerThreshold)
-					existsAdjacent = true;
-				else
-				{
-					return COLLISION;
-				}
-			}
-		}
-	}
-	if (existsAdjacent)
-		return ADJACENT;
-	else
-		return DISJOINT;
-}
-
-double Node::getDistance()
-{
-	Pt3D size = calculateSize();
-	Pt3D parentSize = parent->calculateSize();	// Here we are sure that parent is not nullptr
-	int parentSphereCount, sphereCount;
-	double parentSphereRadius, sphereRadius;
-	Pt3D *centersParent = findSphereCenters(parent->partType, parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
-	Pt3D *centers = findSphereCenters(partType, sphereCount, sphereRadius, size, getRotation());
-
-	double distanceThreshold = sphereRadius + parentSphereRadius;
-	double minDistance = 0.0;
-	double maxDistance = 2 * (max3(parentSize) + max3(size));
-	double currentDistance = avg(maxDistance, minDistance);
-	int result = -1;
-	int iterationNo = 0;
-	while (result != ADJACENT)
-	{
-		iterationNo++;
-		Pt3D currentVector = state->v * currentDistance;
-		result = isCollision(centersParent, centers, parentSphereCount, sphereCount, currentVector, distanceThreshold);
-
-		if (result == DISJOINT)
-		{
-			maxDistance = currentDistance;
-			currentDistance = avg(currentDistance, minDistance);
-		} else if (result == COLLISION)
-		{
-			minDistance = currentDistance;
-			currentDistance = avg(maxDistance, currentDistance);
-		}
-
-		if(maxDistance <= 0 || iterationNo > 1000)
-			throw fS_Exception("Computing of distances between parts failed", 0);
-		if (currentDistance > maxDistance)
-		{
-			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
-		}
-		if (currentDistance < minDistance)
-			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
-
-	}
-
-	delete[] centersParent;
-	delete[] centers;
-	return currentDistance;
-}
 
 void Node::getState(State *_state)
 {
