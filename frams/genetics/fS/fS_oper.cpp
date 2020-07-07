@@ -280,7 +280,7 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 	}
 }
 
-bool GenoOper_fS::addPart(fS_Genotype &geno, vector<Part::Shape> availablePartShapes, bool mutateSize)
+bool GenoOper_fS::addPart(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes, bool mutateSize)
 {
 	geno.getState();
 	Node *node = geno.chooseNode();
@@ -584,7 +584,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second = GenoOperators::getMutatedNeuroClassProperty(it->second, NULL, -1);
+			it->second = GenoOperators::getMutatedNeuronConnectionWeight(it->second);
 			return true;
 		}
 	}

@@ -888,7 +888,13 @@ Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node)
 
 SString fS_Genotype::getGeno()
 {
-	SString geno = SString::sprintf("%.1f",startNode->genotypeParams.modifierMultiplier) + MODE_SEPARATOR;
+	SString geno;
+	geno.reserve(100);
+
+	char buffer[20];
+	doubleToString(startNode->genotypeParams.modifierMultiplier, fS_Genotype::precision, buffer, 20);
+	geno += buffer;
+	geno += MODE_SEPARATOR;
 
 	startNode->getGeno(geno);
 	return geno;
