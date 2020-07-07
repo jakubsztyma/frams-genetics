@@ -10,6 +10,7 @@
 #include "frams/util/rndutil.h"
 #include "frams/neuro/neurolibrary.h"
 #include "../genooperators.h"
+#include "common/nonstd_math.h"
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
@@ -98,22 +99,23 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 		double value;
 		if (separatorIndex == -1)
 		{
-			keyLength = keyValue.len();
+			keyLength = keyValue.length();
 			value = DEFAULT_NEURO_CONNECTION_WEIGHT;
 		} else
 		{
 			keyLength = separatorIndex;
-			size_t valueLength = keyValue.len() - (separatorIndex);
+			size_t valueLength = keyValue.length() - (separatorIndex);
 			value = fS_stod(buffer + separatorIndex + 1, start, &valueLength);
 		}
 		inputs[fS_stod(buffer, start, &keyLength)] = value;
 	}
 }
 
-Node::Node(Substring &restOfGeno, Node *_parent)
+Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 {
-	parent = _parent;
 	partDescription = new Substring(restOfGeno);
+	genotypeParams = _genotypeParams;
+	parent = _parent;
 
 	try
 	{
@@ -320,21 +322,23 @@ double getSphereCoordinate(double dimension, double sphereDiameter, double index
 	return (dimension - sphereDiameter) * (index / (count - 1) - 0.5);
 }
 
-Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
+Pt3D *findSphereCenters(Part::Shape shape, int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D rotations)
 {
 	double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 	double minRadius = min3(radii);
 	if(minRadius <= 0)
 	    throw fS_Exception("Invalid part size", 0);
 	double maxRadius = max3(radii);
-	if (MAX_DIAMETER_QUOTIENT > maxRadius / minRadius)
-		sphereRadius = minRadius;
-	else
+	sphereRadius = 0.5 * minRadius;
+	if (MAX_DIAMETER_QUOTIENT < maxRadius / sphereRadius)
 	{
-		// When max radius is much bigger than min radius
+		// When max radius is much bigger than sphereRadius and there are to many spheresZ
 		sphereRelativeDistance = 1.0;   // Make the spheres adjacent to speed up the computation
 		sphereRadius = maxRadius / MAX_DIAMETER_QUOTIENT;
 	}
+	else if(shape == Part::Shape::SHAPE_ELLIPSOID)
+		sphereRadius = minRadius;
+
 	double sphereDiameter = 2 * sphereRadius;
 
 	double *diameters = new double[3] {2 * radii.x, 2 * radii.y, 2 * radii.z};
@@ -372,8 +376,8 @@ Pt3D *findSphereCenters(int &sphereCount, double &sphereRadius, Pt3D radii, Pt3D
 int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int sphereCount, Pt3D &vector,
 				double distanceThreshold)
 {
-	double upperThreshold = distanceThreshold;
-	double lowerThreshold = SPHERE_DISTANCE_TOLERANCE * distanceThreshold;
+	double upperThreshold = distanceThreshold * distanceThreshold;
+	double lowerThreshold = pow(SPHERE_DISTANCE_TOLERANCE * distanceThreshold, 2);
 	double distance;
 	double dx, dy, dz;
 	bool existsAdjacent = false;
@@ -388,7 +392,7 @@ int isCollision(Pt3D *centersParent, Pt3D *centers, int parentSphereCount, int s
 			dx = shiftedSphere.x - tmpPoint->x;
 			dy = shiftedSphere.y - tmpPoint->y;
 			dz = shiftedSphere.z - tmpPoint->z;
-			distance = sqrt(dx * dx + dy * dy + dz * dz);
+			distance = dx * dx + dy * dy + dz * dz;
 
 			if (distance <= upperThreshold)
 			{
@@ -413,8 +417,8 @@ double Node::getDistance()
 	Pt3D parentSize = parent->calculateSize();	// Here we are sure that parent is not nullptr
 	int parentSphereCount, sphereCount;
 	double parentSphereRadius, sphereRadius;
-	Pt3D *centersParent = findSphereCenters(parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
-	Pt3D *centers = findSphereCenters(sphereCount, sphereRadius, size, getRotation());
+	Pt3D *centersParent = findSphereCenters(parent->partType, parentSphereCount, parentSphereRadius, parentSize, parent->getRotation());
+	Pt3D *centers = findSphereCenters(partType, sphereCount, sphereRadius, size, getRotation());
 
 	double distanceThreshold = sphereRadius + parentSphereRadius;
 	double minDistance = 0.0;
@@ -468,7 +472,7 @@ void Node::getState(State *_state)
 	for (auto it = modifiers.begin(); it != modifiers.end(); ++it)
 	{
 		char mod = it->first;
-		double multiplier = pow(MODIFIER_MULTIPLIER, it->second);
+		double multiplier = pow(genotypeParams.modifierMultiplier, it->second);
 		if (mod == MODIFIERS[0])
 			state->ing *= multiplier;
 		else if (mod == MODIFIERS[1])
@@ -496,7 +500,7 @@ void Node::getChildren(Substring &restOfGenotype)
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
-		children.push_back(new Node(branches[i], this));
+		children.push_back(new Node(branches[i], this, genotypeParams));
 	}
 }
 
@@ -583,7 +587,7 @@ bool Node::isPartSizeValid()
 	if (partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
 		// When not all radii have different values
 		return false;
-	if (partType == Part::Shape::SHAPE_CYLINDER && size.x != size.y)
+	if (partType == Part::Shape::SHAPE_CYLINDER && size.y != size.z)
 		// If base radii have different values
 		return false;
 	return true;
@@ -731,9 +735,10 @@ void Node::getGeno(SString &result)
 
 			result += it->first.c_str();                    // Add parameter key to string
 			result += PARAM_KEY_VALUE_SEPARATOR;
-			string value_text = std::to_string(it->second);
 			// Round the value to two decimal places and add to string
-			result += value_text.substr(0, value_text.find(".") + fS_Genotype::precision).c_str();
+			char buffer[20];
+			doubleToString(it->second, fS_Genotype::precision, buffer, 20);
+			result += buffer;
 		}
 		result += PARAM_END;
 	}
@@ -754,10 +759,27 @@ void Node::getGeno(SString &result)
 }
 
 
-bool Node::changeSizeParam(string key, bool ensureCircleSection)
+bool Node::mutateSizeParam(string key, bool ensureCircleSection)
 {
 	double oldValue = getParam(key);
-	params[key] = GenoOperators::mutateCreep('f', params[key], minValues.at(key), maxValues.at(key), true);
+	double volume = calculateVolume();
+	double valueAtMinVolume, valueAtMaxVolume;
+	if(key == SIZE)
+	{
+		valueAtMinVolume = oldValue * std::cbrt(Model::getMinPart().volume / volume);
+		valueAtMaxVolume = oldValue * std::cbrt(Model::getMaxPart().volume / volume);
+	}
+	else
+	{
+		valueAtMinVolume = oldValue * Model::getMinPart().volume / volume;
+		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
+	}
+
+	double min = std::max(minValues.at(key), valueAtMinVolume);
+	double max = std::min(maxValues.at(key), valueAtMaxVolume);
+
+	params[key] = GenoOperators::mutateCreep('f', params[key], min, max, true);
+
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
 	else
@@ -781,13 +803,22 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const string &genotype)
+fS_Genotype::fS_Genotype(const string &geno)
 {
 	try
 	{
-		string geno = genotype.c_str();
-		Substring substring(geno.c_str(), 0, geno.length());
-		startNode = new Node(substring, nullptr);
+		GenotypeParams genotypeParams;
+		genotypeParams.modifierMultiplier = 1.1;
+
+		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
+		if (modeSeparatorIndex == string::npos)
+			throw fS_Exception("Genotype parameters missing", 0);
+
+		genotypeParams.modifierMultiplier = fS_stod(geno, 0, &modeSeparatorIndex);
+
+		int genoStart = modeSeparatorIndex + 1;
+		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
+		startNode = new Node(substring, nullptr, genotypeParams);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
@@ -857,8 +888,8 @@ Node *fS_Genotype::getNearestNode(vector<Node *> allNodes, Node *node)
 
 SString fS_Genotype::getGeno()
 {
-	SString geno;
-	geno.memoryHint(100);     // Provide a small buffer from the start to improve performance
+	SString geno = SString::sprintf("%.1f",startNode->genotypeParams.modifierMultiplier) + MODE_SEPARATOR;
+
 	startNode->getGeno(geno);
 	return geno;
 }

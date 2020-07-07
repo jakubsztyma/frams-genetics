@@ -73,7 +73,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart(fS_Genotype &geno, string availableTypes = "ECR", bool mutateSize = true);
+	bool addPart(fS_Genotype &geno, vector<Part::Shape> availablePartShapes, bool mutateSize = true);
 
 	/**
 	 * Performs remove part type mutation on genotype
@@ -85,7 +85,7 @@ public:
 	 * Performs change part type mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changePartType(fS_Genotype &geno, string availableTypes = "ECR");
+	bool changePartType(fS_Genotype &geno, vector<Part::Shape> availablePartShapes);
 
 	/**
 	 * Changes the type of one joint in genotype

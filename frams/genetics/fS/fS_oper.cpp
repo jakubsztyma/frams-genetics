@@ -68,13 +68,13 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 	fS_Genotype genotype(geno);
 
 	// Calculate available part types
-	string availableTypes;
-	if(useElli)
-		availableTypes += ELLIPSOID;
-	if(useCub)
-		availableTypes += CUBOID;
-	if(useCyl)
-		availableTypes += CYLINDER;
+	vector<Part::Shape> availablePartShapes;
+	if (useElli)
+		availablePartShapes.push_back(Part::Shape::SHAPE_ELLIPSOID);
+	if (useCub)
+		availablePartShapes.push_back(Part::Shape::SHAPE_CUBOID);
+	if (useCyl)
+		availablePartShapes.push_back(Part::Shape::SHAPE_CYLINDER);
 
 	// Select a mutation
 	bool result = false;
@@ -82,13 +82,13 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 	switch (method)
 	{
 		case FS_ADD_PART:
-			result = addPart(genotype, availableTypes);
+			result = addPart(genotype, availablePartShapes);
 			break;
 		case FS_REM_PART:
 			result = removePart(genotype);
 			break;
 		case FS_MOD_PART:
-			result = changePartType(genotype, availableTypes);
+			result = changePartType(genotype, availablePartShapes);
 			break;
 		case FS_CHANGE_JOINT:
 			result = changeJoint(genotype);
@@ -280,14 +280,14 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 	}
 }
 
-bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateSize)
+bool GenoOper_fS::addPart(fS_Genotype &geno, vector<Part::Shape> availablePartShapes, bool mutateSize)
 {
 	geno.getState();
 	Node *node = geno.chooseNode();
-	char partType = availableTypes[rndUint(availableTypes.length())];
+	char partType = SHAPETYPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
 
 	Substring substring(&partType, 0, 1);
-	Node *newNode = new Node(substring, node);
+	Node *newNode = new Node(substring, node, node->genotypeParams);
 	// Add random rotation
 	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
 	if(strongAddPart)
@@ -328,9 +328,9 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, string availableTypes, bool mutateS
 	if (mutateSize)
 	{
 		geno.getState();
-		newNode->changeSizeParam(SIZE_X, true);
-		newNode->changeSizeParam(SIZE_Y, true);
-		newNode->changeSizeParam(SIZE_Z, true);
+		newNode->mutateSizeParam(SIZE_X, true);
+		newNode->mutateSizeParam(SIZE_Y, true);
+		newNode->mutateSizeParam(SIZE_Z, true);
 	}
 	return true;
 }
@@ -361,19 +361,16 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 	return false;
 }
 
-bool GenoOper_fS::changePartType(fS_Genotype &geno, string availTypes)
+bool GenoOper_fS::changePartType(fS_Genotype &geno, vector<Part::Shape> availablePartShapes)
 {
-	int availTypesLength = availTypes.length();
+	int availShapesLen = availablePartShapes.size();
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = geno.chooseNode();
-		int index = rndUint(availTypesLength);
-		if (availTypes[index] == SHAPETYPE_TO_GENE.at(randomNode->partType))
-			index = (index + 1 + rndUint(availTypesLength - 1)) % availTypesLength;
-		char newTypeChr = availTypes[index];
-
-		auto itr = GENE_TO_SHAPETYPE.find(newTypeChr);
-		Part::Shape newType = itr->second;
+		int index = rndUint(availShapesLen);
+		if (availablePartShapes[index] == randomNode->partType)
+			index = (index + 1 + rndUint(availShapesLen - 1)) % availShapesLen;
+		Part::Shape newType = availablePartShapes[index];
 
 #ifdef _DEBUG
 		if(newType == randomNode->partType)
@@ -440,8 +437,8 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	if (randomNode->params.count(key) > 0)
 		return false;
 	// Do not allow invalid changes in part size
-	bool isRadiusOfBase = key == SIZE_X || key == SIZE_Y;
-	bool isRadius = isRadiusOfBase || key == SIZE_Z;
+	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
+	bool isRadius = isRadiusOfBase || key == SIZE_X;
 	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
@@ -485,12 +482,12 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 			advance(it, rndUint(paramCount));
 
 			// Do not allow invalid changes in part size
-			if (it->first != SIZE_X && it->first != SIZE_Y && it->first != SIZE_Z)
+			if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), it->first) == SIZE_PARAMS.end())
 			{
 				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
 				return true;
 			} else
-				return randomNode->changeSizeParam(it->first, ensureCircleSection);
+				return randomNode->mutateSizeParam(it->first, ensureCircleSection);
 		}
 	}
 	return false;

@@ -15,6 +15,7 @@
 
 /** @name Values of constants used in encoding */
 //@{
+#define MODE_SEPARATOR ':'
 #define BRANCH_START '('
 #define BRANCH_END ')'
 #define BRANCH_SEPARATOR '^'
@@ -35,8 +36,6 @@ enum class SHIFT
 	RIGHT = 1
 };
 
-/** @name Every modifier changes the underlying value by this multiplier */
-const double MODIFIER_MULTIPLIER = 1.1;
 /**
  * Used in finding the proper distance between the parts
  * distance between spheres / sphere radius
@@ -52,7 +51,7 @@ const int MAX_DIAMETER_QUOTIENT = 30;
 /**
  * The tolerance of the value of distance between parts
  */
-const double SPHERE_DISTANCE_TOLERANCE = 0.99;
+const double SPHERE_DISTANCE_TOLERANCE = 0.96;
 
 
 /** @name Names of node parameters and modifiers*/
@@ -108,9 +107,12 @@ const string MODIFIERS = "IFST";
 const char SIZE_MODIFIER = 's';
 const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
 							 STIFFNESS};
+const vector<string> SIZE_PARAMS {SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 
 /** @name Default values of node parameters*/
 static const Part defPart = Model::getDefPart();
+static const Part minPart = Model::getMinPart();
+static const Part maxPart = Model::getMaxPart();
 static const Joint defJoint = Model::getDefJoint();
 const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_CUBOID, 8.0},
@@ -127,26 +129,26 @@ const std::map<string, double> defaultValues = {
 		{RX,             0.0},
 		{RY,             0.0},
 		{RZ,             0.0},
-		{SIZE,           1.0},
-		{SIZE_X,         1.0},
-		{SIZE_Y,         1.0},
-		{SIZE_Z,         1.0}
+		{SIZE,           defPart.scale.x},
+		{SIZE_X,         defPart.scale.x},
+		{SIZE_Y,         defPart.scale.y},
+		{SIZE_Z,         defPart.scale.z}
 };
 
 const std::map<string, double> minValues = {
 		{INGESTION,      0},
 		{FRICTION,       0},
-		{STIFFNESS,	 0.0},
+		{STIFFNESS,	 0.9},
 		{ROT_X,          -M_PI},
 		{ROT_Y,          -M_PI},
 		{ROT_Z,          -M_PI},
 		{RX,             -M_PI},
 		{RY,             -M_PI},
 		{RZ,             -M_PI},
-		{SIZE,           0.01},
-		{SIZE_X,         0.01},
-		{SIZE_Y,         0.01},
-		{SIZE_Z,         0.01}
+		{SIZE,           minPart.scale.x},
+		{SIZE_X,         minPart.scale.x},
+		{SIZE_Y,         minPart.scale.y},
+		{SIZE_Z,         minPart.scale.z}
 };
 
 const std::map<string, double> maxValues = {
@@ -159,10 +161,10 @@ const std::map<string, double> maxValues = {
 		{RX,             M_PI},
 		{RY,             M_PI},
 		{RZ,             M_PI},
-		{SIZE,           100.0},
-		{SIZE_X,         100.0},
-		{SIZE_Y,         100.0},
-		{SIZE_Z,         100.0}
+		{SIZE,           maxPart.scale.x},
+		{SIZE_X,         maxPart.scale.x},
+		{SIZE_Y,         maxPart.scale.y},
+		{SIZE_Z,         maxPart.scale.z}
 };
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
@@ -317,6 +319,10 @@ public:
 	}
 };
 
+struct GenotypeParams{
+	double modifierMultiplier;	// Every modifier changes the underlying value by this multiplier
+};
+
 /**
  * Represents a node in the graph that represents a genotype.
  * A node corresponds to a single part.
@@ -333,8 +339,9 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
+	GenotypeParams genotypeParams;
 
-	std::map<string, double> params; /// The map of all the node params
+
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
@@ -431,8 +438,9 @@ public:
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
+	std::map<string, double> params; /// The map of all the node params
 
-	Node(Substring &genotype, Node *parent);
+	Node(Substring &genotype, Node *parent, GenotypeParams genotypeParams);
 
 	~Node();
 
@@ -462,7 +470,7 @@ public:
 	 * @param ensureCircleSection
 	 * @return True if the parameter value was change, false otherwise
 	 */
-	bool changeSizeParam(string paramKey,  bool ensureCircleSection);
+	bool mutateSizeParam(string paramKey,  bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree
@@ -487,6 +495,7 @@ class fS_Genotype
 	friend class GenoOper_fS;
 
 private:
+
 	/**
 	 * Draws a node that has an index greater that specified
 	 * @param fromIndex minimal index of the node
