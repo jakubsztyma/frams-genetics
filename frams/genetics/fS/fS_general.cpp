@@ -563,9 +563,7 @@ void Node::getGeno(SString &result)
 			result += it->first.c_str();                    // Add parameter key to string
 			result += PARAM_KEY_VALUE_SEPARATOR;
 			// Round the value to two decimal places and add to string
-			char buffer[20];
-			doubleToString(it->second, fS_Genotype::precision, buffer, 20);
-			result += buffer;
+			result += doubleToString(it->second, fS_Genotype::precision).c_str();
 		}
 		result += PARAM_END;
 	}
@@ -718,9 +716,7 @@ SString fS_Genotype::getGeno()
 	SString geno;
 	geno.reserve(100);
 
-	char buffer[20];
-	doubleToString(startNode->genotypeParams.modifierMultiplier, fS_Genotype::precision, buffer, 20);
-	geno += buffer;
+	geno += doubleToString(startNode->genotypeParams.modifierMultiplier, fS_Genotype::precision).c_str();
 	geno += MODE_SEPARATOR;
 
 	startNode->getGeno(geno);
