@@ -1,9 +1,9 @@
-`//
-// Created by jakub on 07.07.2020.
-//
+// This file is a part of Framsticks SDK.  http://www.framsticks.com/
+// Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
+// See LICENSE.txt for details.
 
-#ifndef CPP_DISTANCE_H
-#define CPP_DISTANCE_H
+#ifndef _PART_DISTANCE_ESTIMATOR_H
+#define _PART_DISTANCE_ESTIMATOR_H
 
 class fS_Utils
 {
@@ -99,7 +99,7 @@ public:
 		double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 		double minRadius = fS_Utils::min3(radii);
 		if(minRadius <= 0)
-			throw fS_Exception("Invalid part size", 0);
+			throw fS_Exception("Invalid part size in PartDistanceEstimator", 0);
 		double maxRadius = fS_Utils::max3(radii);
 		sphereRadius = SPHERE_SIZE_QUOTIENT * minRadius;
 		if (MAX_DIAMETER_QUOTIENT < maxRadius / sphereRadius)
@@ -149,30 +149,30 @@ public:
 		return centers;
 	}
 
-	static int isCollision(vector<Pt3D> centersParent, vector<Pt3D> centers, Pt3D &vector,
+	static int isCollision(vector<Pt3D> &centersParent, vector<Pt3D> &centers, Pt3D &vectorBetweenParts,
 					double distanceThreshold)
 	{
-		double upperThreshold = distanceThreshold * distanceThreshold;
-		double lowerThreshold = pow(SPHERE_DISTANCE_TOLERANCE * distanceThreshold, 2);
-		double distance;
+		double upperThresholdSq = distanceThreshold * distanceThreshold;
+		double lowerThresholdSq = pow(SPHERE_DISTANCE_TOLERANCE * distanceThreshold, 2);
+		double distanceSq;
 		double dx, dy, dz;
 		bool existsAdjacent = false;
 		Pt3D *tmpPoint;
 		for (int sc = 0; sc < int(centers.size()); sc++)
 		{
 			Pt3D shiftedSphere = Pt3D(centers[sc]);
-			shiftedSphere += vector;
+			shiftedSphere += vectorBetweenParts;
 			for (int psc = 0; psc < int(centersParent.size()); psc++)
 			{
 				tmpPoint = &centersParent[psc];
 				dx = shiftedSphere.x - tmpPoint->x;
 				dy = shiftedSphere.y - tmpPoint->y;
 				dz = shiftedSphere.z - tmpPoint->z;
-				distance = dx * dx + dy * dy + dz * dz;
+				distanceSq = dx * dx + dy * dy + dz * dz;
 
-				if (distance <= upperThreshold)
+				if (distanceSq <= upperThresholdSq)
 				{
-					if (distance >= lowerThreshold)
+					if (distanceSq >= lowerThresholdSq)
 						existsAdjacent = true;
 					else
 					{
@@ -205,8 +205,8 @@ double Node::getDistance()
 	while (result != ADJACENT)
 	{
 		iterationNo++;
-		Pt3D currentVector = state->v * currentDistance;
-		result = PartDistanceEstimator::isCollision(centersParent, centers, currentVector, distanceThreshold);
+		Pt3D vectorBetweenParts = state->v * currentDistance;
+		result = PartDistanceEstimator::isCollision(centersParent, centers, vectorBetweenParts, distanceThreshold);
 
 		if (result == DISJOINT)
 		{
@@ -222,7 +222,7 @@ double Node::getDistance()
 			throw fS_Exception("Computing of distances between parts failed", 0);
 		if (currentDistance > maxDistance)
 		{
-			throw fS_Exception("Internal error; then maximal distance between parts exceeded.", 0);
+			throw fS_Exception("Internal error; the maximal distance between parts exceeded.", 0);
 		}
 		if (currentDistance < minDistance)
 			throw fS_Exception("Internal error; the minimal distance between parts exceeded.", 0);
@@ -232,4 +232,4 @@ double Node::getDistance()
 	return currentDistance;
 }
 
-#endif //CPP_DISTANCE_H
+#endif //_PART_DISTANCE_ESTIMATOR_H
