@@ -2,8 +2,8 @@
 // Copyright (C) 2019-2020  Maciej Komosinski and Szymon Ulatowski.
 // See LICENSE.txt for details.
 
-#ifndef _PART_DISTANCE_ESTIMATOR_H
-#define _PART_DISTANCE_ESTIMATOR_H
+#ifndef _PART_DISTANCE_ESTIMATOR_H_
+#define _PART_DISTANCE_ESTIMATOR_H_
 
 class fS_Utils
 {
@@ -232,4 +232,4 @@ double Node::getDistance()
 	return currentDistance;
 }
 
-#endif //_PART_DISTANCE_ESTIMATOR_H
+#endif //_PART_DISTANCE_ESTIMATOR_H_
