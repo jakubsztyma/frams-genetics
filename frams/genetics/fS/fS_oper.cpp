@@ -8,7 +8,7 @@
 #include "frams/util/rndutil.h"
 
 #define FIELDSTRUCT GenoOper_fS
-static ParamEntry GENOfSparam_tab[] =
+static ParamEntry genooper_fS_paramtab[] =
 		{
 				{"Genetics: fS",            1, FS_OPCOUNT + 5,},
 				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
@@ -36,7 +36,7 @@ static ParamEntry GENOfSparam_tab[] =
 
 GenoOper_fS::GenoOper_fS()
 {
-	par.setParamTab(GENOfSparam_tab);
+	par.setParamTab(genooper_fS_paramtab);
 	par.select(this);
 	par.setDefault();
 	supported_format = 'S';
@@ -280,7 +280,7 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 	}
 }
 
-bool GenoOper_fS::addPart(fS_Genotype &geno, vector<Part::Shape> availablePartShapes, bool mutateSize)
+bool GenoOper_fS::addPart(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes, bool mutateSize)
 {
 	geno.getState();
 	Node *node = geno.chooseNode();
@@ -584,7 +584,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 			auto it = selectedNeuron->inputs.begin();
 			advance(it, rndUint(inputCount));
 
-			it->second = GenoOperators::getMutatedNeuroClassProperty(it->second, NULL, -1);
+			it->second = GenoOperators::getMutatedNeuronConnectionWeight(it->second);
 			return true;
 		}
 	}

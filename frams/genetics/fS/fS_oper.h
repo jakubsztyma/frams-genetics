@@ -73,7 +73,7 @@ public:
 	 * Performs add part mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool addPart(fS_Genotype &geno, vector<Part::Shape> availablePartShapes, bool mutateSize = true);
+	bool addPart(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes, bool mutateSize = true);
 
 	/**
 	 * Performs remove part type mutation on genotype

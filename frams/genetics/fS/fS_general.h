@@ -36,23 +36,6 @@ enum class SHIFT
 	RIGHT = 1
 };
 
-/**
- * Used in finding the proper distance between the parts
- * distance between spheres / sphere radius
- * That default value can be changed in certain cases
- * */
-const float SPHERE_RELATIVE_DISTANCE = 0.25;
-/**
- * Used in finding the proper distance between the parts
- * The maximal allowed value for
- * maximal radius of the node / sphere radius
- */
-const int MAX_DIAMETER_QUOTIENT = 30;
-/**
- * The tolerance of the value of distance between parts
- */
-const double SPHERE_DISTANCE_TOLERANCE = 0.96;
-
 
 /** @name Names of node parameters and modifiers*/
 //@{
