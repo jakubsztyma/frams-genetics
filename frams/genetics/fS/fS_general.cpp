@@ -11,7 +11,7 @@
 #include "frams/neuro/neurolibrary.h"
 #include "../genooperators.h"
 #include "common/nonstd_math.h"
-#include "distance.h"
+#include "part_distance_estimator.h"
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
@@ -55,7 +55,7 @@ void State::addVector(const double length)
 
 void State::rotate(const Pt3D &rotation)
 {
-       rotateVector(v, rotation);
+       fS_Utils::rotateVector(v, rotation);
        v.normalize();
 }
 
@@ -411,7 +411,7 @@ bool Node::isPartSizeValid()
 	if (size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
 		return false;
 
-	if (partType == Part::Shape::SHAPE_ELLIPSOID && max3(size) != min3(size))
+	if (partType == Part::Shape::SHAPE_ELLIPSOID && fS_Utils::max3(size) != fS_Utils::min3(size))
 		// When not all radii have different values
 		return false;
 	if (partType == Part::Shape::SHAPE_CYLINDER && size.y != size.z)
