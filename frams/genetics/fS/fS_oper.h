@@ -85,7 +85,7 @@ public:
 	 * Performs change part type mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
-	bool changePartType(fS_Genotype &geno, vector<Part::Shape> availablePartShapes);
+	bool changePartType(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes);
 
 	/**
 	 * Changes the type of one joint in genotype

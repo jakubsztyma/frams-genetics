@@ -361,7 +361,7 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 	return false;
 }
 
-bool GenoOper_fS::changePartType(fS_Genotype &geno, vector<Part::Shape> availablePartShapes)
+bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes)
 {
 	int availShapesLen = availablePartShapes.size();
 	for (int i = 0; i < mutationTries; i++)

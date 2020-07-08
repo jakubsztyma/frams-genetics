@@ -110,7 +110,7 @@ bool doubleCompare(double a, double b)
 	return fabs(a - b) < EPSILON;
 }
 
-vector<Part::Shape> availablePartShapes{
+const vector<Part::Shape> availablePartShapes{
 		Part::Shape::SHAPE_ELLIPSOID,
 		Part::Shape::SHAPE_CUBOID,
 		Part::Shape::SHAPE_CYLINDER,
