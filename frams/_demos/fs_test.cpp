@@ -590,6 +590,7 @@ void testMutateSizeParam()
 			assert(result);
 			assert(minVolume < volume && volume < maxVolume);
 			assert(minRadius < size.x && size.x < maxRadius);
+			assert(geno.getGeno().c_str() != test_cases[i]);
 		}
 	}
 }

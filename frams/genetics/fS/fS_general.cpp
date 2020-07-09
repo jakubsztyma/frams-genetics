@@ -603,7 +603,7 @@ bool Node::mutateSizeParam(string key, bool ensureCircleSection)
 	double min = std::max(minValues.at(key), valueAtMinVolume);
 	double max = std::min(maxValues.at(key), valueAtMaxVolume);
 
-	params[key] = GenoOperators::mutateCreep('f', params[key], min, max, true);
+	params[key] = GenoOperators::mutateCreep('f', getParam(key), min, max, true);
 
 	if (!ensureCircleSection || isPartSizeValid())
 		return true;
