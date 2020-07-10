@@ -11,25 +11,25 @@
 static ParamEntry genooper_fS_paramtab[] =
 		{
 				{"Genetics: fS",            1, FS_OPCOUNT + 5,},
-				{"fS_mut_add_part",         0, 0, "Add part",                 "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
-				{"fS_mut_rem_part",         0, 0, "Remove part",              "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
-				{"fS_mut_mod_part",         0, 0, "Modify part",              "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
-				{"fS_mut_change_joint",        0, 0, "Change joint",                "f 0 100 10", FIELD(prob[FS_CHANGE_JOINT]),            "mutation: probability of changing a joint",},
-				{"fS_mut_add_param",        0, 0, "Add param",                "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
-				{"fS_mut_rem_param",        0, 0, "Remove param",             "f 0 100 10", FIELD(prob[FS_REM_PARAM]),            "mutation: probability of removing a parameter",},
-				{"fS_mut_mod_param",        0, 0, "Modify param",             "f 0 100 10", FIELD(prob[FS_MOD_PARAM]),            "mutation: probability of modifying a parameter",},
-				{"fS_mut_mod_mod",          0, 0, "Modify modifier",           "f 0 100 10", FIELD(prob[FS_MOD_MOD]),              "mutation: probability of modifying a modifier",},
-				{"fS_mut_add_neuro",        0, 0, "Add neuron",               "f 0 100 10", FIELD(prob[FS_ADD_NEURO]),            "mutation: probability of adding a neuron",},
-				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",            "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
-				{"fS_mut_mod_neuro_conn",        0, 0, "Modify neuron connection",            "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
-				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",    "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
-				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection", "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
-				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",     "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
-				{"fS_circle_section",       0, 0, "Ensure circle section",    "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
-				{"fS_use_elli",       0, 0, "Use ellipsoids in mutations",    "d 0 1 1",    FIELD(useElli),           "Use ellipsoids in mutations"},
-				{"fS_use_cub",       0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),           "Use cuboids in mutations"},
-				{"fS_use_cyl",       0, 0, "Use cylinders in mutations",    "d 0 1 1",    FIELD(useCyl),           "Use cylinders in mutations"},
-				{"fS_mut_add_part_strong",       0, 0, "Strong add part mutation",    "d 0 1 1",    FIELD(strongAddPart),           "Add part mutation will produce more parametrized parts"},
+				{"fS_mut_add_part",         0, 0, "Add part",                    "f 0 100 10", FIELD(prob[FS_ADD_PART]),             "mutation: probability of adding a part",},
+				{"fS_mut_rem_part",         0, 0, "Remove part",                 "f 0 100 10", FIELD(prob[FS_REM_PART]),             "mutation: probability of deleting a part",},
+				{"fS_mut_mod_part",         0, 0, "Modify part",                 "f 0 100 10", FIELD(prob[FS_MOD_PART]),             "mutation: probability of changing the part type",},
+				{"fS_mut_change_joint",     0, 0, "Change joint",                "f 0 100 10", FIELD(prob[FS_CHANGE_JOINT]),         "mutation: probability of changing a joint",},
+				{"fS_mut_add_param",        0, 0, "Add param",                   "f 0 100 10", FIELD(prob[FS_ADD_PARAM]),            "mutation: probability of adding a parameter",},
+				{"fS_mut_rem_param",        0, 0, "Remove param",                "f 0 100 10", FIELD(prob[FS_REM_PARAM]),            "mutation: probability of removing a parameter",},
+				{"fS_mut_mod_param",        0, 0, "Modify param",                "f 0 100 10", FIELD(prob[FS_MOD_PARAM]),            "mutation: probability of modifying a parameter",},
+				{"fS_mut_mod_mod",          0, 0, "Modify modifier",             "f 0 100 10", FIELD(prob[FS_MOD_MOD]),              "mutation: probability of modifying a modifier",},
+				{"fS_mut_add_neuro",        0, 0, "Add neuron",                  "f 0 100 10", FIELD(prob[FS_ADD_NEURO]),            "mutation: probability of adding a neuron",},
+				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",               "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
+				{"fS_mut_mod_neuro_conn",   0, 0, "Modify neuron connection",    "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
+				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",       "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
+				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection",    "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
+				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",        "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
+				{"fS_circle_section",       0, 0, "Ensure circle section",       "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
+				{"fS_use_elli",             0, 0, "Use ellipsoids in mutations", "d 0 1 1",    FIELD(useElli),                       "Use ellipsoids in mutations"},
+				{"fS_use_cub",              0, 0, "Use cuboids in mutations",    "d 0 1 1",    FIELD(useCub),                        "Use cuboids in mutations"},
+				{"fS_use_cyl",              0, 0, "Use cylinders in mutations",  "d 0 1 1",    FIELD(useCyl),                        "Use cylinders in mutations"},
+				{"fS_mut_add_part_strong",  0, 0, "Strong add part mutation",    "d 0 1 1",    FIELD(strongAddPart),                 "Add part mutation will produce more parametrized parts"},
 		};
 
 #undef FIELDSTRUCT
@@ -48,7 +48,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	{
 		fS_Genotype genotype(geno);
 		int errorPosition = genotype.checkValidityOfPartSizes();
-		if(errorPosition != 0)
+		if (errorPosition != 0)
 		{
 			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
 			return errorPosition;
@@ -65,149 +65,165 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 
 int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 {
-	fS_Genotype genotype(geno);
-
-	// Calculate available part types
-	vector<Part::Shape> availablePartShapes;
-	if (useElli)
-		availablePartShapes.push_back(Part::Shape::SHAPE_ELLIPSOID);
-	if (useCub)
-		availablePartShapes.push_back(Part::Shape::SHAPE_CUBOID);
-	if (useCyl)
-		availablePartShapes.push_back(Part::Shape::SHAPE_CYLINDER);
-
-	// Select a mutation
-	bool result = false;
-	method = GenoOperators::roulette(prob, FS_OPCOUNT);
-	switch (method)
+	try
 	{
-		case FS_ADD_PART:
-			result = addPart(genotype, availablePartShapes);
-			break;
-		case FS_REM_PART:
-			result = removePart(genotype);
-			break;
-		case FS_MOD_PART:
-			result = changePartType(genotype, availablePartShapes);
-			break;
-		case FS_CHANGE_JOINT:
-			result = changeJoint(genotype);
-			break;
-		case FS_ADD_PARAM:
-			result = addParam(genotype);
-			break;
-		case FS_REM_PARAM:
-			result = removeParam(genotype);
-			break;
-		case FS_MOD_PARAM:
-			result = changeParam(genotype);
-			break;
-		case FS_MOD_MOD:
-			result = changeModifier(genotype);
-			break;
-		case FS_ADD_NEURO:
-			result = addNeuro(genotype);
-			break;
-		case FS_REM_NEURO:
-			result = removeNeuro(genotype);
-			break;
-		case FS_MOD_NEURO_CONNECTION:
-			result = changeNeuroConnection(genotype);
-			break;
-		case FS_ADD_NEURO_CONNECTION:
-			result = addNeuroConnection(genotype);
-			break;
-		case FS_REM_NEURO_CONNECTION:
-			result = removeNeuroConnection(genotype);
-			break;
-		case FS_MOD_NEURO_PARAMS:
-			result = changeNeuroParam(genotype);
-			break;
-	}
+		fS_Genotype genotype(geno);
 
-	if (result)
-	{
-		free(geno);
-		geno = strdup(genotype.getGeno().c_str());
-		return GENOPER_OK;
+		// Calculate available part types
+		vector <Part::Shape> availablePartShapes;
+		if (useElli)
+			availablePartShapes.push_back(Part::Shape::SHAPE_ELLIPSOID);
+		if (useCub)
+			availablePartShapes.push_back(Part::Shape::SHAPE_CUBOID);
+		if (useCyl)
+			availablePartShapes.push_back(Part::Shape::SHAPE_CYLINDER);
+
+		// Select a mutation
+		bool result = false;
+		method = GenoOperators::roulette(prob, FS_OPCOUNT);
+		switch (method)
+		{
+			case FS_ADD_PART:
+				result = addPart(genotype, availablePartShapes);
+				break;
+			case FS_REM_PART:
+				result = removePart(genotype);
+				break;
+			case FS_MOD_PART:
+				result = changePartType(genotype, availablePartShapes);
+				break;
+			case FS_CHANGE_JOINT:
+				result = changeJoint(genotype);
+				break;
+			case FS_ADD_PARAM:
+				result = addParam(genotype);
+				break;
+			case FS_REM_PARAM:
+				result = removeParam(genotype);
+				break;
+			case FS_MOD_PARAM:
+				result = changeParam(genotype);
+				break;
+			case FS_MOD_MOD:
+				result = changeModifier(genotype);
+				break;
+			case FS_ADD_NEURO:
+				result = addNeuro(genotype);
+				break;
+			case FS_REM_NEURO:
+				result = removeNeuro(genotype);
+				break;
+			case FS_MOD_NEURO_CONNECTION:
+				result = changeNeuroConnection(genotype);
+				break;
+			case FS_ADD_NEURO_CONNECTION:
+				result = addNeuroConnection(genotype);
+				break;
+			case FS_REM_NEURO_CONNECTION:
+				result = removeNeuroConnection(genotype);
+				break;
+			case FS_MOD_NEURO_PARAMS:
+				result = changeNeuroParam(genotype);
+				break;
+		}
+
+		if (result)
+		{
+			free(geno);
+			geno = strdup(genotype.getGeno().c_str());
+			return GENOPER_OK;
+		}
+		return GENOPER_OPFAIL;
 	}
-	return GENOPER_OPFAIL;
+	catch (fS_Exception &e)
+	{
+		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
+		return GENOPER_OPFAIL;
+	}
 }
 
 int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
-	assert(PARENT_COUNT == 2); // Cross over works only for 2 parents
-	fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
-
-	// Choose random subtrees that have similar size
-	Node *selected[PARENT_COUNT];
-	vector<Node*> allNodes0 = parents[0]->getAllNodes();
-	vector<Node*> allNodes1 = parents[1]->getAllNodes();
-
-	double bestQuotient = DBL_MAX;
-	for (int i = 0; i < crossOverTries; i++)
+	try
 	{
-		Node *tmp0 = allNodes0[rndUint(allNodes0.size())];
-		Node *tmp1 = allNodes1[rndUint(allNodes1.size())];
-		// Choose this pair if it is the most similar
-		double quotient = double(tmp0->getNodeCount()) / double(tmp1->getNodeCount());
-		if(quotient < 1.0)
-			quotient = 1.0 / quotient;
-		if (quotient < bestQuotient)
+		assert(PARENT_COUNT == 2); // Cross over works only for 2 parents
+		fS_Genotype *parents[PARENT_COUNT] = {new fS_Genotype(g0), new fS_Genotype(g1)};
+
+		// Choose random subtrees that have similar size
+		Node *selected[PARENT_COUNT];
+		vector < Node * > allNodes0 = parents[0]->getAllNodes();
+		vector < Node * > allNodes1 = parents[1]->getAllNodes();
+
+		double bestQuotient = DBL_MAX;
+		for (int i = 0; i < crossOverTries; i++)
 		{
-			bestQuotient = quotient;
-			selected[0] = tmp0;
-			selected[1] = tmp1;
+			Node *tmp0 = allNodes0[rndUint(allNodes0.size())];
+			Node *tmp1 = allNodes1[rndUint(allNodes1.size())];
+			// Choose this pair if it is the most similar
+			double quotient = double(tmp0->getNodeCount()) / double(tmp1->getNodeCount());
+			if (quotient < 1.0)
+				quotient = 1.0 / quotient;
+			if (quotient < bestQuotient)
+			{
+				bestQuotient = quotient;
+				selected[0] = tmp0;
+				selected[1] = tmp1;
+			}
+			if (bestQuotient == 1.0)
+				break;
 		}
-		if (bestQuotient == 1.0)
-			break;
-	}
 
-	// Compute gene percentages in children
-	double subtreeSizes[PARENT_COUNT], restSizes[PARENT_COUNT];
-	for (int i = 0; i < PARENT_COUNT; i++)
-	{
-
-		subtreeSizes[i] = selected[i]->getNodeCount();
-		restSizes[i] = parents[i]->getNodeCount() - subtreeSizes[i];
-	}
-	chg0 = restSizes[0] / (restSizes[0] + subtreeSizes[1]);
-	chg1 = restSizes[1] / (restSizes[1] + subtreeSizes[0]);
-
-	// Rearrange neurons before crossover
-	int subOldStart[PARENT_COUNT] {-1, -1};
-	rearrangeConnectionsBeforeCrossover(parents[0], selected[0], subOldStart[0]);
-	rearrangeConnectionsBeforeCrossover(parents[1], selected[1], subOldStart[1]);
-
-	// Swap the subtress
-	for(int i=0; i<PARENT_COUNT; i++)
-	{
-		Node *other = selected[1 - i];
-		Node *p = selected[i]->parent;
-		if (p != nullptr)
+		// Compute gene percentages in children
+		double subtreeSizes[PARENT_COUNT], restSizes[PARENT_COUNT];
+		for (int i = 0; i < PARENT_COUNT; i++)
 		{
-			size_t index = std::distance(p->children.begin(), std::find(p->children.begin(), p->children.end(), selected[i]));
-			p->children[index] = other;
-		} else
-			parents[i]->startNode = other;
+
+			subtreeSizes[i] = selected[i]->getNodeCount();
+			restSizes[i] = parents[i]->getNodeCount() - subtreeSizes[i];
+		}
+		chg0 = restSizes[0] / (restSizes[0] + subtreeSizes[1]);
+		chg1 = restSizes[1] / (restSizes[1] + subtreeSizes[0]);
+
+		// Rearrange neurons before crossover
+		int subOldStart[PARENT_COUNT] {-1, -1};
+		rearrangeConnectionsBeforeCrossover(parents[0], selected[0], subOldStart[0]);
+		rearrangeConnectionsBeforeCrossover(parents[1], selected[1], subOldStart[1]);
+
+		// Swap the subtress
+		for (int i = 0; i < PARENT_COUNT; i++)
+		{
+			Node *other = selected[1 - i];
+			Node *p = selected[i]->parent;
+			if (p != nullptr)
+			{
+				size_t index = std::distance(p->children.begin(), std::find(p->children.begin(), p->children.end(), selected[i]));
+				p->children[index] = other;
+			} else
+				parents[i]->startNode = other;
+		}
+
+		// Rearrange neurons after crossover
+		rearrangeConnectionsAfterCrossover(parents[0], selected[1], subOldStart[0]);
+		rearrangeConnectionsAfterCrossover(parents[1], selected[0], subOldStart[1]);
+
+		// Clenup, assign children to result strings
+		free(g0);
+		free(g1);
+		g0 = strdup(parents[0]->getGeno().c_str());
+		g1 = strdup(parents[1]->getGeno().c_str());
+
+		delete parents[0];
+		delete parents[1];
 	}
-
-	// Rearrange neurons after crossover
-	rearrangeConnectionsAfterCrossover(parents[0], selected[1], subOldStart[0]);
-	rearrangeConnectionsAfterCrossover(parents[1], selected[0], subOldStart[1]);
-
-	// Clenup, assign children to result strings
-	free(g0);
-	free(g1);
-	g0 = strdup(parents[0]->getGeno().c_str());
-	g1 = strdup(parents[1]->getGeno().c_str());
-
-	delete parents[0];
-	delete parents[1];
+	catch (fS_Exception &e)
+	{
+		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
+		return GENOPER_OPFAIL;
+	}
 	return GENOPER_OK;
 }
 
-const char* GenoOper_fS::getSimplest()
+const char *GenoOper_fS::getSimplest()
 {
 	return "1.1:C{x=0.80599;y=0.80599;z=0.80599}";
 }
@@ -219,20 +235,16 @@ uint32_t GenoOper_fS::style(const char *geno, int pos)
 	if (ch == ELLIPSOID || ch == CUBOID || ch == CYLINDER) // part type
 	{
 		style = GENSTYLE_RGBS(0, 0, 200, GENSTYLE_BOLD);
-	}
-	else if(JOINTS.find(ch) != string::npos)	// Joint type
+	} else if (JOINTS.find(ch) != string::npos)    // Joint type
 	{
 		style = GENSTYLE_RGBS(0, 200, 200, GENSTYLE_BOLD);
-	}
-	else if(MODIFIERS.find(ch) != string::npos) // Modifier
+	} else if (MODIFIERS.find(ch) != string::npos) // Modifier
 	{
 		style = GENSTYLE_RGBS(0, 200, 0, GENSTYLE_NONE);
-	}
-	else if (isdigit(ch) || strchr(".", ch)) // Numerical value
+	} else if (isdigit(ch) || strchr(".", ch)) // Numerical value
 	{
 		style = GENSTYLE_RGBS(200, 0, 0, GENSTYLE_NONE);
-	}
-	else if(strchr("()_;[],=", ch))
+	} else if (strchr("()_;[],=", ch))
 	{
 		style = GENSTYLE_CS(0, GENSTYLE_BOLD); // Important char
 	}
@@ -242,8 +254,8 @@ uint32_t GenoOper_fS::style(const char *geno, int pos)
 
 void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *sub, int &subStart)
 {
-	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
-	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
+	vector < fS_Neuron * > subNeurons = fS_Genotype::extractNeurons(sub);
 
 	if (!subNeurons.empty())
 	{
@@ -254,8 +266,8 @@ void GenoOper_fS::rearrangeConnectionsBeforeCrossover(fS_Genotype *geno, Node *s
 
 void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *sub, int subOldStart)
 {
-	vector<fS_Neuron*> genoNeurons = geno->getAllNeurons();
-	vector<fS_Neuron*> subNeurons = fS_Genotype::extractNeurons(sub);
+	vector < fS_Neuron * > genoNeurons = geno->getAllNeurons();
+	vector < fS_Neuron * > subNeurons = fS_Genotype::extractNeurons(sub);
 
 	// Shift the inputs right
 	if (!subNeurons.empty())
@@ -280,7 +292,7 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 	}
 }
 
-bool GenoOper_fS::addPart(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes, bool mutateSize)
+bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availablePartShapes, bool mutateSize)
 {
 	geno.getState();
 	Node *node = geno.chooseNode();
@@ -289,24 +301,22 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector<Part::Shape> &availabl
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, node, node->genotypeParams);
 	// Add random rotation
-	string rotationParams[]{ROT_X, ROT_Y, ROT_Z};
-	if(strongAddPart)
+	string rotationParams[] {ROT_X, ROT_Y, ROT_Z};
+	if (strongAddPart)
 	{
-		for(int i=0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			newNode->params[rotationParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
-	}
-	else
+	} else
 	{
 		string selectedParam = rotationParams[rndUint(3)];
 		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
-	string rParams[]{RX, RY, RZ};
-	if(strongAddPart)
+	string rParams[] {RX, RY, RZ};
+	if (strongAddPart)
 	{
-		for(int i=0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			newNode->params[rParams[i]] = RndGen.Uni(-M_PI / 2, M_PI / 2);
-	}
-	else
+	} else
 	{
 		string selectedParam = rParams[rndUint(3)];
 		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
@@ -361,7 +371,7 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 	return false;
 }
 
-bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector<Part::Shape> &availablePartShapes)
+bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector <Part::Shape> &availablePartShapes)
 {
 	int availShapesLen = availablePartShapes.size();
 	for (int i = 0; i < mutationTries; i++)
@@ -381,28 +391,25 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector<Part::Shape> &a
 		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
 		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
 
-		if(!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
+		if (!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
 		{
 			double radiusQuotient = std::cbrt(volumeMultipliers.at(randomNode->partType) / volumeMultipliers.at(newType));
 			randomNode->params[SIZE_X] = randomNode->getParam(SIZE_X) * radiusQuotient;
 			randomNode->params[SIZE_Y] = randomNode->getParam(SIZE_Y) * radiusQuotient;
 			randomNode->params[SIZE_Z] = randomNode->getParam(SIZE_Z) * radiusQuotient;
-		}
-		else if(randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
+		} else if (randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
 		{
 			double newRadius = 0.5 * (randomNode->getParam(SIZE_X) + randomNode->getParam(SIZE_Y));
 			randomNode->params[SIZE_X] = newRadius;
 			randomNode->params[SIZE_Y] = newRadius;
 			randomNode->params[SIZE_Z] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
-		}
-		else if(newType == Part::Shape::SHAPE_ELLIPSOID)
+		} else if (newType == Part::Shape::SHAPE_ELLIPSOID)
 		{
 			double newRelativeRadius = cbrt(relativeVolume / volumeMultipliers.at(newType));
 			randomNode->params[SIZE_X] = newRelativeRadius;
 			randomNode->params[SIZE_Y] = newRelativeRadius;
 			randomNode->params[SIZE_Z] = newRelativeRadius;
-		}
-		else
+		} else
 		{
 			throw fS_Exception("Invalid part type", 1);
 		}
@@ -418,7 +425,7 @@ bool GenoOper_fS::changeJoint(fS_Genotype &geno)
 		return false;
 
 	Node *randomNode = geno.chooseNode(1);        // First part does not have joints
-	int jointLen  = ALL_JOINTS.length();
+	int jointLen = ALL_JOINTS.length();
 	int index = rndUint(jointLen);
 	if (ALL_JOINTS[index] == randomNode->joint)
 		index = (index + 1 + rndUint(jointLen - 1)) % jointLen;
@@ -513,7 +520,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 	Node *randomNode = geno.chooseNode();
 	fS_Neuron *newNeuron;
 	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
-	if(rndclass->preflocation == 2 && randomNode == geno.startNode)
+	if (rndclass->preflocation == 2 && randomNode == geno.startNode)
 		return false;
 
 	const char *name = rndclass->getName().c_str();
@@ -522,7 +529,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 	if (effectiveInputCount > 0)
 	{
 		// Create as many connections for the neuron as possible (at most prefinputs)
-		vector<fS_Neuron*> allNeurons = geno.getAllNeurons();
+		vector < fS_Neuron * > allNeurons = geno.getAllNeurons();
 		vector<int> neuronsWithOutput;
 		for (int i = 0; i < int(allNeurons.size()); i++)
 		{
@@ -570,7 +577,7 @@ bool GenoOper_fS::removeNeuro(fS_Genotype &geno)
 
 bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 {
-	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	vector < fS_Neuron * > neurons = geno.getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -593,7 +600,7 @@ bool GenoOper_fS::changeNeuroConnection(fS_Genotype &geno)
 
 bool GenoOper_fS::addNeuroConnection(fS_Genotype &geno)
 {
-	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	vector < fS_Neuron * > neurons = geno.getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -623,7 +630,7 @@ bool GenoOper_fS::addNeuroConnection(fS_Genotype &geno)
 
 bool GenoOper_fS::removeNeuroConnection(fS_Genotype &geno)
 {
-	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	vector < fS_Neuron * > neurons = geno.getAllNeurons();
 	if (neurons.empty())
 		return false;
 
@@ -645,7 +652,7 @@ bool GenoOper_fS::removeNeuroConnection(fS_Genotype &geno)
 
 bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 {
-	vector<fS_Neuron*> neurons = geno.getAllNeurons();
+	vector < fS_Neuron * > neurons = geno.getAllNeurons();
 	if (neurons.empty())
 		return false;
 

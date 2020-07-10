@@ -482,6 +482,7 @@ void evolutionTest(int operationCount)
 	GenoConv_fS0 converter = GenoConv_fS0();
 	int gen_size = 5;
 	GenoOper_fS operators;
+	GenMan genman;
 	int failCount = 0;
 	assert(strcmp(operators.getSimplest(), "1.1:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
@@ -518,6 +519,11 @@ void evolutionTest(int operationCount)
 
 		testRandomModifications(arr1);
 		testRandomModifications(arr2);
+
+		// Test actual GenMan calls
+		Geno result1 = genman.mutate(Geno(arr1, "S"));
+		Geno result2 = genman.mutate(Geno(arr2, "S"));
+		Geno result3 = genman.crossOver(Geno(arr1, "S"), Geno(arr2, "S"));
 
 		if (operators.mutate(arr1, gp, method) == GENOPER_OK)
 			methodUsages[method]++;
