@@ -487,10 +487,10 @@ void evolutionTest(int operationCount)
 	assert(strcmp(operators.getSimplest(), "1.1:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("1.1:EbcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[0] = new SString("1.1:EcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
 	gens[1] = new SString("1.1:RcR[N_0]bR[N_0_1]");
-	gens[2] = new SString("1.1:R[N_0;N_0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
-	gens[3] = new SString("1.1:R[N_1]{z=1.04}R[N_1]cRC[N_0;N_1]{x=1.03}");
+	gens[2] = new SString("1.1:EcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[3] = new SString("1.1:R[N_1]{x=1.04}R[N_1]cRC[N_0;N_1]{x=1.03}");
 	gens[4] = new SString("1.1:E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[N_0_2;N_0_2]^cE(bcE^bcE[N;N_0_1_2])^E)");
 
 
@@ -556,6 +556,7 @@ void evolutionTest(int operationCount)
 		free(arr1);
 		free(arr2);
 	}
+	assert(failCount < 0.1 * operationCount);
 //	cout<< "Fails: "<<failCount<<std::endl<<std::endl;
 //	cout << "Method usages:" << endl;
 //	for (int i = 0; i < FS_OPCOUNT; i++)

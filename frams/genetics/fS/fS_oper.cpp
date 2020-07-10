@@ -400,9 +400,9 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector <Part::Shape> &
 		} else if (randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
 		{
 			double newRadius = 0.5 * (randomNode->getParam(SIZE_X) + randomNode->getParam(SIZE_Y));
-			randomNode->params[SIZE_X] = newRadius;
+			randomNode->params[SIZE_X] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
 			randomNode->params[SIZE_Y] = newRadius;
-			randomNode->params[SIZE_Z] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
+			randomNode->params[SIZE_Z] = newRadius;
 		} else if (newType == Part::Shape::SHAPE_ELLIPSOID)
 		{
 			double newRelativeRadius = cbrt(relativeVolume / volumeMultipliers.at(newType));
