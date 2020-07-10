@@ -102,7 +102,7 @@ const std::map<Part::Shape, double> volumeMultipliers = {
 const std::map<string, double> minValues = {
 		{INGESTION,      Model::getMinPart().ingest},
 		{FRICTION,       Model::getMinPart().friction},
-		{STIFFNESS,	 	0.1},
+		{STIFFNESS,	 	 0.1},
 		{ROT_X,          -M_PI},
 		{ROT_Y,          -M_PI},
 		{ROT_Z,          -M_PI},
@@ -117,7 +117,7 @@ const std::map<string, double> minValues = {
 const std::map<string, double> defaultValues = {
 		{INGESTION,      Model::getDefPart().ingest},
 		{FRICTION,       Model::getDefPart().friction},
-		{STIFFNESS,	 	 0.4},
+		{STIFFNESS,	 	 Model::getDefJoint().stif},
 		{ROT_X,          0.0},
 		{ROT_Y,          0.0},
 		{ROT_Z,          0.0},
@@ -133,7 +133,7 @@ const std::map<string, double> defaultValues = {
 const std::map<string, double> maxValues = {
 		{INGESTION,      Model::getMaxPart().ingest},
 		{FRICTION,       Model::getMaxPart().friction},
-		{STIFFNESS,	 	1.0},
+		{STIFFNESS,	 	 0.5},
 		{ROT_X,          M_PI},
 		{ROT_Y,          M_PI},
 		{ROT_Z,          M_PI},

@@ -209,7 +209,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 
 const char* GenoOper_fS::getSimplest()
 {
-	return "C{x=0.80599;y=0.80599;z=0.80599}";
+	return "1.1:C{x=0.80599;y=0.80599;z=0.80599}";
 }
 
 uint32_t GenoOper_fS::style(const char *geno, int pos)

@@ -483,14 +483,14 @@ void evolutionTest(int operationCount)
 	int gen_size = 5;
 	GenoOper_fS operators;
 	int failCount = 0;
-	assert(strcmp(operators.getSimplest(), "C{x=0.80599;y=0.80599;z=0.80599}") == 0);
+	assert(strcmp(operators.getSimplest(), "1.1:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("1.1:EbcE[1_2]cRbC[G_0_2]bC[0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("1.1:RcR[N_0]bR[0_1]");
-	gens[2] = new SString("1.1:R[0;0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
-	gens[3] = new SString("1.1:R[1]{z=1.04}R[1]cRC[0;1]{x=1.03}");
-	gens[4] = new SString("1.1:E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[0_2;0_2]^cE(bcE^bcE[;0_1_2])^E)");
+	gens[0] = new SString("1.1:EbcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
+	gens[1] = new SString("1.1:RcR[N_0]bR[N_0_1]");
+	gens[2] = new SString("1.1:R[N_0;N_0_1]{ty=2.1;tz=4.3;z=1.1}bRcR");
+	gens[3] = new SString("1.1:R[N_1]{z=1.04}R[N_1]cRC[N_0;N_1]{x=1.03}");
+	gens[4] = new SString("1.1:E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[N_0_2;N_0_2]^cE(bcE^bcE[N;N_0_1_2])^E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -668,7 +668,6 @@ int main(int argc, char *argv[])
 			"1.1:C{rx=0.78}E{tz=1.57;rx=0.78}",
 			"1.1:R{rx=0.78}E{tz=1.57;rx=0.78}",
 	};
-	srand(time(NULL));
 
 
 	int expectedPartCount[] = {
