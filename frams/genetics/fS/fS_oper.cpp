@@ -34,6 +34,41 @@ static ParamEntry genooper_fS_paramtab[] =
 
 #undef FIELDSTRUCT
 
+
+
+const std::map<string, double> minValues = {
+		{INGESTION,      Model::getMinPart().ingest},
+		{FRICTION,       Model::getMinPart().friction},
+		{STIFFNESS,	 	 0.1},
+		{ROT_X,          -M_PI},
+		{ROT_Y,          -M_PI},
+		{ROT_Z,          -M_PI},
+		{RX,             -M_PI},
+		{RY,             -M_PI},
+		{RZ,             -M_PI},
+		{SIZE,           0.01},
+		{SIZE_X,         Model::getMinPart().scale.x},
+		{SIZE_Y,         Model::getMinPart().scale.y},
+		{SIZE_Z,         Model::getMinPart().scale.z}
+};
+
+const std::map<string, double> maxValues = {
+		{INGESTION,      Model::getMaxPart().ingest},
+		{FRICTION,       Model::getMaxPart().friction},
+		{STIFFNESS,	 	 0.5},
+		{ROT_X,          M_PI},
+		{ROT_Y,          M_PI},
+		{ROT_Z,          M_PI},
+		{RX,             M_PI},
+		{RY,             M_PI},
+		{RZ,             M_PI},
+		{SIZE,           100.0},
+		{SIZE_X,         Model::getMaxPart().scale.x},
+		{SIZE_Y,         Model::getMaxPart().scale.y},
+		{SIZE_Z,         Model::getMaxPart().scale.z}
+};
+
+
 GenoOper_fS::GenoOper_fS()
 {
 	par.setParamTab(genooper_fS_paramtab);
@@ -50,13 +85,13 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 		int errorPosition = genotype.checkValidityOfPartSizes();
 		if (errorPosition != 0)
 		{
-			logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, "Invalid part size");
+			logPrintf("GenoOper_fS", "checkValidity", LOG_WARN, "Invalid part size");
 			return errorPosition;
 		}
 	}
 	catch (fS_Exception &e)
 	{
-		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
+		logPrintf("GenoOper_fS", "checkValidity", LOG_WARN, e.what());
 		return 1 + e.errorPosition;
 	}
 	return 0;
@@ -137,7 +172,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 	}
 	catch (fS_Exception &e)
 	{
-		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
+		logPrintf("GenoOper_fS", "mutate", LOG_WARN, e.what());
 		return GENOPER_OPFAIL;
 	}
 }
@@ -217,7 +252,7 @@ int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 	}
 	catch (fS_Exception &e)
 	{
-		logPrintf("GenoOper_fS", "checkValidity", LOG_ERROR, e.what());
+		logPrintf("GenoOper_fS", "crossOver", LOG_WARN, e.what());
 		return GENOPER_OPFAIL;
 	}
 	return GENOPER_OK;
@@ -520,7 +555,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 	Node *randomNode = geno.chooseNode();
 	fS_Neuron *newNeuron;
 	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
-	if (rndclass->preflocation == 2 && randomNode == geno.startNode)
+	if (rndclass->preflocation == NeuroClass::PREFER_JOINT && randomNode == geno.startNode)
 		return false;
 
 	const char *name = rndclass->getName().c_str();
@@ -658,4 +693,34 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 
 	fS_Neuron *neu = neurons[rndUint(neurons.size())];
 	return GenoOperators::mutateRandomNeuroClassProperty(neu);
+}
+
+bool Node::mutateSizeParam(string key, bool ensureCircleSection)
+{
+	double oldValue = getParam(key);
+	double volume = calculateVolume();
+	double valueAtMinVolume, valueAtMaxVolume;
+	if(key == SIZE)
+	{
+		valueAtMinVolume = oldValue * std::cbrt(Model::getMinPart().volume / volume);
+		valueAtMaxVolume = oldValue * std::cbrt(Model::getMaxPart().volume / volume);
+	}
+	else
+	{
+		valueAtMinVolume = oldValue * Model::getMinPart().volume / volume;
+		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
+	}
+
+	double min = std::max(minValues.at(key), valueAtMinVolume);
+	double max = std::min(maxValues.at(key), valueAtMaxVolume);
+
+	params[key] = GenoOperators::mutateCreep('f', getParam(key), min, max, true);
+
+	if (!ensureCircleSection || isPartSizeValid())
+		return true;
+	else
+	{
+		params[key] = oldValue;
+		return false;
+	}
 }

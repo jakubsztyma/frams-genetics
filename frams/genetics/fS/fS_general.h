@@ -99,52 +99,7 @@ const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
 };
 
-const std::map<string, double> minValues = {
-		{INGESTION,      Model::getMinPart().ingest},
-		{FRICTION,       Model::getMinPart().friction},
-		{STIFFNESS,	 	 0.1},
-		{ROT_X,          -M_PI},
-		{ROT_Y,          -M_PI},
-		{ROT_Z,          -M_PI},
-		{RX,             -M_PI},
-		{RY,             -M_PI},
-		{RZ,             -M_PI},
-		{SIZE,           0.01},
-		{SIZE_X,         Model::getMinPart().scale.x},
-		{SIZE_Y,         Model::getMinPart().scale.y},
-		{SIZE_Z,         Model::getMinPart().scale.z}
-};
-const std::map<string, double> defaultValues = {
-		{INGESTION,      Model::getDefPart().ingest},
-		{FRICTION,       Model::getDefPart().friction},
-		{STIFFNESS,	 	 Model::getDefJoint().stif},
-		{ROT_X,          0.0},
-		{ROT_Y,          0.0},
-		{ROT_Z,          0.0},
-		{RX,             0.0},
-		{RY,             0.0},
-		{RZ,             0.0},
-		{SIZE,           1.0},
-		{SIZE_X,         Model::getDefPart().scale.x},
-		{SIZE_Y,         Model::getDefPart().scale.y},
-		{SIZE_Z,         Model::getDefPart().scale.z}
-};
-
-const std::map<string, double> maxValues = {
-		{INGESTION,      Model::getMaxPart().ingest},
-		{FRICTION,       Model::getMaxPart().friction},
-		{STIFFNESS,	 	 0.5},
-		{ROT_X,          M_PI},
-		{ROT_Y,          M_PI},
-		{ROT_Z,          M_PI},
-		{RX,             M_PI},
-		{RY,             M_PI},
-		{RZ,             M_PI},
-		{SIZE,           100.0},
-		{SIZE_X,         Model::getMaxPart().scale.x},
-		{SIZE_Y,         Model::getMaxPart().scale.y},
-		{SIZE_Z,         Model::getMaxPart().scale.z}
-};
+extern const std::map<string, double> defaultValues;
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
