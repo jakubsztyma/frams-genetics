@@ -484,6 +484,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
 	bool isRadius = isRadiusOfBase || key == SIZE_X;
 	if (ensureCircleSection && isRadius)
+	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
@@ -491,7 +492,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[key] = mutateCreep('f', defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
+	randomNode->params[key] = mutateCreep('f', randomNode->defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
 	return true;
 }
 

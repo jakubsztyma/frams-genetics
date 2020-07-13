@@ -16,21 +16,24 @@
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
 
-const std::map<string, double> defaultValues = {
-		{INGESTION,      Model::getDefPart().ingest},
-		{FRICTION,       Model::getDefPart().friction},
-		{STIFFNESS,	 	 Model::getDefJoint().stif},
-		{ROT_X,          0.0},
-		{ROT_Y,          0.0},
-		{ROT_Z,          0.0},
-		{RX,             0.0},
-		{RY,             0.0},
-		{RZ,             0.0},
-		{SIZE,           1.0},
-		{SIZE_X,         Model::getDefPart().scale.x},
-		{SIZE_Y,         Model::getDefPart().scale.y},
-		{SIZE_Z,         Model::getDefPart().scale.z}
-};
+void Node::prepareParams()
+{
+	defaultValues = {
+			{INGESTION, Model::getDefPart().ingest},
+			{FRICTION,  Model::getDefPart().friction},
+			{STIFFNESS, Model::getDefJoint().stif},
+			{ROT_X,     0.0},
+			{ROT_Y,     0.0},
+			{ROT_Z,     0.0},
+			{RX,        0.0},
+			{RY,        0.0},
+			{RZ,        0.0},
+			{SIZE,      1.0},
+			{SIZE_X,    Model::getDefPart().scale.x},
+			{SIZE_Y,    Model::getDefPart().scale.y},
+			{SIZE_Z,    Model::getDefPart().scale.z}
+	};
+}
 
 double fS_stod(const string&  str, int start, size_t* size)
 {
@@ -122,6 +125,7 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 
 Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 {
+	prepareParams();
 	partDescription = new Substring(restOfGeno);
 	genotypeParams = _genotypeParams;
 	parent = _parent;

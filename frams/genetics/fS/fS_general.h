@@ -99,8 +99,6 @@ const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
 };
 
-extern const std::map<string, double> defaultValues;
-
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
 
@@ -273,12 +271,14 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
+	std::map<string, double> defaultValues;
 	GenotypeParams genotypeParams;
-
 
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
+
+	void prepareParams();
 
 	double getDistance();
 
