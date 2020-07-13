@@ -15,7 +15,7 @@ void ensure(bool condition)
 {
 	if(!condition)
 	{
-		std::cout<<"Error!"<<std::endl;
+		std::cout<<"ensure() failed!"<<std::endl;
 		exit(0);
 	}
 }
@@ -338,7 +338,6 @@ void testOneGenotype(SString test, int expectedPartCount)
 		ensure(geno.getNodeCount() == tmp);
 		ensure(geno.getGeno() != tmpStr);
 	}
-
 	// Test remove part
 	tmp = geno.getNodeCount();
 	if (operators.removePart(geno))
