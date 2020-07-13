@@ -578,6 +578,7 @@ void evolutionTest(int operationCount)
 
 void testMutateSizeParam()
 {
+	GenoOper_fS operators;
 	double minVolume = Model::getMinPart().volume;
 	double maxVolume = Model::getMaxPart().volume;
 	double minRadius = Model::getMinPart().scale.x;
@@ -598,7 +599,7 @@ void testMutateSizeParam()
 			fS_Genotype geno(test_cases[i]);
 			geno.getState();
 
-			bool result = geno.startNode->mutateSizeParam(SIZE_PARAMS[j], false);
+			bool result = operators.mutateSizeParam(geno.startNode, SIZE_PARAMS[j], false);
 
 			geno.getState();
 			double volume = geno.startNode->calculateVolume();

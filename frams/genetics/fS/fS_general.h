@@ -68,19 +68,19 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_GENE = {
+const std::unordered_map<Part::Shape, char> SHAPE_TO_GENE = {
 		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
 		{Part::Shape::SHAPE_CUBOID,    CUBOID},
 		{Part::Shape::SHAPE_CYLINDER,  CYLINDER},
 };
 
 // This map is inverse to SHAPE_TO_SYMBOL. Those two should be compatible
-const std::unordered_map<char, Part::Shape> GENE_TO_SHAPETYPE = {
+const std::unordered_map<char, Part::Shape> GENE_TO_SHAPE = {
 		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
 		{CUBOID,    Part::Shape::SHAPE_CUBOID},
 		{CYLINDER,  Part::Shape::SHAPE_CYLINDER},
 };
-const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE and GENE_TO_SHAPETYPE
+const int SHAPE_COUNT = 3;    // This should be the count of SHAPE_TO_GENE and GENE_TO_SHAPE
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
@@ -395,16 +395,6 @@ public:
 	 * @return The effective volume
 	 */
 	double calculateVolume();
-
-	/**
-	 * Change the value of the size parameter by given multiplier
-	 * Do not change the value if any of the size restrictions is not satisfied
-	 * @param paramKey
-	 * @param multiplier
-	 * @param ensureCircleSection
-	 * @return True if the parameter value was change, false otherwise
-	 */
-	bool mutateSizeParam(string paramKey,  bool ensureCircleSection);
 
 	/**
 	 * Counts all the nodes in subtree

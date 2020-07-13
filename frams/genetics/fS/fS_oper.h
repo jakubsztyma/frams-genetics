@@ -31,6 +31,8 @@
 
 const int PARENT_COUNT = 2;
 
+
+
 class GenoOper_fS : public GenoOperators
 {
 public:
@@ -39,6 +41,9 @@ public:
 	paInt ensureCircleSection;
 	paInt useElli, useCub,  useCyl;
 	paInt strongAddPart;
+
+	std::map<string, double> minValues;
+	std::map<string, double> maxValues;
 
 	GenoOper_fS();
 
@@ -128,6 +133,18 @@ public:
 	bool removeNeuroConnection(fS_Genotype &geno);
 
 	bool changeNeuroParam(fS_Genotype &geno);
+
+	/**
+	 * Change the value of the size parameter by given multiplier
+	 * Do not change the value if any of the size restrictions is not satisfied
+	 * @param paramKey
+	 * @param multiplier
+	 * @param ensureCircleSection
+	 * @return True if the parameter value was change, false otherwise
+	 */
+	bool mutateSizeParam(Node *node, string key, bool ensureCircleSection);
+
+	void prepareParams();
 };
 
 #endif

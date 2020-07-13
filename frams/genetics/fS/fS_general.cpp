@@ -164,7 +164,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (GENE_TO_SHAPETYPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPETYPE.end())
+		if (GENE_TO_SHAPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPE.end())
 			return i;
 	}
 	return -1;
@@ -192,8 +192,8 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	auto itr = GENE_TO_SHAPETYPE.find(restOfGenotype.at(0));
-	if (itr == GENE_TO_SHAPETYPE.end())
+	auto itr = GENE_TO_SHAPE.find(restOfGenotype.at(0));
+	if (itr == GENE_TO_SHAPE.end())
 		throw fS_Exception("Invalid part type", restOfGenotype.start);
 
 	partType = itr->second;
@@ -535,7 +535,7 @@ void Node::getGeno(SString &result)
 		}
 		result += std::string(count, mod).c_str();
 	}
-	result += SHAPETYPE_TO_GENE.at(partType);
+	result += SHAPE_TO_GENE.at(partType);
 
 	if (!neurons.empty())
 	{

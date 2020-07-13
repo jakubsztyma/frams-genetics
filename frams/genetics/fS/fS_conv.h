@@ -18,8 +18,8 @@ public:
 	{
 		name = "Solid encoding";
 
-		in_format = 'S';
-		out_format = '0';
+		in_format = "S";
+		out_format = "0s";
 		mapsupport = 1;
 	}
 
