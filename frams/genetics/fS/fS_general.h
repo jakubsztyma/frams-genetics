@@ -93,62 +93,13 @@ const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, R
 const vector<string> SIZE_PARAMS {SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 
 /** @name Default values of node parameters*/
-static const Part defPart = Model::getDefPart();
-static const Part minPart = Model::getMinPart();
-static const Part maxPart = Model::getMaxPart();
-static const Joint defJoint = Model::getDefJoint();
 const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_CUBOID, 8.0},
 		{Part::Shape::SHAPE_CYLINDER, 2.0 * M_PI},
 		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
 };
-const std::map<string, double> defaultValues = {
-		{INGESTION,      defPart.ingest},
-		{FRICTION,       defPart.friction},
-		{STIFFNESS,	 	 defJoint.stif},
-		{ROT_X,          0.0},
-		{ROT_Y,          0.0},
-		{ROT_Z,          0.0},
-		{RX,             0.0},
-		{RY,             0.0},
-		{RZ,             0.0},
-		{SIZE,           defPart.scale.x},
-		{SIZE_X,         defPart.scale.x},
-		{SIZE_Y,         defPart.scale.y},
-		{SIZE_Z,         defPart.scale.z}
-};
 
-const std::map<string, double> minValues = {
-		{INGESTION,      0},
-		{FRICTION,       0},
-		{STIFFNESS,	 0.9},
-		{ROT_X,          -M_PI},
-		{ROT_Y,          -M_PI},
-		{ROT_Z,          -M_PI},
-		{RX,             -M_PI},
-		{RY,             -M_PI},
-		{RZ,             -M_PI},
-		{SIZE,           minPart.scale.x},
-		{SIZE_X,         minPart.scale.x},
-		{SIZE_Y,         minPart.scale.y},
-		{SIZE_Z,         minPart.scale.z}
-};
-
-const std::map<string, double> maxValues = {
-		{INGESTION,      1.0},
-		{FRICTION,       1.0},
-		{STIFFNESS,	 0.0},
-		{ROT_X,          M_PI},
-		{ROT_Y,          M_PI},
-		{ROT_Z,          M_PI},
-		{RX,             M_PI},
-		{RY,             M_PI},
-		{RZ,             M_PI},
-		{SIZE,           maxPart.scale.x},
-		{SIZE_X,         maxPart.scale.x},
-		{SIZE_Y,         maxPart.scale.y},
-		{SIZE_Z,         maxPart.scale.z}
-};
+extern const std::map<string, double> defaultValues;
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
@@ -478,7 +429,6 @@ class fS_Genotype
 	friend class GenoOper_fS;
 
 private:
-
 	/**
 	 * Draws a node that has an index greater that specified
 	 * @param fromIndex minimal index of the node

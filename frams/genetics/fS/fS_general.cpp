@@ -16,6 +16,21 @@
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
 
+const std::map<string, double> defaultValues = {
+		{INGESTION,      Model::getDefPart().ingest},
+		{FRICTION,       Model::getDefPart().friction},
+		{STIFFNESS,	 	 Model::getDefJoint().stif},
+		{ROT_X,          0.0},
+		{ROT_Y,          0.0},
+		{ROT_Z,          0.0},
+		{RX,             0.0},
+		{RY,             0.0},
+		{RZ,             0.0},
+		{SIZE,           1.0},
+		{SIZE_X,         Model::getDefPart().scale.x},
+		{SIZE_Y,         Model::getDefPart().scale.y},
+		{SIZE_Z,         Model::getDefPart().scale.z}
+};
 
 double fS_stod(const string&  str, int start, size_t* size)
 {
@@ -449,7 +464,7 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		Neuro *neuro = new Neuro(*neurons[i]);
 		model.addNeuro(neuro);
-		if (neuro->getClass()->preflocation == 2 && parent != nullptr)
+		if (neuro->getClass()->preflocation == NeuroClass::PREFER_JOINT && parent != nullptr)
 		{
 			neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
 		} else
@@ -580,37 +595,6 @@ void Node::getGeno(SString &result)
 		}
 		children.back()->getGeno(result);
 		result += BRANCH_END;
-	}
-}
-
-
-bool Node::mutateSizeParam(string key, bool ensureCircleSection)
-{
-	double oldValue = getParam(key);
-	double volume = calculateVolume();
-	double valueAtMinVolume, valueAtMaxVolume;
-	if(key == SIZE)
-	{
-		valueAtMinVolume = oldValue * std::cbrt(Model::getMinPart().volume / volume);
-		valueAtMaxVolume = oldValue * std::cbrt(Model::getMaxPart().volume / volume);
-	}
-	else
-	{
-		valueAtMinVolume = oldValue * Model::getMinPart().volume / volume;
-		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
-	}
-
-	double min = std::max(minValues.at(key), valueAtMinVolume);
-	double max = std::min(maxValues.at(key), valueAtMaxVolume);
-
-	params[key] = GenoOperators::mutateCreep('f', params[key], min, max, true);
-
-	if (!ensureCircleSection || isPartSizeValid())
-		return true;
-	else
-	{
-		params[key] = oldValue;
-		return false;
 	}
 }
 

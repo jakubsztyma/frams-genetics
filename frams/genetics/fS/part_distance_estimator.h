@@ -20,7 +20,7 @@ public:
 		return 0.5 * (a + b);
 	}
 
-	static double min3(Pt3D p)
+	static double min3(const Pt3D &p)
 	{
 		double tmp = p.x;
 		if (p.y < tmp)
@@ -30,7 +30,7 @@ public:
 		return tmp;
 	}
 
-	static double max3(Pt3D p)
+	static double max3(const Pt3D &p)
 	{
 		double tmp = p.x;
 		if (p.y > tmp)
@@ -63,7 +63,7 @@ class PartDistanceEstimator
 	static constexpr double SPHERE_SIZE_QUOTIENT = 0.25;
 
 
-	static bool isInsidePart(Part::Shape shape, Pt3D partRadii, Pt3D center, double sphereRadius)
+	static bool isInsidePart(Part::Shape shape, const Pt3D &partRadii, const Pt3D &center, double sphereRadius)
 	{
 		if(sphereRadius >= fS_Utils::min3(partRadii))
 			return true; // TODO Special case
@@ -75,7 +75,7 @@ class PartDistanceEstimator
 		switch (shape)
 		{
 			case Part::Shape::SHAPE_CUBOID:
-				if(mostRemote.x <= mostRemote.y <= partRadii.y && mostRemote.z <= partRadii.z)
+				if(mostRemote.x <= partRadii.x && mostRemote.y <= partRadii.y && mostRemote.z <= partRadii.z)
 					result = true;
 				break;
 			case Part::Shape::SHAPE_CYLINDER:
@@ -94,7 +94,7 @@ class PartDistanceEstimator
 	}
 
 public:
-	static vector<Pt3D> findSphereCenters(Part::Shape shape, double &sphereRadius, Pt3D radii, Pt3D rotations)
+	static vector<Pt3D> findSphereCenters(Part::Shape shape, double &sphereRadius, const Pt3D &radii, const Pt3D &rotations)
 	{
 		double sphereRelativeDistance = SPHERE_RELATIVE_DISTANCE;
 		double minRadius = fS_Utils::min3(radii);
