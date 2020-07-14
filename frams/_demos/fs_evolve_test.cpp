@@ -7,6 +7,8 @@
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/fS_oper.h"
 #include "frams/genetics/preconfigured.h"
+#include "frams/model/geometry/geometryutils.h"
+#include "frams/model/geometry/modelgeometryinfo.h"
 
 using std::cout;
 using std::endl;
@@ -69,6 +71,12 @@ void testRandomModifications(string test)
 	}
 }
 
+double evaluate(const char *geno)
+{
+	int nodeCount = fS_Genotype(geno).getNodeCount();
+	return 1.0 / nodeCount;
+}
+
 void evolutionTest(int operationCount)
 {
 	GenoConv_fS0 converter = GenoConv_fS0();
@@ -101,7 +109,7 @@ void evolutionTest(int operationCount)
 
 		if (i % 10 == 0)
 		{
-			cout << i << " out of " << operationCount << " Length: " << gens[i1]->length() + gens[i2]->length() << endl;
+			cout << i << " out of " << operationCount << " Length: " << gens[i1]->length() + gens[i2]->length() << " Evaluation: " << evaluate(gens[i1]->c_str()) << endl;
 		}
 
 		int method;
@@ -109,6 +117,13 @@ void evolutionTest(int operationCount)
 
 		char *arr1 = strdup(gens[i1]->c_str());
 		char *arr2 = strdup(gens[i2]->c_str());
+
+//		Model model;
+//		model.open(true);
+//		fS_Genotype(arr1).buildModel(model);
+//		model.close();
+//		const double density = 1.0;
+//		double volume = ModelGeometryInfo::volume(model, density);
 
 		testRandomModifications(arr1);
 		testRandomModifications(arr2);
@@ -126,15 +141,22 @@ void evolutionTest(int operationCount)
 
 		int crossOverResult = operators.crossOver(arr1, arr2, f1, f2);
 
+
 		if (crossOverResult == GENOPER_OK && 0 == operators.checkValidity(arr1, "") && 0 == operators.checkValidity(arr2, ""))
 		{
 			ensure(0. <= f1 && f1 <= 1.);
 			ensure(0. <= f2 && f2 <= 1.);
 
-			delete gens[i1];
-			delete gens[i2];
-			gens[i1] = new SString(arr1);
-			gens[i2] = new SString(arr2);
+			if(evaluate(arr1) > evaluate(gens[i1]->c_str()))
+			{
+				delete gens[i1];
+				gens[i1] = new SString(arr1);
+			}
+			if(evaluate(arr2) > evaluate(gens[i2]->c_str()))
+			{
+				delete gens[i2];
+				gens[i2] = new SString(arr2);
+			}
 
 			// Check if genotypes convert correctly
 			MultiMap map;
