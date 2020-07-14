@@ -88,11 +88,11 @@ void evolutionTest(int operationCount)
 	ensure(strcmp(operators.getSimplest(), "1.1:C{x=0.80599;y=0.80599;z=0.80599}") == 0);
 
 	SString **gens = new SString *[gen_size];
-	gens[0] = new SString("1.1:EcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[1] = new SString("1.1:RcR[N_0]bR[N_0_1]");
-	gens[2] = new SString("1.1:EcE[N_1_2]cRbC[G_0_2]bC[N_0_1_2]{x=1.02;y=1.02;z=1.03}");
-	gens[3] = new SString("1.1:R[N_1]{x=1.04}R[N_1]cRC[N_0;N_1]{x=1.03}");
-	gens[4] = new SString("1.1:E(cE(bE[T;T_1_2]^cE^bC[N_0]^cR)^bE[N_0_2;N_0_2]^cE(bcE^bcE[N;N_0_1_2])^E)");
+	gens[0] = new SString("1.1:EcE[N'1'2]cRbC[G'0'2]bC[N'0'1'2]{x=1.02;y=1.02;z=1.03}");
+	gens[1] = new SString("1.1:RcR[N'0]bR[N'0'1]");
+	gens[2] = new SString("1.1:EcE[N'1'2]cRbC[G'0'2]bC[N'0'1'2]{x=1.02;y=1.02;z=1.03}");
+	gens[3] = new SString("1.1:R[N'1]{x=1.04}R[N'1]cRC[N'0;N'1]{x=1.03}");
+	gens[4] = new SString("1.1:E(cE(bE[T;T'1'2]^cE^bC[N'0]^cR)^bE[N'0'2;N'0'2]^cE(bcE^bcE[N;N'0'1'2])^E)");
 
 
 	FILE *pFile = fopen("output.txt", "w");
@@ -147,12 +147,12 @@ void evolutionTest(int operationCount)
 			ensure(0. <= f1 && f1 <= 1.);
 			ensure(0. <= f2 && f2 <= 1.);
 
-			if(evaluate(arr1) > evaluate(gens[i1]->c_str()))
+			if(evaluate(arr1) >= evaluate(gens[i1]->c_str()))
 			{
 				delete gens[i1];
 				gens[i1] = new SString(arr1);
 			}
-			if(evaluate(arr2) > evaluate(gens[i2]->c_str()))
+			if(evaluate(arr2) >= evaluate(gens[i2]->c_str()))
 			{
 				delete gens[i2];
 				gens[i2] = new SString(arr2);

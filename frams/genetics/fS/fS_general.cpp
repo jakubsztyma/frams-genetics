@@ -655,11 +655,18 @@ void fS_Genotype::getState()
 	startNode->getState(initialState);
 }
 
-void fS_Genotype::buildModel(Model &model)
+Model fS_Genotype::buildModel(bool using_checkpoints)
 {
+
+	Model model;
+	model.open(using_checkpoints);
+
 	getState();
 	startNode->buildModel(model, nullptr);
 	buildNeuroConnections(model);
+
+	model.close();
+	return model;
 }
 
 

@@ -17,10 +17,7 @@ SString GenoConv_fS0::convert(SString &i, MultiMap *map, bool using_checkpoints)
 		return SString();
 	}
 
-	Model model;
-	model.open(using_checkpoints);
-	genotype->buildModel(model);
-	model.close();
+	Model model = genotype->buildModel(using_checkpoints);
 	delete genotype;
 
 	if (map)

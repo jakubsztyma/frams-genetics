@@ -26,7 +26,7 @@ const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
 const char NEURON_END = ']';
 const char NEURON_SEPARATOR = ';';
-const SString NEURON_INTERNAL_SEPARATOR("_");
+const SString NEURON_INTERNAL_SEPARATOR("'");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
@@ -510,7 +510,7 @@ public:
 	 * Builds Model object from internal representation
 	 * @param a reference to a model that will contain a built model
 	 */
-	void buildModel(Model &model);
+	Model buildModel(bool using_checkpoints);
 
 	/**
 	 * Adds neuro connections to model

@@ -64,13 +64,13 @@ void testRearrangeBeforeCrossover()
 	string test_cases[] = {
 			"1.1:EE[N]",
 			"1.1:E[N;N;N]E[N;N;N]",
-			"1.1:E[N;N;N]E[N_3;N_4_5;N_3]",
-			"1.1:E[N_3;4;]E[N_3;N_4_5;N_3]",
-			"1.1:E[N_1;2;0]E[N;N;N]",
-			"1.1:E[N_1_3;N_2_4;N]E[N_3;N_4_5;N_3]",
+			"1.1:E[N;N;N]E[N'3;N'4'5;N'3]",
+			"1.1:E[N'3;4;]E[N'3;N'4'5;N'3]",
+			"1.1:E[N'1;2;0]E[N;N;N]",
+			"1.1:E[N'1'3;N'2'4;N]E[N'3;N'4'5;N'3]",
 			"1.1:E[Sin;N;G]E[Rnd;N;T]",
-			"1.1:E[N_1_3;N_2_4;N](E[N_3;N_4_5;N_3]^E[N_3;N_4_6_7])",
-			"1.1:E[N_1_3;N_2_4;N](E[N_0_3;N_4_5;N_3_6]^E[N_3;N_4_6_7])",
+			"1.1:E[N'1'3;N'2'4;N](E[N'3;N'4'5;N'3]^E[N'3;N'4'6'7])",
+			"1.1:E[N'1'3;N'2'4;N](E[N'0'3;N'4'5;N'3'6]^E[N'3;N'4'6'7])",
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -92,11 +92,11 @@ void testRearrangeAfterCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"1.1:E[N_0_1;N_0]E[N]",
-			"1.1:E[N_0_1;N_0]E[Rnd;N;N]",
-			"1.1:E[N_0_1;N_0]E[Rnd;N;N]E[N;N]",
-			"1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2])",
-			"1.1:E[N_0_1;N_0](E[Rnd;N;N]^E[N_2_3;N_2]C[N_2_4])",
+			"1.1:E[N'0'1;N'0]E[N]",
+			"1.1:E[N'0'1;N'0]E[Rnd;N;N]",
+			"1.1:E[N'0'1;N'0]E[Rnd;N;N]E[N;N]",
+			"1.1:E[N'0'1;N'0](E[Rnd;N;N]^E[N'2'3;N'2])",
+			"1.1:E[N'0'1;N'0](E[Rnd;N;N]^E[N'2'3;N'2]C[N'2'4])",
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -313,6 +313,10 @@ void testOneGenotype(SString test, int expectedPartCount)
 	// Test mapping
 	map.print();
 
+	// Test checkpoints
+	int checkpointCount = geno.buildModel(true).getCheckpointCount();
+	ensure(checkpointCount == geno.getNodeCount());
+
 	////Test operations
 	// Test part count
 	ensure(geno.getNodeCount() == expectedPartCount);
@@ -417,20 +421,24 @@ void validationTest()
 			"1.1:E{qw=1.0}",    // Wrong param key
 			"1.1:E{f=}",    // Wrong param value
 			"1.1:E{f=fr}",    // Wrong param value
-			"1.1:E[G_w_2]",    // Invalid neuro connection key
-			"1.1:E[G_1:w_2]",    // Invalid neuro connection value
+			"1.1:E[G'w'2]",    // Invalid neuro connection key
+			"1.1:E[G'1:w'2]",    // Invalid neuro connection value
 			"1.1:E{",    // Lacking param end
 			"1.1:E[",    // Lacking neuro end
 			"1.1:E{x=1.5;y=0.0}",    // Lacking param end
 			"1.1:E[2]",    // Invalid neuron connection key
 			"1.1:E[-2]",    // Invalid neuron connection key
 			"1.1:E[;;3]",    // Invalid neuron connection key
+			"1.E",			// No genotype param separator
+			"1.E",			// No genotype param separator
+			"EE",			// No genotype params
+			"abc:E"		// Invalid genotype params
 	};
 	int errorIndexes[] = {
 			5, 5, 5, 6,
 			6, 8, 8, 7, 7,
 			6, 6, 14, 1, 1,
-			1,
+			1, 1, 1, 1, 1
 	};
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
@@ -444,7 +452,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	const int size = 6;
-	string before = "1.1:E[T]bE[N_2_3]cRbC[T;G_1_2]bE[N_1_2_3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "1.1:E[T]bE[N'2'3]cRbC[T;G'1'2]bE[N'1'2'3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -560,14 +568,14 @@ int main(int argc, char *argv[])
 			"1.1:E[N;N]",
 			"1.1:E[N]E[N]",
 			"1.1:E[T]",
-			"1.1:E[N]E[N_0]",
-			"1.1:E[Sin;T_0]",
-			"1.1:E[Sin_2;T_0;T_0_1]",
-			"1.1:E[Sin_2;T_0;T_0_1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
-			"1.1:E[Sin_2:2.0;T_0:3.0;T_0:4.0_1:5.0]",
-			"1.1:E[N]E[G_0]",
-			"1.1:E[N]E[Rnd_0]",
-			"1.1:E[Rnd]E[Rnd_0_1;Sin_0]",
+			"1.1:E[N]E[N'0]",
+			"1.1:E[Sin;T'0]",
+			"1.1:E[Sin'2;T'0;T'0'1]",
+			"1.1:E[Sin'2;T'0;T'0'1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"1.1:E[Sin'2:2.0;T'0:3.0;T'0:4.0'1:5.0]",
+			"1.1:E[N]E[G'0]",
+			"1.1:E[N]E[Rnd'0]",
+			"1.1:E[Rnd]E[Rnd'0'1;Sin'0]",
 			"1.1:E{s=1.5}",
 			"1.1:SE{s=1.1;x=1.2;z=1.3}",
 			"1.1:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
