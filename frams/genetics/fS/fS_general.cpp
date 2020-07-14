@@ -78,8 +78,10 @@ void State::rotate(const Pt3D &rotation)
 }
 
 
-fS_Neuron::fS_Neuron(const char *str, int start, int length)
+fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 {
+	start = _start + 1;
+	end = start + length;
 	if (length == 0)
 		return;
 
@@ -468,6 +470,7 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		Neuro *neuro = new Neuro(*neurons[i]);
 		model.addNeuro(neuro);
+		neuro->addMapping(MultiRange(IRange(neurons[i]->start, neurons[i]->end)));
 		if (neuro->getClass()->preflocation == NeuroClass::PREFER_JOINT && parent != nullptr)
 		{
 			neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));

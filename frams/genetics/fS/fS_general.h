@@ -195,9 +195,8 @@ public:
 	 */
 	MultiRange toMultiRange()
 	{
-		MultiRange range;
-		range.add(start, start + len - 1);
-		return range;
+		int end = start + len - 1;
+		return MultiRange(IRange(start, end));
 	}
 };
 
@@ -241,6 +240,7 @@ public:
 class fS_Neuron: public Neuro
 {
 public:
+	int start, end;
 	std::map<int, double> inputs;
 
 	fS_Neuron(const char *str, int start, int length);

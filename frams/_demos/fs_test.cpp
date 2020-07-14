@@ -310,6 +310,9 @@ void testOneGenotype(SString test, int expectedPartCount)
 	/// Test translate
 	cout << converter.convert(test, &map, false).c_str() << endl;
 
+	// Test mapping
+	map.print();
+
 	////Test operations
 	// Test part count
 	ensure(geno.getNodeCount() == expectedPartCount);
@@ -425,7 +428,7 @@ void validationTest()
 	};
 	int errorIndexes[] = {
 			5, 5, 5, 6,
-			6, 8, 8, 6, 6,
+			6, 8, 8, 7, 7,
 			6, 6, 14, 1, 1,
 			1,
 	};
