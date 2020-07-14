@@ -26,7 +26,7 @@ const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
 const char NEURON_END = ']';
 const char NEURON_SEPARATOR = ';';
-const SString NEURON_INTERNAL_SEPARATOR("_");
+const SString NEURON_INTERNAL_SEPARATOR("'");
 #define NEURON_I_W_SEPARATOR ':'
 //@}
 
@@ -68,19 +68,19 @@ const double DEFAULT_NEURO_CONNECTION_WEIGHT = 1.0;
 const char ELLIPSOID = 'E';
 const char CUBOID = 'C';
 const char CYLINDER = 'R';
-const std::unordered_map<Part::Shape, char> SHAPETYPE_TO_GENE = {
+const std::unordered_map<Part::Shape, char> SHAPE_TO_GENE = {
 		{Part::Shape::SHAPE_ELLIPSOID, ELLIPSOID},
 		{Part::Shape::SHAPE_CUBOID,    CUBOID},
 		{Part::Shape::SHAPE_CYLINDER,  CYLINDER},
 };
 
 // This map is inverse to SHAPE_TO_SYMBOL. Those two should be compatible
-const std::unordered_map<char, Part::Shape> GENE_TO_SHAPETYPE = {
+const std::unordered_map<char, Part::Shape> GENE_TO_SHAPE = {
 		{ELLIPSOID, Part::Shape::SHAPE_ELLIPSOID},
 		{CUBOID,    Part::Shape::SHAPE_CUBOID},
 		{CYLINDER,  Part::Shape::SHAPE_CYLINDER},
 };
-const int SHAPE_COUNT = 3;    // This should be the count of SHAPETYPE_TO_GENE and GENE_TO_SHAPETYPE
+const int SHAPE_COUNT = 3;    // This should be the count of SHAPE_TO_GENE and GENE_TO_SHAPE
 
 const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
@@ -98,8 +98,6 @@ const std::map<Part::Shape, double> volumeMultipliers = {
 		{Part::Shape::SHAPE_CYLINDER, 2.0 * M_PI},
 		{Part::Shape::SHAPE_ELLIPSOID, (4.0 / 3.0) * M_PI},
 };
-
-extern const std::map<string, double> defaultValues;
 
 /** @name Number of tries of performing a mutation before GENOPER_FAIL is returned */
 #define mutationTries  20
@@ -197,9 +195,8 @@ public:
 	 */
 	MultiRange toMultiRange()
 	{
-		MultiRange range;
-		range.add(start, start + len - 1);
-		return range;
+		int end = start + len - 1;
+		return MultiRange(IRange(start, end));
 	}
 };
 
@@ -243,6 +240,7 @@ public:
 class fS_Neuron: public Neuro
 {
 public:
+	int start, end;
 	std::map<int, double> inputs;
 
 	fS_Neuron(const char *str, int start, int length);
@@ -273,12 +271,14 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
+	std::map<string, double> defaultValues;
 	GenotypeParams genotypeParams;
-
 
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
+
+	void prepareParams();
 
 	double getDistance();
 
@@ -397,16 +397,6 @@ public:
 	double calculateVolume();
 
 	/**
-	 * Change the value of the size parameter by given multiplier
-	 * Do not change the value if any of the size restrictions is not satisfied
-	 * @param paramKey
-	 * @param multiplier
-	 * @param ensureCircleSection
-	 * @return True if the parameter value was change, false otherwise
-	 */
-	bool mutateSizeParam(string paramKey,  bool ensureCircleSection);
-
-	/**
 	 * Counts all the nodes in subtree
 	 * @return node count
 	 */
@@ -520,7 +510,7 @@ public:
 	 * Builds Model object from internal representation
 	 * @param a reference to a model that will contain a built model
 	 */
-	void buildModel(Model &model);
+	Model buildModel(bool using_checkpoints);
 
 	/**
 	 * Adds neuro connections to model

@@ -35,42 +35,44 @@ static ParamEntry genooper_fS_paramtab[] =
 #undef FIELDSTRUCT
 
 
+void GenoOper_fS::prepareParams()
+{
+	minValues = {
+			{INGESTION, Model::getMinPart().ingest},
+			{FRICTION,  Model::getMinPart().friction},
+			{STIFFNESS, 0.1},
+			{ROT_X,     -M_PI},
+			{ROT_Y,     -M_PI},
+			{ROT_Z,     -M_PI},
+			{RX,        -M_PI},
+			{RY,        -M_PI},
+			{RZ,        -M_PI},
+			{SIZE,      0.01},
+			{SIZE_X,    Model::getMinPart().scale.x},
+			{SIZE_Y,    Model::getMinPart().scale.y},
+			{SIZE_Z,    Model::getMinPart().scale.z}
+	};
 
-const std::map<string, double> minValues = {
-		{INGESTION,      Model::getMinPart().ingest},
-		{FRICTION,       Model::getMinPart().friction},
-		{STIFFNESS,	 	 0.1},
-		{ROT_X,          -M_PI},
-		{ROT_Y,          -M_PI},
-		{ROT_Z,          -M_PI},
-		{RX,             -M_PI},
-		{RY,             -M_PI},
-		{RZ,             -M_PI},
-		{SIZE,           0.01},
-		{SIZE_X,         Model::getMinPart().scale.x},
-		{SIZE_Y,         Model::getMinPart().scale.y},
-		{SIZE_Z,         Model::getMinPart().scale.z}
-};
-
-const std::map<string, double> maxValues = {
-		{INGESTION,      Model::getMaxPart().ingest},
-		{FRICTION,       Model::getMaxPart().friction},
-		{STIFFNESS,	 	 0.5},
-		{ROT_X,          M_PI},
-		{ROT_Y,          M_PI},
-		{ROT_Z,          M_PI},
-		{RX,             M_PI},
-		{RY,             M_PI},
-		{RZ,             M_PI},
-		{SIZE,           100.0},
-		{SIZE_X,         Model::getMaxPart().scale.x},
-		{SIZE_Y,         Model::getMaxPart().scale.y},
-		{SIZE_Z,         Model::getMaxPart().scale.z}
-};
-
+	maxValues = {
+			{INGESTION, Model::getMaxPart().ingest},
+			{FRICTION,  Model::getMaxPart().friction},
+			{STIFFNESS, 0.5},
+			{ROT_X,     M_PI},
+			{ROT_Y,     M_PI},
+			{ROT_Z,     M_PI},
+			{RX,        M_PI},
+			{RY,        M_PI},
+			{RZ,        M_PI},
+			{SIZE,      100.0},
+			{SIZE_X,    Model::getMaxPart().scale.x},
+			{SIZE_Y,    Model::getMaxPart().scale.y},
+			{SIZE_Z,    Model::getMaxPart().scale.z}
+	};
+}
 
 GenoOper_fS::GenoOper_fS()
 {
+	prepareParams();
 	par.setParamTab(genooper_fS_paramtab);
 	par.select(this);
 	par.setDefault();
@@ -331,7 +333,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 {
 	geno.getState();
 	Node *node = geno.chooseNode();
-	char partType = SHAPETYPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
+	char partType = SHAPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
 
 	Substring substring(&partType, 0, 1);
 	Node *newNode = new Node(substring, node, node->genotypeParams);
@@ -373,9 +375,9 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 	if (mutateSize)
 	{
 		geno.getState();
-		newNode->mutateSizeParam(SIZE_X, true);
-		newNode->mutateSizeParam(SIZE_Y, true);
-		newNode->mutateSizeParam(SIZE_Z, true);
+		mutateSizeParam(newNode, SIZE_X, true);
+		mutateSizeParam(newNode, SIZE_Y, true);
+		mutateSizeParam(newNode, SIZE_Z, true);
 	}
 	return true;
 }
@@ -482,6 +484,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
 	bool isRadius = isRadiusOfBase || key == SIZE_X;
 	if (ensureCircleSection && isRadius)
+	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
@@ -489,7 +492,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[key] = mutateCreep('f', defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
+	randomNode->params[key] = mutateCreep('f', randomNode->defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
 	return true;
 }
 
@@ -529,7 +532,7 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
 				return true;
 			} else
-				return randomNode->mutateSizeParam(it->first, ensureCircleSection);
+				return mutateSizeParam(randomNode, it->first, ensureCircleSection);
 		}
 	}
 	return false;
@@ -695,10 +698,10 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 	return GenoOperators::mutateRandomNeuroClassProperty(neu);
 }
 
-bool Node::mutateSizeParam(string key, bool ensureCircleSection)
+bool GenoOper_fS::mutateSizeParam(Node *node, string key, bool ensureCircleSection)
 {
-	double oldValue = getParam(key);
-	double volume = calculateVolume();
+	double oldValue = node->getParam(key);
+	double volume = node->calculateVolume();
 	double valueAtMinVolume, valueAtMaxVolume;
 	if(key == SIZE)
 	{
@@ -714,13 +717,13 @@ bool Node::mutateSizeParam(string key, bool ensureCircleSection)
 	double min = std::max(minValues.at(key), valueAtMinVolume);
 	double max = std::min(maxValues.at(key), valueAtMaxVolume);
 
-	params[key] = GenoOperators::mutateCreep('f', getParam(key), min, max, true);
+	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, true);
 
-	if (!ensureCircleSection || isPartSizeValid())
+	if (!ensureCircleSection || node->isPartSizeValid())
 		return true;
 	else
 	{
-		params[key] = oldValue;
+		node->params[key] = oldValue;
 		return false;
 	}
 }

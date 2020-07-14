@@ -9,7 +9,7 @@
 #include "frams/util/multimap.h"
 
 /**
- * Genotype converter from fS to f0.
+ * Genotype converter from fS to f0s.
  */
 class GenoConv_fS0 : public GenoConverter
 {
@@ -18,8 +18,8 @@ public:
 	{
 		name = "Solid encoding";
 
-		in_format = 'S';
-		out_format = '0';
+		in_format = "S";
+		out_format = "0s";
 		mapsupport = 1;
 	}
 

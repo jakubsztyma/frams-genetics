@@ -16,21 +16,24 @@
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
 
-const std::map<string, double> defaultValues = {
-		{INGESTION,      Model::getDefPart().ingest},
-		{FRICTION,       Model::getDefPart().friction},
-		{STIFFNESS,	 	 Model::getDefJoint().stif},
-		{ROT_X,          0.0},
-		{ROT_Y,          0.0},
-		{ROT_Z,          0.0},
-		{RX,             0.0},
-		{RY,             0.0},
-		{RZ,             0.0},
-		{SIZE,           1.0},
-		{SIZE_X,         Model::getDefPart().scale.x},
-		{SIZE_Y,         Model::getDefPart().scale.y},
-		{SIZE_Z,         Model::getDefPart().scale.z}
-};
+void Node::prepareParams()
+{
+	defaultValues = {
+			{INGESTION, Model::getDefPart().ingest},
+			{FRICTION,  Model::getDefPart().friction},
+			{STIFFNESS, Model::getDefJoint().stif},
+			{ROT_X,     0.0},
+			{ROT_Y,     0.0},
+			{ROT_Z,     0.0},
+			{RX,        0.0},
+			{RY,        0.0},
+			{RZ,        0.0},
+			{SIZE,      1.0},
+			{SIZE_X,    Model::getDefPart().scale.x},
+			{SIZE_Y,    Model::getDefPart().scale.y},
+			{SIZE_Z,    Model::getDefPart().scale.z}
+	};
+}
 
 double fS_stod(const string&  str, int start, size_t* size)
 {
@@ -75,8 +78,10 @@ void State::rotate(const Pt3D &rotation)
 }
 
 
-fS_Neuron::fS_Neuron(const char *str, int start, int length)
+fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 {
+	start = _start + 1;
+	end = start + length;
 	if (length == 0)
 		return;
 
@@ -122,6 +127,7 @@ fS_Neuron::fS_Neuron(const char *str, int start, int length)
 
 Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 {
+	prepareParams();
 	partDescription = new Substring(restOfGeno);
 	genotypeParams = _genotypeParams;
 	parent = _parent;
@@ -164,7 +170,7 @@ int Node::getPartPosition(Substring &restOfGenotype)
 {
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
-		if (GENE_TO_SHAPETYPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPETYPE.end())
+		if (GENE_TO_SHAPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPE.end())
 			return i;
 	}
 	return -1;
@@ -192,8 +198,8 @@ void Node::extractModifiers(Substring &restOfGenotype)
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	auto itr = GENE_TO_SHAPETYPE.find(restOfGenotype.at(0));
-	if (itr == GENE_TO_SHAPETYPE.end())
+	auto itr = GENE_TO_SHAPE.find(restOfGenotype.at(0));
+	if (itr == GENE_TO_SHAPE.end())
 		throw fS_Exception("Invalid part type", restOfGenotype.start);
 
 	partType = itr->second;
@@ -464,6 +470,7 @@ void Node::buildModel(Model &model, Node *parent)
 	{
 		Neuro *neuro = new Neuro(*neurons[i]);
 		model.addNeuro(neuro);
+		neuro->addMapping(MultiRange(IRange(neurons[i]->start, neurons[i]->end)));
 		if (neuro->getClass()->preflocation == NeuroClass::PREFER_JOINT && parent != nullptr)
 		{
 			neuro->attachToJoint(model.getJoint(model.getJointCount() - 1));
@@ -535,7 +542,7 @@ void Node::getGeno(SString &result)
 		}
 		result += std::string(count, mod).c_str();
 	}
-	result += SHAPETYPE_TO_GENE.at(partType);
+	result += SHAPE_TO_GENE.at(partType);
 
 	if (!neurons.empty())
 	{
@@ -648,11 +655,18 @@ void fS_Genotype::getState()
 	startNode->getState(initialState);
 }
 
-void fS_Genotype::buildModel(Model &model)
+Model fS_Genotype::buildModel(bool using_checkpoints)
 {
+
+	Model model;
+	model.open(using_checkpoints);
+
 	getState();
 	startNode->buildModel(model, nullptr);
 	buildNeuroConnections(model);
+
+	model.close();
+	return model;
 }
 
 

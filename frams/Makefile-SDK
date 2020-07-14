@@ -11,7 +11,7 @@ sdk_tests: $(SDK_TESTS)
 CXXWARNINGS=-Wall -Wno-parentheses -Wno-overloaded-virtual -Wno-format -Werror=return-type
 
 SDK_BUILD_CONFIG= -include frams/config/sdk_build_config.h
-CXXFLAGS= -I$(CURDIR) -std=gnu++11 $(SDK_BUILD_CONFIG) $(CXXWARNINGS) -g
+CXXFLAGS= -I$(CURDIR) -ansi -pedantic -std=gnu++11 $(SDK_BUILD_CONFIG) $(CXXWARNINGS) -g
 
 AR=ar
 ARFLAGS=rs
@@ -102,6 +102,9 @@ mutableparam_test: $(MUTABLEPARAM_TEST_OBJS)
 
 fs_test: $(FS_TEST_OBJS)
 	$(CXX) $(FS_TEST_OBJS) $(LDFLAGS) -o $@
+
+fs_evolve_test: $(FS_EVOLVE_TEST_OBJS)
+	$(CXX) $(FS_EVOLVE_TEST_OBJS) $(LDFLAGS) -o $@
 
 #############################################
 
