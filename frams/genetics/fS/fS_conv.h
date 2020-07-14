@@ -9,7 +9,7 @@
 #include "frams/util/multimap.h"
 
 /**
- * Genotype converter from fS to f0.
+ * Genotype converter from fS to f0s.
  */
 class GenoConv_fS0 : public GenoConverter
 {
