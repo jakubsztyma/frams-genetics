@@ -306,7 +306,7 @@ double Node::getParam(string key)
 }
 
 
-void Node::getState(State *_state)
+void Node::getState(State *_state, bool calculateLocation)
 {
 	if (state != nullptr)
 		delete state;
@@ -331,7 +331,7 @@ void Node::getState(State *_state)
 			state->stif *= multiplier;
 	}
 
-	if (parent != nullptr)
+	if (parent != nullptr && calculateLocation)
 	{
 		// Rotate
 		state->rotate(getVectorRotation());
@@ -340,7 +340,7 @@ void Node::getState(State *_state)
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
-		children[i]->getState(state);
+		children[i]->getState(state, calculateLocation);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
@@ -649,10 +649,10 @@ fS_Genotype::~fS_Genotype()
 	delete startNode;
 }
 
-void fS_Genotype::getState()
+void fS_Genotype::getState(bool calculateLocation)
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-	startNode->getState(initialState);
+	startNode->getState(initialState, calculateLocation);
 }
 
 Model fS_Genotype::buildModel(bool using_checkpoints)
@@ -661,7 +661,7 @@ Model fS_Genotype::buildModel(bool using_checkpoints)
 	Model model;
 	model.open(using_checkpoints);
 
-	getState();
+	getState(true);
 	startNode->buildModel(model, nullptr);
 	buildNeuroConnections(model);
 
@@ -807,7 +807,7 @@ int fS_Genotype::getNodeCount()
 
 int fS_Genotype::checkValidityOfPartSizes()
 {
-	getState();
+	getState(false);
 	vector<Node*> nodes = getAllNodes();
 	for (int i = 0; i < int(nodes.size()); i++)
 	{

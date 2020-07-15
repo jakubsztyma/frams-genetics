@@ -153,7 +153,7 @@ void testAddPart()
 
 		operators.addPart(geno, availablePartShapes, false);
 
-		geno.getState();
+		geno.getState(false);
 		Node *newNode = geno.getAllNodes()[1];
 		ensure(doubleCompare(newNode->calculateVolume(), expectedVolume[i]));
 	}
@@ -175,12 +175,12 @@ void testChangePartType()
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
-		geno.getState();
+		geno.getState(false);
 		double oldVolume = geno.startNode->calculateVolume();
 
 		operators.changePartType(geno, availablePartShapes);
 
-		geno.getState();
+		geno.getState(false);
 		ensure(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
 
@@ -504,11 +504,11 @@ void testMutateSizeParam()
 		for(int j=0; j < int(SIZE_PARAMS.size()); j++)
 		{
 			fS_Genotype geno(test_cases[i]);
-			geno.getState();
+			geno.getState(false);
 
 			bool result = operators.mutateSizeParam(geno.startNode, SIZE_PARAMS[j], false);
 
-			geno.getState();
+			geno.getState(false);
 			double volume = geno.startNode->calculateVolume();
 			Pt3D size = geno.startNode->calculateSize();
 			ensure(result);

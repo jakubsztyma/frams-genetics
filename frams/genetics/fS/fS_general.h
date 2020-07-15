@@ -334,7 +334,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state);
+	void getState(State *_state, bool calculateLocation);
 
 	/**
 	 * Build children internal representations from fS genotype
@@ -453,7 +453,7 @@ public:
 
 	~fS_Genotype();
 
-	void getState();
+	void getState(bool calculateLocation);
 
 	/**
 	 * Get all existing nodes

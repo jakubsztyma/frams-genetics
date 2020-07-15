@@ -331,7 +331,7 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 
 bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availablePartShapes, bool mutateSize)
 {
-	geno.getState();
+	geno.getState(false);
 	Node *node = geno.chooseNode();
 	char partType = SHAPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
 
@@ -374,7 +374,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 
 	if (mutateSize)
 	{
-		geno.getState();
+		geno.getState(false);
 		mutateSizeParam(newNode, SIZE_X, true);
 		mutateSizeParam(newNode, SIZE_Y, true);
 		mutateSizeParam(newNode, SIZE_Z, true);
@@ -424,7 +424,7 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector <Part::Shape> &
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
-		geno.getState();
+		geno.getState(false);
 		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
 		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
 
@@ -492,7 +492,7 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	}
 	// Add modified default value for param
 	randomNode->params[key] = randomNode->defaultValues.at(key);
-	geno.getState();
+	geno.getState(false);
 	return mutateParamValue(randomNode, key);
 }
 
@@ -536,7 +536,7 @@ bool GenoOper_fS::mutateParamValue(Node *node, string key)
 
 bool GenoOper_fS::changeParam(fS_Genotype &geno)
 {
-	geno.getState();
+	geno.getState(false);
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = geno.chooseNode();
