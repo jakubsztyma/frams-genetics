@@ -484,7 +484,6 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
 	bool isRadius = isRadiusOfBase || key == SIZE_X;
 	if (ensureCircleSection && isRadius)
-	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;

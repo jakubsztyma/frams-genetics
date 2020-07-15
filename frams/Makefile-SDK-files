@@ -101,6 +101,6 @@ PARAMTREE_PARAMLIST_TEST_OBJS=frams/_demos/paramtree_paramlist_test.o frams/_dem
 
 MUTABLEPARAM_TEST_OBJS=frams/_demos/mutableparam_test.o $(STDOUT_LOGGER_OBJS) common/virtfile/stdiofile.o $(SDK_OBJS) frams/param/mutableparam.o frams/param/mutparamlist.o frams/param/paramtrans.o
 
-FS_TEST_OBJS=frams/_demos/fs_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)
+FS_TEST_OBJS=frams/_demos/fS_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)
 
-FS_EVOLVE_TEST_OBJS=frams/_demos/fs_evolve_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)
+FS_EVOLVE_TEST_OBJS=frams/_demos/fS_evolve_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)

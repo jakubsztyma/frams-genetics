@@ -11,7 +11,8 @@ tests/*
 frams/_demos/*
 frams/genetics/*
 #
-!frams/_demos/fs_test.cpp
+!frams/_demos/fS_test.cpp
+!frams/_demos/fS_evolve_test.cpp
 !frams/Makefile-SDK
 !frams/Makefile-SDK-files
 !frams/genetics/fs
