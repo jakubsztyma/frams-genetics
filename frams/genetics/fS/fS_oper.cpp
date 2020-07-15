@@ -491,8 +491,9 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[key] = mutateCreep('f', randomNode->defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
-	return true;
+	randomNode->params[key] = randomNode->defaultValues.at(key);
+	geno.getState();
+	return mutateParamValue(randomNode, key);
 }
 
 bool GenoOper_fS::removeParam(fS_Genotype &geno)
@@ -506,11 +507,31 @@ bool GenoOper_fS::removeParam(fS_Genotype &geno)
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-			randomNode->params.erase(it->first);
-			return true;
+			string key = it->first;
+			double value = it->second;
+
+			randomNode->params.erase(key);
+			if(geno.checkValidityOfPartSizes() == 0)
+				return true;
+			else
+			{
+				randomNode->params[key] = value;
+			}
 		}
 	}
 	return false;
+}
+
+
+bool GenoOper_fS::mutateParamValue(Node *node, string key)
+{
+	// Do not allow invalid changes in part size
+	if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), key) == SIZE_PARAMS.end())
+	{
+		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), minValues.at(key), maxValues.at(key), true);
+		return true;
+	} else
+		return mutateSizeParam(node, key, ensureCircleSection);
 }
 
 bool GenoOper_fS::changeParam(fS_Genotype &geno)
@@ -524,14 +545,7 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-
-			// Do not allow invalid changes in part size
-			if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), it->first) == SIZE_PARAMS.end())
-			{
-				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
-				return true;
-			} else
-				return mutateSizeParam(randomNode, it->first, ensureCircleSection);
+			return mutateParamValue(randomNode, it->first);
 		}
 	}
 	return false;
@@ -541,12 +555,14 @@ bool GenoOper_fS::changeModifier(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	char randomModifier = MODIFIERS[rndUint(MODIFIERS.length())];
+	int oldValue = randomNode->modifiers[randomModifier];
+
 	randomNode->modifiers[randomModifier] += rndUint(2) == 0 ? 1 : -1;
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
 	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
-		randomNode->modifiers[randomModifier]++;
+		randomNode->modifiers[randomModifier] = oldValue;
 		return false;
 	}
 	return true;

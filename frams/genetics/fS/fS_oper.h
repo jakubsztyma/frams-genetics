@@ -117,6 +117,15 @@ public:
 	bool changeParam(fS_Genotype &geno);
 
 	/**
+	 * Changes the value of specified parameter.
+	 * The state of the node must be previously calculated
+	 * @param node - the node on which parameter is modified
+	 * @param key - the key of parameter
+	 * @return
+	 */
+	bool mutateParamValue(Node *node, string key);
+
+	/**
 	 * Performs change modifier mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
