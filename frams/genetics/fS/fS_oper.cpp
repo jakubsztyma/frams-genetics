@@ -23,7 +23,7 @@ static ParamEntry genooper_fS_paramtab[] =
 				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",               "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
 				{"fS_mut_mod_neuro_conn",   0, 0, "Modify neuron connection",    "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
 				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",       "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
-				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection",    "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
+				{"fS_mut_rem_neuro_conn",   0, 0, "Remove neuron connection",    "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
 				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",        "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
 				{"fS_circle_section",       0, 0, "Ensure circle section",       "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
 				{"fS_use_elli",             0, 0, "Use ellipsoids in mutations", "d 0 1 1",    FIELD(useElli),                       "Use ellipsoids in mutations"},
