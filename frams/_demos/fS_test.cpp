@@ -212,7 +212,7 @@ void testUsePartType()
 
 void testTurnWithRotation()
 {
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	fS_Genotype::TURN_WITH_ROTATION = true;
 	MultiMap map;
 	SString test_cases[]{
@@ -298,7 +298,7 @@ void testAllPartSizesValid()
 void testOneGenotype(SString test, int expectedPartCount)
 {
 	GenoOper_fS operators;
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	MultiMap map;
 	int tmp = -1;
 	SString tmpStr;
@@ -411,7 +411,7 @@ void testOneGenotype(SString test, int expectedPartCount)
 
 void validationTest()
 {
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	GenoOper_fS operators;
 	SString invalidGenotypes[] = {
 			"1.1:FFF",    // No part type
