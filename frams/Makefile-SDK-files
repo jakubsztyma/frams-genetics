@@ -38,7 +38,7 @@ SIMILARITY_OBJS=frams/model/similarity/hungarian/hungarian.o frams/model/similar
 
 NN_LAYOUT_OBJS=frams/canvas/nn_layout_model.o frams/canvas/nn_simple_layout.o frams/canvas/nn_smart_layout.o
 
-SDK_OBJS=frams/util/list.o frams/util/advlist.o frams/param/param.o frams/util/sstring.o frams/util/sstringutils.o frams/util/3d.o frams/vm/classes/3dobject.o frams/model/model.o frams/model/modelparts.o frams/neuro/neurolibrary.o frams/genetics/geno.o frams/genetics/genoconv.o frams/util/extvalue.o frams/vm/classes/collectionobj.o frams/util/hashtable.o common/log.o common/util-string.o common/util-file.o common/nonstd_stdio.o frams/util/callbacks.o frams/param/syntparam.o frams/util/multirange.o frams/util/multimap.o frams/param/paramtabobj.o common/loggers/loggers.o frams/param/paramobj.o frams/genetics/genooperators.o common/nonstd_math.o frams/util/validitychecks.o common/Convert.o frams/util/rndutil.o common/virtfile/stringfile.o $(PRINTFLOAT_OBJS)
+SDK_OBJS=frams/util/list.o frams/util/advlist.o frams/param/param.o frams/util/sstring.o frams/util/sstringutils.o frams/util/3d.o frams/vm/classes/3dobject.o frams/model/model.o frams/model/modelparts.o frams/neuro/neurolibrary.o frams/genetics/geno.o frams/genetics/genoconv.o frams/util/extvalue.o frams/vm/classes/collectionobj.o frams/util/hashtable.o common/log.o common/util-string.o common/util-file.o common/nonstd_stdio.o frams/util/callbacks.o frams/param/syntparam.o frams/util/multirange.o frams/util/multimap.o frams/param/paramtabobj.o common/loggers/loggers.o frams/param/paramobj.o frams/genetics/genooperators.o common/nonstd_math.o frams/util/validitychecks.o common/Convert.o frams/util/rndutil.o common/virtfile/stringfile.o $(PRINTFLOAT_OBJS) $(GEOMETRY_OBJS)
 
 GEOMETRY_OBJS=frams/model/geometry/meshbuilder.o frams/model/geometry/modelgeometryinfo.o frams/model/geometry/geometryutils.o
 
@@ -103,6 +103,6 @@ MUTABLEPARAM_TEST_OBJS=frams/_demos/mutableparam_test.o $(STDOUT_LOGGER_OBJS) co
 
 EVOL_TEST_OBJS=frams/_demos/evol_test.o $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS) $(STDOUT_LOGGER_OBJS)
 
-FS_TEST_OBJS=frams/_demos/fS_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS) $(GEOMETRY_OBJS)
+FS_TEST_OBJS=frams/_demos/fS_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)
 
-FS_EVOL_TEST_OBJS=frams/_demos/fS_evolve_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS) $(GEOMETRY_OBJS)
+FS_EVOL_TEST_OBJS=frams/_demos/fS_evolve_test.o  $(STDOUT_LOGGER_OBJS) $(SDK_OBJS) $(GENOCONV_AND_GENMAN_SDK_OBJS)
