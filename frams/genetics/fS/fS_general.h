@@ -401,7 +401,7 @@ public:
 	 * Extract the value of parameter or return default if parameter not exists
 	 * @return the param value
 	 */
-	double getParam(string key);
+	double getParam(const string &key);
 };
 
 /**

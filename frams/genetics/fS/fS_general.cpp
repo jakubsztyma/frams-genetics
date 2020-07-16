@@ -335,7 +335,7 @@ void Node::extractParams(Substring &restOfGenotype)
 	restOfGenotype.startFrom(paramsEndIndex + 2);
 }
 
-double Node::getParam(string key)
+double Node::getParam(const string &key)
 {
 	auto item = params.find(key);
 	if (item != params.end())
@@ -528,16 +528,12 @@ void Node::buildModel(Model &model, Node *parent)
 void Node::createPart()
 {
 	part = new Part(partType);
-	part->p = Pt3D(state->location.x,
-				   state->location.y,
-				   state->location.z);
+	part->p = Pt3D(state->location);
 
 	part->friction = getParam(FRICTION) * state->fr;
 	part->ingest = getParam(INGESTION) * state->ing;
 	Pt3D size = calculateSize();
-	part->scale.x = size.x;
-	part->scale.y = size.y;
-	part->scale.z = size.z;
+	part->scale = size;
 	part->setRot(getRotation());
 }
 
