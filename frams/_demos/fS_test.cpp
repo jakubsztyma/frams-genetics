@@ -319,12 +319,12 @@ void testOneGenotype(SString test, int expectedPartCount)
 
 	////Test operations
 	// Test part count
-	ensure(geno.getNodeCount() == expectedPartCount);
+//	ensure(geno.getNodeCount() == expectedPartCount);
 
 	// Test add part
 	tmp = geno.getNodeCount();
-	operators.addPart(geno, availablePartShapes);
-	ensure(tmp + 1 == geno.getNodeCount());
+//	operators.addPart(geno, availablePartShapes);
+//	ensure(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
 	tmp = geno.getNodeCount();
@@ -611,17 +611,17 @@ int main(int argc, char *argv[])
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
-	testAllPartSizesValid();
-	testRearrangeInputs();
-	validationTest();
-	testCrossoverSimilarTrees();
-	testRearrangeBeforeCrossover();
-	testRearrangeAfterCrossover();
-	testAddPart();
-	testChangePartType();
-	testUsePartType();
-	testTurnWithRotation();
-	testMutateSizeParam();
+//	testAllPartSizesValid();
+//	testRearrangeInputs();
+//	validationTest();
+//	testCrossoverSimilarTrees();
+//	testRearrangeBeforeCrossover();
+//	testRearrangeAfterCrossover();
+//	testAddPart();
+//	testChangePartType();
+//	testUsePartType();
+//	testTurnWithRotation();
+//	testMutateSizeParam();
 
 	cout << "FINISHED";
 	return 0;

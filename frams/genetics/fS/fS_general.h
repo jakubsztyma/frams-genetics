@@ -53,12 +53,7 @@ enum class SHIFT
 #define RY "ry"
 #define RZ "rz"
 //@}
-/** @name Macros and values used in collision detection */
-//@{
-#define DISJOINT 0
-#define COLLISION 1
-#define ADJACENT 2
-//@}
+
 
 #define HINGE_X 'b'
 #define HINGE_XY 'c'
