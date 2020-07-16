@@ -47,8 +47,10 @@ class PartDistanceEstimator
 {
 
 public:
-	static constexpr double PRECISION = 0.01;
-	static constexpr double RELATIVE_DENSITY = 10.0;
+	static constexpr double PRECISION = 0.05;
+	static constexpr double RELATIVE_DENSITY = 5.0;
+
+	static constexpr double CBRT_3 = std::cbrt(3);
 
 	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotations)
 	{
@@ -75,10 +77,12 @@ public:
 
 	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
 	{
+		double maxParentReachSq = pow(CBRT_3 * fS_Utils::max3(parentPart->scale), 2);
 		for (int i = 0; i < int(centers.size()); i++)
 		{
-			Pt3D shiftedSphere = centers[i] + vectorBetweenParts;
-			if (GeometryUtils::isPointInsidePart(shiftedSphere, parentPart))
+			Pt3D shifted = centers[i] + vectorBetweenParts;
+			double distanceToCenterSq = shifted.x * shifted.x + shifted.y * shifted.y + shifted.z * shifted.z;
+			if (distanceToCenterSq <= maxParentReachSq && GeometryUtils::isPointInsidePart(shifted, parentPart))
 				return true;
 		}
 		return false;
