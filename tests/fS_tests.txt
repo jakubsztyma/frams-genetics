@@ -1,7 +1,7 @@
 
 ####
 
-exe:fs_test
+exe:fS_test
 
 TESTNAME:fS
 arg:10

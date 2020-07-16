@@ -81,10 +81,9 @@ const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "IFST";
+const string MODIFIERS = "IFS";
 const char SIZE_MODIFIER = 's';
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
-							 STIFFNESS};
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 const vector<string> SIZE_PARAMS {SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 
 /** @name Default values of node parameters*/
@@ -208,7 +207,6 @@ public:
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
 	double s = 1.0;      /// Size multipliers
-	double stif = 1.0;	/// Stiffness multipliers
 
 	State(State *_state); /// Derive the state from parent
 

@@ -26,7 +26,6 @@ void Node::prepareParams()
 		minValues = {
 				{INGESTION, Model::getMinPart().ingest},
 				{FRICTION,  Model::getMinPart().friction},
-				{STIFFNESS, 0.1},
 				{ROT_X,     -M_PI},
 				{ROT_Y,     -M_PI},
 				{ROT_Z,     -M_PI},
@@ -45,7 +44,6 @@ void Node::prepareParams()
 		maxValues = {
 				{INGESTION, Model::getMaxPart().ingest},
 				{FRICTION,  Model::getMaxPart().friction},
-				{STIFFNESS, 0.5},
 				{ROT_X,     M_PI},
 				{ROT_Y,     M_PI},
 				{ROT_Z,     M_PI},
@@ -63,7 +61,6 @@ void Node::prepareParams()
 		defaultValues = {
 				{INGESTION, Model::getDefPart().ingest},
 				{FRICTION,  Model::getDefPart().friction},
-				{STIFFNESS, Model::getDefJoint().stif},
 				{ROT_X,     0.0},
 				{ROT_Y,     0.0},
 				{ROT_Z,     0.0},
@@ -100,7 +97,6 @@ State::State(State *_state)
 	v = Pt3D(_state->v);
 	fr = _state->fr;
 	s = _state->s;
-	stif = _state->stif;
 }
 
 State::State(Pt3D _location, Pt3D _v)
@@ -370,8 +366,6 @@ void Node::getState(State *_state, bool calculateLocation)
 			state->fr *= multiplier;
 		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
-		else if (mod == MODIFIERS[3])
-			state->stif *= multiplier;
 	}
 
 	if (parent != nullptr && calculateLocation)
@@ -550,9 +544,6 @@ void Node::createPart()
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
-	j->stif = getParam(STIFFNESS) * state->stif;
-	j->rotstif = j->stif;
-
 	j->attachToParts(parent->part, part);
 	switch (joint)
 	{
