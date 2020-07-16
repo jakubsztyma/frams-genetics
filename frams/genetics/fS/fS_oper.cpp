@@ -572,7 +572,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	fS_Neuron *newNeuron;
-	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
+	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPETYPE_SOLIDS);
 	if (rndclass->preflocation == NeuroClass::PREFER_JOINT && randomNode == geno.startNode)
 		return false;
 

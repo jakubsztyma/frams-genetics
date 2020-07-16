@@ -113,6 +113,8 @@ double Node::getDistance()
 			currentDistance = fS_Utils::avg(currentDistance, minDistance);
 		}
 	}
+	delete tmpPart;
+	delete parentTmpPart;
 	return currentDistance;
 }
 
