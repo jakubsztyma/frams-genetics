@@ -91,8 +91,10 @@ public:
 
 double Node::getDistance()
 {
-	Pt3D size = calculateSize();
-	Pt3D parentSize = parent->calculateSize();    // Here we are sure that parent is not nullptr
+	Pt3D size;
+	calculateSize(size);
+	Pt3D parentSize;
+	parent->calculateSize(parentSize);    // Here we are sure that parent is not nullptr
 	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partType, size, getRotation());
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partType, parentSize, parent->getRotation());
 

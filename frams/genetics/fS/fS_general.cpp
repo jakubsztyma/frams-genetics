@@ -297,6 +297,7 @@ void Node::extractParams(Substring &restOfGenotype)
 	vector<int> separators = getSeparatorPositions(paramString, restOfGenotype.len, PARAM_SEPARATOR, PARAM_END, paramsEndIndex);
 	if(paramsEndIndex == -1)
 		throw fS_Exception("Lacking param end sign", restOfGenotype.start);
+
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
 		int start = separators[i] + 1;
@@ -340,8 +341,15 @@ double Node::getParam(const string &key)
 	auto item = params.find(key);
 	if (item != params.end())
 		return item->second;
-	else
-		return defaultValues.at(key);
+	return defaultValues.at(key);
+}
+
+double Node::getParam(const string &key, double defaultValue)
+{
+	auto item = params.find(key);
+	if (item != params.end())
+		return item->second;
+	return defaultValue;
 }
 
 
@@ -424,19 +432,19 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 	return children;
 }
 
-Pt3D Node::calculateSize()
+void Node::calculateSize(Pt3D &scale)
 {
 	double sizeMultiplier = getParam(SIZE) * state->s;
-	double sx = getParam(SIZE_X) * sizeMultiplier;
-	double sy = getParam(SIZE_Y) * sizeMultiplier;
-	double sz = getParam(SIZE_Z) * sizeMultiplier;
-	return Pt3D(sx, sy, sz);
+	scale.x = getParam(SIZE_X) * sizeMultiplier;
+	scale.y = getParam(SIZE_Y) * sizeMultiplier;
+	scale.z = getParam(SIZE_Z) * sizeMultiplier;
 }
 
 double Node::calculateVolume()
 {
 	double result;
-	Pt3D size = calculateSize();
+	Pt3D size;
+	calculateSize(size);
 	double radiiProduct = size.x * size.y * size.z;
 	switch (partType)
 	{
@@ -457,7 +465,8 @@ double Node::calculateVolume()
 
 bool Node::isPartSizeValid()
 {
-	Pt3D size = calculateSize();
+	Pt3D size;
+	calculateSize(size);
 	double volume = calculateVolume();
 	Part_MinMaxDef minP = Model::getMinPart();
 	Part_MinMaxDef maxP = Model::getMaxPart();
@@ -485,12 +494,12 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	return Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z));
+	return Pt3D(getParam(ROT_X, 0.0), getParam(ROT_Y, 0.0), getParam(ROT_Z, 0.0));
 }
 
 Pt3D Node::getRotation()
 {
-	Pt3D rotation = Pt3D(getParam(RX), getParam(RY), getParam(RZ));
+	Pt3D rotation = Pt3D(getParam(RX, 0.0), getParam(RY, 0.0), getParam(RZ, 0.0));
 	if(fS_Genotype::TURN_WITH_ROTATION)
 		rotation += getVectorRotation();
 	return rotation;
@@ -532,8 +541,7 @@ void Node::createPart()
 
 	part->friction = getParam(FRICTION) * state->fr;
 	part->ingest = getParam(INGESTION) * state->ing;
-	Pt3D size = calculateSize();
-	part->scale = size;
+	calculateSize(part->scale);
 	part->setRot(getRotation());
 }
 

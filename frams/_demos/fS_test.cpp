@@ -510,7 +510,8 @@ void testMutateSizeParam()
 
 			geno.getState(false);
 			double volume = geno.startNode->calculateVolume();
-			Pt3D size = geno.startNode->calculateSize();
+			Pt3D size;
+			geno.startNode->calculateSize(size);
 			ensure(result);
 			ensure(minVolume < volume && volume < maxVolume);
 			ensure(minRadius <= size.x && size.x <= maxRadius);

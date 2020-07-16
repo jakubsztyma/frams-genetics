@@ -383,7 +383,7 @@ public:
 	 * Calculate the effective size of the part (after applying all multipliers and params)
 	 * @return The effective size
 	 */
-	Pt3D calculateSize();
+	void calculateSize(Pt3D &scale);
 
 	/**
 	 * Calculate the effective volume of the part
@@ -402,6 +402,7 @@ public:
 	 * @return the param value
 	 */
 	double getParam(const string &key);
+	double getParam(const string &key, double defaultValue);
 };
 
 /**
