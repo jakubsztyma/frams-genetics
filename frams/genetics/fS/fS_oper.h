@@ -42,9 +42,6 @@ public:
 	paInt useElli, useCub,  useCyl;
 	paInt strongAddPart;
 
-	std::map<string, double> minValues;
-	std::map<string, double> maxValues;
-
 	GenoOper_fS();
 
 	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
@@ -152,8 +149,6 @@ public:
 	 * @return True if the parameter value was change, false otherwise
 	 */
 	bool mutateSizeParam(Node *node, string key, bool ensureCircleSection);
-
-	void prepareParams();
 };
 
 #endif

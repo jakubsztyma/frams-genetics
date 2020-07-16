@@ -34,45 +34,8 @@ static ParamEntry genooper_fS_paramtab[] =
 
 #undef FIELDSTRUCT
 
-
-void GenoOper_fS::prepareParams()
-{
-	minValues = {
-			{INGESTION, Model::getMinPart().ingest},
-			{FRICTION,  Model::getMinPart().friction},
-			{STIFFNESS, 0.1},
-			{ROT_X,     -M_PI},
-			{ROT_Y,     -M_PI},
-			{ROT_Z,     -M_PI},
-			{RX,        -M_PI},
-			{RY,        -M_PI},
-			{RZ,        -M_PI},
-			{SIZE,      0.01},
-			{SIZE_X,    Model::getMinPart().scale.x},
-			{SIZE_Y,    Model::getMinPart().scale.y},
-			{SIZE_Z,    Model::getMinPart().scale.z}
-	};
-
-	maxValues = {
-			{INGESTION, Model::getMaxPart().ingest},
-			{FRICTION,  Model::getMaxPart().friction},
-			{STIFFNESS, 0.5},
-			{ROT_X,     M_PI},
-			{ROT_Y,     M_PI},
-			{ROT_Z,     M_PI},
-			{RX,        M_PI},
-			{RY,        M_PI},
-			{RZ,        M_PI},
-			{SIZE,      100.0},
-			{SIZE_X,    Model::getMaxPart().scale.x},
-			{SIZE_Y,    Model::getMaxPart().scale.y},
-			{SIZE_Z,    Model::getMaxPart().scale.z}
-	};
-}
-
 GenoOper_fS::GenoOper_fS()
 {
-	prepareParams();
 	par.setParamTab(genooper_fS_paramtab);
 	par.select(this);
 	par.setDefault();
@@ -528,7 +491,7 @@ bool GenoOper_fS::mutateParamValue(Node *node, string key)
 	// Do not allow invalid changes in part size
 	if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), key) == SIZE_PARAMS.end())
 	{
-		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), minValues.at(key), maxValues.at(key), true);
+		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), Node::minValues.at(key), Node::maxValues.at(key), true);
 		return true;
 	} else
 		return mutateSizeParam(node, key, ensureCircleSection);
@@ -729,8 +692,8 @@ bool GenoOper_fS::mutateSizeParam(Node *node, string key, bool ensureCircleSecti
 		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
 	}
 
-	double min = std::max(minValues.at(key), valueAtMinVolume);
-	double max = std::min(maxValues.at(key), valueAtMaxVolume);
+	double min = std::max(Node::minValues.at(key), valueAtMinVolume);
+	double max = std::min(Node::maxValues.at(key), valueAtMaxVolume);
 
 	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, true);
 

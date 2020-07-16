@@ -15,24 +15,67 @@
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
+std::map<string, double> Node::minValues;
+std::map<string, double> Node::defaultValues;
+std::map<string, double> Node::maxValues;
 
 void Node::prepareParams()
 {
-	defaultValues = {
-			{INGESTION, Model::getDefPart().ingest},
-			{FRICTION,  Model::getDefPart().friction},
-			{STIFFNESS, Model::getDefJoint().stif},
-			{ROT_X,     0.0},
-			{ROT_Y,     0.0},
-			{ROT_Z,     0.0},
-			{RX,        0.0},
-			{RY,        0.0},
-			{RZ,        0.0},
-			{SIZE,      1.0},
-			{SIZE_X,    Model::getDefPart().scale.x},
-			{SIZE_Y,    Model::getDefPart().scale.y},
-			{SIZE_Z,    Model::getDefPart().scale.z}
-	};
+	if(minValues.empty())
+	{
+		minValues = {
+				{INGESTION, Model::getMinPart().ingest},
+				{FRICTION,  Model::getMinPart().friction},
+				{STIFFNESS, 0.1},
+				{ROT_X,     -M_PI},
+				{ROT_Y,     -M_PI},
+				{ROT_Z,     -M_PI},
+				{RX,        -M_PI},
+				{RY,        -M_PI},
+				{RZ,        -M_PI},
+				{SIZE,      0.01},
+				{SIZE_X,    Model::getMinPart().scale.x},
+				{SIZE_Y,    Model::getMinPart().scale.y},
+				{SIZE_Z,    Model::getMinPart().scale.z}
+		};
+	}
+
+	if(maxValues.empty())
+	{
+		maxValues = {
+				{INGESTION, Model::getMaxPart().ingest},
+				{FRICTION,  Model::getMaxPart().friction},
+				{STIFFNESS, 0.5},
+				{ROT_X,     M_PI},
+				{ROT_Y,     M_PI},
+				{ROT_Z,     M_PI},
+				{RX,        M_PI},
+				{RY,        M_PI},
+				{RZ,        M_PI},
+				{SIZE,      100.0},
+				{SIZE_X,    Model::getMaxPart().scale.x},
+				{SIZE_Y,    Model::getMaxPart().scale.y},
+				{SIZE_Z,    Model::getMaxPart().scale.z}
+		};
+	}
+	if(defaultValues.empty())
+	{
+		defaultValues = {
+				{INGESTION, Model::getDefPart().ingest},
+				{FRICTION,  Model::getDefPart().friction},
+				{STIFFNESS, Model::getDefJoint().stif},
+				{ROT_X,     0.0},
+				{ROT_Y,     0.0},
+				{ROT_Z,     0.0},
+				{RX,        0.0},
+				{RY,        0.0},
+				{RZ,        0.0},
+				{SIZE,      1.0},
+				{SIZE_X,    Model::getDefPart().scale.x},
+				{SIZE_Y,    Model::getDefPart().scale.y},
+				{SIZE_Z,    Model::getDefPart().scale.z}
+		};
+	}
 }
 
 double fS_stod(const string&  str, int start, size_t* size)
