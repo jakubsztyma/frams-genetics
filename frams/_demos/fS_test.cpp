@@ -319,12 +319,12 @@ void testOneGenotype(SString test, int expectedPartCount)
 
 	////Test operations
 	// Test part count
-//	ensure(geno.getNodeCount() == expectedPartCount);
+	ensure(geno.getNodeCount() == expectedPartCount);
 
 	// Test add part
 	tmp = geno.getNodeCount();
-//	operators.addPart(geno, availablePartShapes);
-//	ensure(tmp + 1 == geno.getNodeCount());
+	operators.addPart(geno, availablePartShapes);
+	ensure(tmp + 1 == geno.getNodeCount());
 
 	// Test change part
 	tmp = geno.getNodeCount();
@@ -496,7 +496,6 @@ void testMutateSizeParam()
 			"1.1:R{x=3.3}",
 			"1.1:C{x=4.9;y=0.5}",
 			"1.1:C{x=4.9;y=0.25;z=2.0}",
-			"1.1:C{x=999.0;y=0.05;z=0.05}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -505,6 +504,7 @@ void testMutateSizeParam()
 		{
 			fS_Genotype geno(test_cases[i]);
 			geno.getState(false);
+			std::cout<<test_cases[i]	<<std::endl;
 
 			bool result = operators.mutateSizeParam(geno.startNode, SIZE_PARAMS[j], false);
 
@@ -513,7 +513,7 @@ void testMutateSizeParam()
 			Pt3D size = geno.startNode->calculateSize();
 			ensure(result);
 			ensure(minVolume < volume && volume < maxVolume);
-			ensure(minRadius < size.x && size.x < maxRadius);
+			ensure(minRadius <= size.x && size.x <= maxRadius);
 			ensure(strcmp(geno.getGeno().c_str(), test_cases[i].c_str()) != 0);
 		}
 	}
@@ -608,17 +608,17 @@ int main(int argc, char *argv[])
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
-//	testAllPartSizesValid();
-//	testRearrangeInputs();
-//	validationTest();
-//	testCrossoverSimilarTrees();
-//	testRearrangeBeforeCrossover();
-//	testRearrangeAfterCrossover();
-//	testAddPart();
-//	testChangePartType();
-//	testUsePartType();
-//	testTurnWithRotation();
-//	testMutateSizeParam();
+	testAllPartSizesValid();
+	testRearrangeInputs();
+	validationTest();
+	testCrossoverSimilarTrees();
+	testRearrangeBeforeCrossover();
+	testRearrangeAfterCrossover();
+	testAddPart();
+	testChangePartType();
+	testUsePartType();
+	testTurnWithRotation();
+	testMutateSizeParam();
 
 	cout << "FINISHED";
 	return 0;
