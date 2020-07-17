@@ -381,7 +381,7 @@ void Node::getState(State *_state, bool calculateLocation)
 		// Rotate
 		state->rotate(getVectorRotation());
 
-		double distance = calculateDistance();
+		double distance = calculateDistanceFromParent();
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
@@ -658,6 +658,8 @@ fS_Genotype::fS_Genotype(const string &geno)
 	{
 		GenotypeParams genotypeParams;
 		genotypeParams.modifierMultiplier = 1.1;
+		genotypeParams.PRECISION = 0.1;
+		genotypeParams.RELATIVE_DENSITY = 10.0;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
@@ -878,3 +880,18 @@ void fS_Genotype::rearrangeNeuronConnections(fS_Neuron *changedNeuron, SHIFT shi
 	shiftNeuroConnections(neurons, changedNeuronIndex, changedNeuronIndex, shift);
 }
 
+double Node::calculateDistanceFromParent()
+{
+	Pt3D scale;
+	calculateScale(scale);
+	Pt3D parentScale;
+	parent->calculateScale(parentScale);    // Here we are sure that parent is not nullptr
+	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
+	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
+
+	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.PRECISION, genotypeParams.RELATIVE_DENSITY);
+
+	delete tmpPart;
+	delete parentTmpPart;
+	return result;
+}

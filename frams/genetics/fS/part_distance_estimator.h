@@ -47,10 +47,6 @@ class PartDistanceEstimator
 {
 
 public:
-	/// The maximal allowed difference between calculated distance and the real distance between parts
-	static constexpr double PRECISION = 0.05;
-	/// Used for deriving density for MeshBuilder
-	static constexpr double RELATIVE_DENSITY = 5.0;
 
 	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotations)
 	{
@@ -61,10 +57,10 @@ public:
 	}
 
 	/// Get some of the points from the surface of the part
-	static vector <Pt3D> findSurfacePoints(Part *part)
+	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
 		// Divide by maximal radius to avoid long computations
-		MeshBuilder::PartSurface surface(RELATIVE_DENSITY / fS_Utils::max3(part->scale));
+		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
 		surface.initialize(part);
 
 		vector <Pt3D> centers;
@@ -90,41 +86,34 @@ public:
 		}
 		return false;
 	}
+
+
+	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double precision, double relativeDensity)
+	{
+		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
+
+		double minDistance = 0.0;
+		double maxDistance = 2 * (fS_Utils::max3(parentTmpPart->scale) + fS_Utils::max3(tmpPart->scale));
+		double currentDistance = fS_Utils::avg(maxDistance, minDistance);
+		int collisionDetected = false;
+		while (maxDistance - minDistance > precision)
+		{
+			Pt3D vectorBetweenParts = directionVersor * currentDistance;
+			collisionDetected = PartDistanceEstimator::isCollision(parentTmpPart, centers, vectorBetweenParts);
+
+			if (collisionDetected)
+			{
+				minDistance = currentDistance;
+				currentDistance = fS_Utils::avg(maxDistance, currentDistance);
+			} else
+			{
+				maxDistance = currentDistance;
+				currentDistance = fS_Utils::avg(currentDistance, minDistance);
+			}
+		}
+		return currentDistance;
+	}
 };
 
-double Node::calculateDistance()
-{
-	Pt3D scale;
-	calculateScale(scale);
-	Pt3D parentScale;
-	parent->calculateScale(parentScale);    // Here we are sure that parent is not nullptr
-	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
-	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
-
-	vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart);
-
-	double minDistance = 0.0;
-	double maxDistance = 2 * (fS_Utils::max3(parentScale) + fS_Utils::max3(scale));
-	double currentDistance = fS_Utils::avg(maxDistance, minDistance);
-	int collisionDetected = false;
-	while (maxDistance - minDistance > PartDistanceEstimator::PRECISION)
-	{
-		Pt3D vectorBetweenParts = state->v * currentDistance;
-		collisionDetected = PartDistanceEstimator::isCollision(parentTmpPart, centers, vectorBetweenParts);
-
-		if (collisionDetected)
-		{
-			minDistance = currentDistance;
-			currentDistance = fS_Utils::avg(maxDistance, currentDistance);
-		} else
-		{
-			maxDistance = currentDistance;
-			currentDistance = fS_Utils::avg(currentDistance, minDistance);
-		}
-	}
-	delete tmpPart;
-	delete parentTmpPart;
-	return currentDistance;
-}
 
 #endif //_PART_DISTANCE_ESTIMATOR_H_

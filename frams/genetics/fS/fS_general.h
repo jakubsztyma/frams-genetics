@@ -246,6 +246,10 @@ public:
 
 struct GenotypeParams{
 	double modifierMultiplier;	// Every modifier changes the underlying value by this multiplier
+	/// The maximal allowed difference between calculated distance and the real distance between parts
+	double PRECISION;
+	/// Used for deriving density for MeshBuilder
+	double RELATIVE_DENSITY;
 };
 
 /**
@@ -264,7 +268,6 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
-	GenotypeParams genotypeParams; /// Parameters that affect the whole genotype
 	static std::map<string, double> minValues;	/// Min parameter values
 	static std::map<string, double> defaultValues;	/// Default parameter values
 	static std::map<string, double> maxValues;	/// Max parameter values
@@ -274,9 +277,6 @@ private:
 	vector<fS_Neuron *> neurons;    /// Vector of all the neurons
 
 	void prepareParams();
-
-	/// Calculate distance between the part its parent
-	double calculateDistance();
 
 	void cleanUp();
 
@@ -369,6 +369,7 @@ public:
 	Part::Shape partShape;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
 	std::map<string, double> params; /// The map of all the node params
+	GenotypeParams genotypeParams; /// Parameters that affect the whole genotype
 
 	Node(Substring &genotype, Node *parent, GenotypeParams genotypeParams);
 
@@ -404,6 +405,9 @@ public:
 	 */
 	double getParam(const string &key);
 	double getParam(const string &key, double defaultValue);
+
+	/// Calculate distance between the part its parent
+	double calculateDistanceFromParent();
 };
 
 /**
