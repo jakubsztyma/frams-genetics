@@ -60,7 +60,8 @@ public:
 		return tmpPart;
 	}
 
-	static vector <Pt3D> findSphereCenters(Part *part)
+	/// Get some of the points from the surface of the part
+	static vector <Pt3D> findSurfacePoints(Part *part)
 	{
 		// Divide by maximal radius to avoid long computations
 		MeshBuilder::PartSurface surface(RELATIVE_DENSITY / fS_Utils::max3(part->scale));
@@ -75,6 +76,7 @@ public:
 		return centers;
 	}
 
+	/// Check if there is a collision between the parts
 	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
 	{
 		static double CBRT_3 = std::cbrt(3);
@@ -90,19 +92,19 @@ public:
 	}
 };
 
-double Node::getDistance()
+double Node::calculateDistance()
 {
-	Pt3D size;
-	calculateSize(size);
-	Pt3D parentSize;
-	parent->calculateSize(parentSize);    // Here we are sure that parent is not nullptr
-	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partType, size, getRotation());
-	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partType, parentSize, parent->getRotation());
+	Pt3D scale;
+	calculateScale(scale);
+	Pt3D parentScale;
+	parent->calculateScale(parentScale);    // Here we are sure that parent is not nullptr
+	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
+	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
-	vector <Pt3D> centers = PartDistanceEstimator::findSphereCenters(tmpPart);
+	vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart);
 
 	double minDistance = 0.0;
-	double maxDistance = 2 * (fS_Utils::max3(parentSize) + fS_Utils::max3(size));
+	double maxDistance = 2 * (fS_Utils::max3(parentScale) + fS_Utils::max3(scale));
 	double currentDistance = fS_Utils::avg(maxDistance, minDistance);
 	int collisionDetected = false;
 	while (maxDistance - minDistance > PartDistanceEstimator::PRECISION)
