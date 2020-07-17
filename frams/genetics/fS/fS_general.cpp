@@ -15,24 +15,64 @@
 
 int fS_Genotype::precision = 4;
 bool fS_Genotype::TURN_WITH_ROTATION = false;
+std::map<string, double> Node::minValues;
+std::map<string, double> Node::defaultValues;
+std::map<string, double> Node::maxValues;
 
 void Node::prepareParams()
 {
-	defaultValues = {
-			{INGESTION, Model::getDefPart().ingest},
-			{FRICTION,  Model::getDefPart().friction},
-			{STIFFNESS, Model::getDefJoint().stif},
-			{ROT_X,     0.0},
-			{ROT_Y,     0.0},
-			{ROT_Z,     0.0},
-			{RX,        0.0},
-			{RY,        0.0},
-			{RZ,        0.0},
-			{SIZE,      1.0},
-			{SIZE_X,    Model::getDefPart().scale.x},
-			{SIZE_Y,    Model::getDefPart().scale.y},
-			{SIZE_Z,    Model::getDefPart().scale.z}
-	};
+	if(minValues.empty())
+	{
+		minValues = {
+				{INGESTION, Model::getMinPart().ingest},
+				{FRICTION,  Model::getMinPart().friction},
+				{ROT_X,     -M_PI},
+				{ROT_Y,     -M_PI},
+				{ROT_Z,     -M_PI},
+				{RX,        -M_PI},
+				{RY,        -M_PI},
+				{RZ,        -M_PI},
+				{SIZE,      0.01},
+				{SIZE_X,    Model::getMinPart().scale.x},
+				{SIZE_Y,    Model::getMinPart().scale.y},
+				{SIZE_Z,    Model::getMinPart().scale.z}
+		};
+	}
+
+	if(maxValues.empty())
+	{
+		maxValues = {
+				{INGESTION, Model::getMaxPart().ingest},
+				{FRICTION,  Model::getMaxPart().friction},
+				{ROT_X,     M_PI},
+				{ROT_Y,     M_PI},
+				{ROT_Z,     M_PI},
+				{RX,        M_PI},
+				{RY,        M_PI},
+				{RZ,        M_PI},
+				{SIZE,      100.0},
+				{SIZE_X,    Model::getMaxPart().scale.x},
+				{SIZE_Y,    Model::getMaxPart().scale.y},
+				{SIZE_Z,    Model::getMaxPart().scale.z}
+		};
+	}
+	if(defaultValues.empty())
+	{
+		defaultValues = {
+				{INGESTION, Model::getDefPart().ingest},
+				{FRICTION,  Model::getDefPart().friction},
+				{ROT_X,     0.0},
+				{ROT_Y,     0.0},
+				{ROT_Z,     0.0},
+				{RX,        0.0},
+				{RY,        0.0},
+				{RZ,        0.0},
+				{SIZE,      1.0},
+				{SIZE_X,    Model::getDefPart().scale.x},
+				{SIZE_Y,    Model::getDefPart().scale.y},
+				{SIZE_Z,    Model::getDefPart().scale.z}
+		};
+	}
 }
 
 double fS_stod(const string&  str, int start, size_t* size)
@@ -57,7 +97,6 @@ State::State(State *_state)
 	v = Pt3D(_state->v);
 	fr = _state->fr;
 	s = _state->s;
-	stif = _state->stif;
 }
 
 State::State(Pt3D _location, Pt3D _v)
@@ -258,6 +297,7 @@ void Node::extractParams(Substring &restOfGenotype)
 	vector<int> separators = getSeparatorPositions(paramString, restOfGenotype.len, PARAM_SEPARATOR, PARAM_END, paramsEndIndex);
 	if(paramsEndIndex == -1)
 		throw fS_Exception("Lacking param end sign", restOfGenotype.start);
+
 	for (int i = 0; i < int(separators.size()) - 1; i++)
 	{
 		int start = separators[i] + 1;
@@ -296,17 +336,24 @@ void Node::extractParams(Substring &restOfGenotype)
 	restOfGenotype.startFrom(paramsEndIndex + 2);
 }
 
-double Node::getParam(string key)
+double Node::getParam(const string &key)
 {
 	auto item = params.find(key);
 	if (item != params.end())
 		return item->second;
-	else
-		return defaultValues.at(key);
+	return defaultValues.at(key);
+}
+
+double Node::getParam(const string &key, double defaultValue)
+{
+	auto item = params.find(key);
+	if (item != params.end())
+		return item->second;
+	return defaultValue;
 }
 
 
-void Node::getState(State *_state)
+void Node::getState(State *_state, bool calculateLocation)
 {
 	if (state != nullptr)
 		delete state;
@@ -327,11 +374,9 @@ void Node::getState(State *_state)
 			state->fr *= multiplier;
 		else if (mod == MODIFIERS[2])
 			state->s *= multiplier;
-		else if (mod == MODIFIERS[3])
-			state->stif *= multiplier;
 	}
 
-	if (parent != nullptr)
+	if (parent != nullptr && calculateLocation)
 	{
 		// Rotate
 		state->rotate(getVectorRotation());
@@ -340,7 +385,7 @@ void Node::getState(State *_state)
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
-		children[i]->getState(state);
+		children[i]->getState(state, calculateLocation);
 }
 
 void Node::getChildren(Substring &restOfGenotype)
@@ -387,19 +432,19 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 	return children;
 }
 
-Pt3D Node::calculateSize()
+void Node::calculateSize(Pt3D &scale)
 {
 	double sizeMultiplier = getParam(SIZE) * state->s;
-	double sx = getParam(SIZE_X) * sizeMultiplier;
-	double sy = getParam(SIZE_Y) * sizeMultiplier;
-	double sz = getParam(SIZE_Z) * sizeMultiplier;
-	return Pt3D(sx, sy, sz);
+	scale.x = getParam(SIZE_X) * sizeMultiplier;
+	scale.y = getParam(SIZE_Y) * sizeMultiplier;
+	scale.z = getParam(SIZE_Z) * sizeMultiplier;
 }
 
 double Node::calculateVolume()
 {
 	double result;
-	Pt3D size = calculateSize();
+	Pt3D size;
+	calculateSize(size);
 	double radiiProduct = size.x * size.y * size.z;
 	switch (partType)
 	{
@@ -420,7 +465,8 @@ double Node::calculateVolume()
 
 bool Node::isPartSizeValid()
 {
-	Pt3D size = calculateSize();
+	Pt3D size;
+	calculateSize(size);
 	double volume = calculateVolume();
 	Part_MinMaxDef minP = Model::getMinPart();
 	Part_MinMaxDef maxP = Model::getMaxPart();
@@ -448,12 +494,12 @@ bool Node::hasPartSizeParam()
 
 Pt3D Node::getVectorRotation()
 {
-	return Pt3D(getParam(ROT_X), getParam(ROT_Y), getParam(ROT_Z));
+	return Pt3D(getParam(ROT_X, 0.0), getParam(ROT_Y, 0.0), getParam(ROT_Z, 0.0));
 }
 
 Pt3D Node::getRotation()
 {
-	Pt3D rotation = Pt3D(getParam(RX), getParam(RY), getParam(RZ));
+	Pt3D rotation = Pt3D(getParam(RX, 0.0), getParam(RY, 0.0), getParam(RZ, 0.0));
 	if(fS_Genotype::TURN_WITH_ROTATION)
 		rotation += getVectorRotation();
 	return rotation;
@@ -491,25 +537,17 @@ void Node::buildModel(Model &model, Node *parent)
 void Node::createPart()
 {
 	part = new Part(partType);
-	part->p = Pt3D(state->location.x,
-				   state->location.y,
-				   state->location.z);
+	part->p = Pt3D(state->location);
 
 	part->friction = getParam(FRICTION) * state->fr;
 	part->ingest = getParam(INGESTION) * state->ing;
-	Pt3D size = calculateSize();
-	part->scale.x = size.x;
-	part->scale.y = size.y;
-	part->scale.z = size.z;
+	calculateSize(part->scale);
 	part->setRot(getRotation());
 }
 
 void Node::addJointsToModel(Model &model, Node *parent)
 {
 	Joint *j = new Joint();
-	j->stif = getParam(STIFFNESS) * state->stif;
-	j->rotstif = j->stif;
-
 	j->attachToParts(parent->part, part);
 	switch (joint)
 	{
@@ -649,10 +687,10 @@ fS_Genotype::~fS_Genotype()
 	delete startNode;
 }
 
-void fS_Genotype::getState()
+void fS_Genotype::getState(bool calculateLocation)
 {
 	State *initialState = new State(Pt3D(0), Pt3D(1, 0, 0));
-	startNode->getState(initialState);
+	startNode->getState(initialState, calculateLocation);
 }
 
 Model fS_Genotype::buildModel(bool using_checkpoints)
@@ -661,7 +699,7 @@ Model fS_Genotype::buildModel(bool using_checkpoints)
 	Model model;
 	model.open(using_checkpoints);
 
-	getState();
+	getState(true);
 	startNode->buildModel(model, nullptr);
 	buildNeuroConnections(model);
 
@@ -807,7 +845,7 @@ int fS_Genotype::getNodeCount()
 
 int fS_Genotype::checkValidityOfPartSizes()
 {
-	getState();
+	getState(false);
 	vector<Node*> nodes = getAllNodes();
 	for (int i = 0; i < int(nodes.size()); i++)
 	{

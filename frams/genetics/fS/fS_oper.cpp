@@ -23,7 +23,7 @@ static ParamEntry genooper_fS_paramtab[] =
 				{"fS_mut_rem_neuro",        0, 0, "Remove neuron",               "f 0 100 10", FIELD(prob[FS_REM_NEURO]),            "mutation: probability of removing a neuron",},
 				{"fS_mut_mod_neuro_conn",   0, 0, "Modify neuron connection",    "f 0 100 10", FIELD(prob[FS_MOD_NEURO_CONNECTION]), "mutation: probability of changing a neuron connection",},
 				{"fS_mut_add_neuro_conn",   0, 0, "Add neuron connection",       "f 0 100 10", FIELD(prob[FS_ADD_NEURO_CONNECTION]), "mutation: probability of adding a neuron connection",},
-				{"fS_mut_rem neuro_conn",   0, 0, "Remove neuron connection",    "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
+				{"fS_mut_rem_neuro_conn",   0, 0, "Remove neuron connection",    "f 0 100 10", FIELD(prob[FS_REM_NEURO_CONNECTION]), "mutation: probability of removing a neuron connection",},
 				{"fS_mut_mod_neuro_params", 0, 0, "Modify neuron params",        "f 0 100 10", FIELD(prob[FS_MOD_NEURO_PARAMS]),     "mutation: probability of changing a neuron param",},
 				{"fS_circle_section",       0, 0, "Ensure circle section",       "d 0 1 1",    FIELD(ensureCircleSection),           "Ensure that ellipsoids and cylinders have circle cross-section"},
 				{"fS_use_elli",             0, 0, "Use ellipsoids in mutations", "d 0 1 1",    FIELD(useElli),                       "Use ellipsoids in mutations"},
@@ -34,45 +34,8 @@ static ParamEntry genooper_fS_paramtab[] =
 
 #undef FIELDSTRUCT
 
-
-void GenoOper_fS::prepareParams()
-{
-	minValues = {
-			{INGESTION, Model::getMinPart().ingest},
-			{FRICTION,  Model::getMinPart().friction},
-			{STIFFNESS, 0.1},
-			{ROT_X,     -M_PI},
-			{ROT_Y,     -M_PI},
-			{ROT_Z,     -M_PI},
-			{RX,        -M_PI},
-			{RY,        -M_PI},
-			{RZ,        -M_PI},
-			{SIZE,      0.01},
-			{SIZE_X,    Model::getMinPart().scale.x},
-			{SIZE_Y,    Model::getMinPart().scale.y},
-			{SIZE_Z,    Model::getMinPart().scale.z}
-	};
-
-	maxValues = {
-			{INGESTION, Model::getMaxPart().ingest},
-			{FRICTION,  Model::getMaxPart().friction},
-			{STIFFNESS, 0.5},
-			{ROT_X,     M_PI},
-			{ROT_Y,     M_PI},
-			{ROT_Z,     M_PI},
-			{RX,        M_PI},
-			{RY,        M_PI},
-			{RZ,        M_PI},
-			{SIZE,      100.0},
-			{SIZE_X,    Model::getMaxPart().scale.x},
-			{SIZE_Y,    Model::getMaxPart().scale.y},
-			{SIZE_Z,    Model::getMaxPart().scale.z}
-	};
-}
-
 GenoOper_fS::GenoOper_fS()
 {
-	prepareParams();
 	par.setParamTab(genooper_fS_paramtab);
 	par.select(this);
 	par.setDefault();
@@ -331,7 +294,7 @@ void GenoOper_fS::rearrangeConnectionsAfterCrossover(fS_Genotype *geno, Node *su
 
 bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availablePartShapes, bool mutateSize)
 {
-	geno.getState();
+	geno.getState(false);
 	Node *node = geno.chooseNode();
 	char partType = SHAPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
 
@@ -374,7 +337,7 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 
 	if (mutateSize)
 	{
-		geno.getState();
+		geno.getState(false);
 		mutateSizeParam(newNode, SIZE_X, true);
 		mutateSizeParam(newNode, SIZE_Y, true);
 		mutateSizeParam(newNode, SIZE_Z, true);
@@ -386,7 +349,8 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 {
 	Node *randomNode, *selectedChild;
 	// Choose a parent with children
-	for (int i = 0; i < mutationTries; i++)
+	// It may be difficult to choose a eligible node, so the number of tries should be high
+	for (int i = 0; i < 10 * mutationTries; i++)
 	{
 		randomNode = geno.chooseNode();
 		int childCount = randomNode->children.size();
@@ -424,7 +388,7 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector <Part::Shape> &
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
-		geno.getState();
+		geno.getState(false);
 		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
 		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
 
@@ -484,7 +448,6 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
 	bool isRadius = isRadiusOfBase || key == SIZE_X;
 	if (ensureCircleSection && isRadius)
-	if (ensureCircleSection && isRadius)
 	{
 		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
@@ -492,8 +455,9 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 			return false;
 	}
 	// Add modified default value for param
-	randomNode->params[key] = mutateCreep('f', randomNode->defaultValues.at(key), minValues.at(key), maxValues.at(key), true);
-	return true;
+	randomNode->params[key] = randomNode->defaultValues.at(key);
+	geno.getState(false);
+	return mutateParamValue(randomNode, key);
 }
 
 bool GenoOper_fS::removeParam(fS_Genotype &geno)
@@ -507,16 +471,36 @@ bool GenoOper_fS::removeParam(fS_Genotype &geno)
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-			randomNode->params.erase(it->first);
-			return true;
+			string key = it->first;
+			double value = it->second;
+
+			randomNode->params.erase(key);
+			if(geno.checkValidityOfPartSizes() == 0)
+				return true;
+			else
+			{
+				randomNode->params[key] = value;
+			}
 		}
 	}
 	return false;
 }
 
+
+bool GenoOper_fS::mutateParamValue(Node *node, string key)
+{
+	// Do not allow invalid changes in part size
+	if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), key) == SIZE_PARAMS.end())
+	{
+		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), Node::minValues.at(key), Node::maxValues.at(key), true);
+		return true;
+	} else
+		return mutateSizeParam(node, key, ensureCircleSection);
+}
+
 bool GenoOper_fS::changeParam(fS_Genotype &geno)
 {
-	geno.getState();
+	geno.getState(false);
 	for (int i = 0; i < mutationTries; i++)
 	{
 		Node *randomNode = geno.chooseNode();
@@ -525,14 +509,7 @@ bool GenoOper_fS::changeParam(fS_Genotype &geno)
 		{
 			auto it = randomNode->params.begin();
 			advance(it, rndUint(paramCount));
-
-			// Do not allow invalid changes in part size
-			if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), it->first) == SIZE_PARAMS.end())
-			{
-				it->second = GenoOperators::mutateCreep('f', it->second, minValues.at(it->first), maxValues.at(it->first), true);
-				return true;
-			} else
-				return mutateSizeParam(randomNode, it->first, ensureCircleSection);
+			return mutateParamValue(randomNode, it->first);
 		}
 	}
 	return false;
@@ -542,12 +519,14 @@ bool GenoOper_fS::changeModifier(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	char randomModifier = MODIFIERS[rndUint(MODIFIERS.length())];
+	int oldValue = randomNode->modifiers[randomModifier];
+
 	randomNode->modifiers[randomModifier] += rndUint(2) == 0 ? 1 : -1;
 
 	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
 	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
-		randomNode->modifiers[randomModifier]++;
+		randomNode->modifiers[randomModifier] = oldValue;
 		return false;
 	}
 	return true;
@@ -557,7 +536,7 @@ bool GenoOper_fS::addNeuro(fS_Genotype &geno)
 {
 	Node *randomNode = geno.chooseNode();
 	fS_Neuron *newNeuron;
-	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPE_SOLIDS);
+	NeuroClass *rndclass = GenoOperators::getRandomNeuroClass(Model::SHAPETYPE_SOLIDS);
 	if (rndclass->preflocation == NeuroClass::PREFER_JOINT && randomNode == geno.startNode)
 		return false;
 
@@ -714,8 +693,8 @@ bool GenoOper_fS::mutateSizeParam(Node *node, string key, bool ensureCircleSecti
 		valueAtMaxVolume = oldValue * Model::getMaxPart().volume / volume;
 	}
 
-	double min = std::max(minValues.at(key), valueAtMinVolume);
-	double max = std::min(maxValues.at(key), valueAtMaxVolume);
+	double min = std::max(Node::minValues.at(key), valueAtMinVolume);
+	double max = std::min(Node::maxValues.at(key), valueAtMaxVolume);
 
 	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, true);
 

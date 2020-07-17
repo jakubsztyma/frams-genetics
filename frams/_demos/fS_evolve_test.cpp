@@ -74,12 +74,13 @@ void testRandomModifications(string test)
 double evaluate(const char *geno)
 {
 	int nodeCount = fS_Genotype(geno).getNodeCount();
-	return 1.0 / nodeCount;
+//	return 1.0 / nodeCount;
+	return -fabs(5.0 - nodeCount);
 }
 
 void evolutionTest(int operationCount)
 {
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	int gen_size = 5;
 	GenoOper_fS operators;
 	PreconfiguredGenetics genetics;

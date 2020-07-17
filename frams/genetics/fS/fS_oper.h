@@ -42,9 +42,6 @@ public:
 	paInt useElli, useCub,  useCyl;
 	paInt strongAddPart;
 
-	std::map<string, double> minValues;
-	std::map<string, double> maxValues;
-
 	GenoOper_fS();
 
 	int crossOver(char *&g1, char *&g2, float &chg1, float &chg2);
@@ -117,6 +114,15 @@ public:
 	bool changeParam(fS_Genotype &geno);
 
 	/**
+	 * Changes the value of specified parameter.
+	 * The state of the node must be previously calculated
+	 * @param node - the node on which parameter is modified
+	 * @param key - the key of parameter
+	 * @return
+	 */
+	bool mutateParamValue(Node *node, string key);
+
+	/**
 	 * Performs change modifier mutation on genotype
 	 * @return true if mutation succeeded, false otherwise
 	 */
@@ -143,8 +149,6 @@ public:
 	 * @return True if the parameter value was change, false otherwise
 	 */
 	bool mutateSizeParam(Node *node, string key, bool ensureCircleSection);
-
-	void prepareParams();
 };
 
 #endif

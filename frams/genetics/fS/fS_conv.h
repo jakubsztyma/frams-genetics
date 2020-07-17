@@ -11,10 +11,10 @@
 /**
  * Genotype converter from fS to f0s.
  */
-class GenoConv_fS0 : public GenoConverter
+class GenoConv_fS0s : public GenoConverter
 {
 public:
-	GenoConv_fS0() : GenoConverter()
+	GenoConv_fS0s() : GenoConverter()
 	{
 		name = "Solid encoding";
 
@@ -26,7 +26,7 @@ public:
 	/// Return empty string if can not convert
 	SString convert(SString &i, MultiMap *map, bool using_checkpoints);
 
-	~GenoConv_fS0()
+	~GenoConv_fS0s()
 	{};
 };
 

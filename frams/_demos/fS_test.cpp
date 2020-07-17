@@ -153,7 +153,7 @@ void testAddPart()
 
 		operators.addPart(geno, availablePartShapes, false);
 
-		geno.getState();
+		geno.getState(false);
 		Node *newNode = geno.getAllNodes()[1];
 		ensure(doubleCompare(newNode->calculateVolume(), expectedVolume[i]));
 	}
@@ -175,12 +175,12 @@ void testChangePartType()
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
 		fS_Genotype geno(test_cases[i]);
-		geno.getState();
+		geno.getState(false);
 		double oldVolume = geno.startNode->calculateVolume();
 
 		operators.changePartType(geno, availablePartShapes);
 
-		geno.getState();
+		geno.getState(false);
 		ensure(doubleCompare(geno.startNode->calculateVolume(), oldVolume));
 	}
 
@@ -212,7 +212,7 @@ void testUsePartType()
 
 void testTurnWithRotation()
 {
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	fS_Genotype::TURN_WITH_ROTATION = true;
 	MultiMap map;
 	SString test_cases[]{
@@ -298,7 +298,7 @@ void testAllPartSizesValid()
 void testOneGenotype(SString test, int expectedPartCount)
 {
 	GenoOper_fS operators;
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	MultiMap map;
 	int tmp = -1;
 	SString tmpStr;
@@ -411,7 +411,7 @@ void testOneGenotype(SString test, int expectedPartCount)
 
 void validationTest()
 {
-	GenoConv_fS0 converter = GenoConv_fS0();
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	GenoOper_fS operators;
 	SString invalidGenotypes[] = {
 			"1.1:FFF",    // No part type
@@ -496,7 +496,6 @@ void testMutateSizeParam()
 			"1.1:R{x=3.3}",
 			"1.1:C{x=4.9;y=0.5}",
 			"1.1:C{x=4.9;y=0.25;z=2.0}",
-			"1.1:C{x=999.0;y=0.05;z=0.05}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -504,16 +503,18 @@ void testMutateSizeParam()
 		for(int j=0; j < int(SIZE_PARAMS.size()); j++)
 		{
 			fS_Genotype geno(test_cases[i]);
-			geno.getState();
+			geno.getState(false);
+			std::cout<<test_cases[i]	<<std::endl;
 
 			bool result = operators.mutateSizeParam(geno.startNode, SIZE_PARAMS[j], false);
 
-			geno.getState();
+			geno.getState(false);
 			double volume = geno.startNode->calculateVolume();
-			Pt3D size = geno.startNode->calculateSize();
+			Pt3D size;
+			geno.startNode->calculateSize(size);
 			ensure(result);
 			ensure(minVolume < volume && volume < maxVolume);
-			ensure(minRadius < size.x && size.x < maxRadius);
+			ensure(minRadius <= size.x && size.x <= maxRadius);
 			ensure(strcmp(geno.getGeno().c_str(), test_cases[i].c_str()) != 0);
 		}
 	}
@@ -579,8 +580,6 @@ int main(int argc, char *argv[])
 			"1.1:E{s=1.5}",
 			"1.1:SE{s=1.1;x=1.2;z=1.3}",
 			"1.1:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
-			"1.1:ETTE{st=0.5}",
-			"1.1:EttE{st=0.5}",
 			"1.3:SE",
 			"1.1:EC{ry=0.78}",
 			"1.1:EC{ry=0.78;rx=0.78}",
@@ -601,8 +600,7 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			2, 2, 1, 2, 2, 2, 2, 2, 2, 2,
-			2, 2};
+			1, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 	PreconfiguredGenetics genetics;
 
 

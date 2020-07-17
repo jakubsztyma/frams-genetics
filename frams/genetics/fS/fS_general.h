@@ -53,12 +53,7 @@ enum class SHIFT
 #define RY "ry"
 #define RZ "rz"
 //@}
-/** @name Macros and values used in collision detection */
-//@{
-#define DISJOINT 0
-#define COLLISION 1
-#define ADJACENT 2
-//@}
+
 
 #define HINGE_X 'b'
 #define HINGE_XY 'c'
@@ -86,10 +81,9 @@ const char DEFAULT_JOINT = 'a';
 const string JOINTS = "bc";
 const string ALL_JOINTS = "abc";
 const int JOINT_COUNT = JOINTS.length();
-const string MODIFIERS = "IFST";
+const string MODIFIERS = "IFS";
 const char SIZE_MODIFIER = 's';
-const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z,
-							 STIFFNESS};
+const vector<string> PARAMS {INGESTION, FRICTION, ROT_X, ROT_Y, ROT_Z, RX, RY, RZ, SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 const vector<string> SIZE_PARAMS {SIZE, SIZE_X, SIZE_Y, SIZE_Z};
 
 /** @name Default values of node parameters*/
@@ -213,7 +207,6 @@ public:
 	double fr = 1.0;      /// Friction multiplier
 	double ing = 1.0;      /// Ingestion multiplier
 	double s = 1.0;      /// Size multipliers
-	double stif = 1.0;	/// Stiffness multipliers
 
 	State(State *_state); /// Derive the state from parent
 
@@ -271,7 +264,6 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
-	std::map<string, double> defaultValues;
 	GenotypeParams genotypeParams;
 
 	vector<Node *> children;    /// Vector of all direct children
@@ -334,7 +326,7 @@ private:
 	 * Used when building model
 	 * @param _state state of the parent
 	 */
-	void getState(State *_state);
+	void getState(State *_state, bool calculateLocation);
 
 	/**
 	 * Build children internal representations from fS genotype
@@ -369,6 +361,9 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
+	static std::map<string, double> minValues;
+	static std::map<string, double> defaultValues;
+	static std::map<string, double> maxValues;
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors
@@ -388,7 +383,7 @@ public:
 	 * Calculate the effective size of the part (after applying all multipliers and params)
 	 * @return The effective size
 	 */
-	Pt3D calculateSize();
+	void calculateSize(Pt3D &scale);
 
 	/**
 	 * Calculate the effective volume of the part
@@ -406,7 +401,8 @@ public:
 	 * Extract the value of parameter or return default if parameter not exists
 	 * @return the param value
 	 */
-	double getParam(string key);
+	double getParam(const string &key);
+	double getParam(const string &key, double defaultValue);
 };
 
 /**
@@ -453,7 +449,7 @@ public:
 
 	~fS_Genotype();
 
-	void getState();
+	void getState(bool calculateLocation);
 
 	/**
 	 * Get all existing nodes
