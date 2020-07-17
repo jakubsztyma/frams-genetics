@@ -33,35 +33,59 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 	{
 		switch (*p)
 		{
-		case '0':
-			break;
-		case '!': //special symbol for current fitness (used only in printing population stats)
-			fitness += ind.fitness;
-			break;
-		case 'l':
-		case 'L':
-			fitness += criterion(*p, genotype.length());
-			break;
-		case 'p':
-		case 'P':
-			fitness += criterion(*p, model.getPartCount());
-			break;
-		case 'j':
-		case 'J':
-			fitness += criterion(*p, model.getJointCount());
-			break;
-		case 'n':
-		case 'N':
-			fitness += criterion(*p, model.getNeuroCount());
-			break;
-		case 'c':
-		case 'C':
-			fitness += criterion(*p, model.getConnectionCount());
-			break;
-		// TODO add more criteria as described in main() below
-		default:
-			printf("Unknown fitness criterion symbol: '%c'\n", *p);
-			exit(3);
+			case '0':
+				break;
+			case '!': //special symbol for current fitness (used only in printing population stats)
+				fitness += ind.fitness;
+				break;
+			case 'l':
+			case 'L':
+				fitness += criterion(*p, genotype.length());
+				break;
+			case 'p':
+			case 'P':
+				fitness += criterion(*p, model.getPartCount());
+				break;
+			case 'j':
+			case 'J':
+				fitness += criterion(*p, model.getJointCount());
+				break;
+			case 'n':
+			case 'N':
+				fitness += criterion(*p, model.getNeuroCount());
+				break;
+			case 'c':
+			case 'C':
+				fitness += criterion(*p, model.getConnectionCount());
+				break;
+			case 'b':
+			case 'B':
+				fitness += criterion(*p, model.size.x * model.size.y * model.size.z);
+				break;
+			case 's':
+			case 'S':
+				fitness += criterion(*p, ModelGeometryInfo::area(model, 1.0));
+				break;
+			case 'v':
+			case 'V':
+				fitness += criterion(*p, ModelGeometryInfo::volume(model, 1.0));
+				break;
+			case 'h':
+			case 'H':
+				fitness += criterion(*p, model.size.z);
+				break;
+			case 'w':
+			case 'W':
+				fitness += criterion(*p, model.size.x);
+				break;
+			case 'd':
+			case 'D':
+				fitness += criterion(*p, model.size.y);
+				break;
+				// TODO add more criteria as described in main() below
+			default:
+				printf("Unknown fitness criterion symbol: '%c'\n", *p);
+				exit(3);
 		}
 		p++;
 	}
@@ -81,8 +105,8 @@ void print_stats(const vector<Individual> &population, char criterion)
 	for (const Individual& ind : population)
 		criterion_values.push_back(get_fitness(ind, crit));
 	printf("%g,%g,%g", *std::min_element(criterion_values.begin(), criterion_values.end()),
-		std::accumulate(criterion_values.begin(), criterion_values.end(), 0.0) / criterion_values.size(),
-		*std::max_element(criterion_values.begin(), criterion_values.end()));
+		   std::accumulate(criterion_values.begin(), criterion_values.end(), 0.0) / criterion_values.size(),
+		   *std::max_element(criterion_values.begin(), criterion_values.end()));
 }
 
 int tournament(const vector<Individual> &population, int tournament_size)
@@ -125,6 +149,12 @@ int main(int argc, char *argv[])
 		printf("  j or J - the number of Joints.\n");
 		printf("  n or N - the number of Neurons.\n");
 		printf("  c or C - the number of neural Connections.\n");
+		printf("  b or B - the bounding box volume.\n");
+		printf("  s or S - the surface area.\n");
+		printf("  v or V - volume.\n");
+		printf("  h or H - height.\n");
+		printf("  w or W- width.\n");
+		printf("  d or D - depth.\n");
 		//TODO add b - bounding box volume (from Model), s - surface area (from geometry), v - volume (from geometry), h,w,d - three consecutive dimensions (from geometry)
 
 		printf("\nThe output consists of 7 columns separated by the TAB character.\n");
