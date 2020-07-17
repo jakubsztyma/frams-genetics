@@ -15,7 +15,7 @@ GENMANFL=frams/genetics/fL/fL_oper.o frams/genetics/fL/fL_general.o frams/geneti
 
 CONVF1=frams/genetics/f1/f1_conv.o frams/genetics/geneprops.o
 CONVF4=frams/genetics/f4/f4_conv.o frams/genetics/f4/f4_general.o frams/genetics/geneprops.o
-CONVFS=frams/genetics/fS/fS_conv.o frams/genetics/fS/fS_general.o
+CONVFS=frams/genetics/fS/fS_conv.o frams/genetics/fS/fS_general.o $(GEOMETRY_OBJS)
 CONVF9=frams/genetics/f9/f9_conv.o
 CONVFF=frams/genetics/fF/fF_conv.o frams/genetics/fF/fF_genotype.o frams/genetics/fF/fF_chamber3d.o
 CONVFN=frams/genetics/fn/fn_conv.o
@@ -38,7 +38,7 @@ SIMILARITY_OBJS=frams/model/similarity/hungarian/hungarian.o frams/model/similar
 
 NN_LAYOUT_OBJS=frams/canvas/nn_layout_model.o frams/canvas/nn_simple_layout.o frams/canvas/nn_smart_layout.o
 
-SDK_OBJS=frams/util/list.o frams/util/advlist.o frams/param/param.o frams/util/sstring.o frams/util/sstringutils.o frams/util/3d.o frams/vm/classes/3dobject.o frams/model/model.o frams/model/modelparts.o frams/neuro/neurolibrary.o frams/genetics/geno.o frams/genetics/genoconv.o frams/util/extvalue.o frams/vm/classes/collectionobj.o frams/util/hashtable.o common/log.o common/util-string.o common/util-file.o common/nonstd_stdio.o frams/util/callbacks.o frams/param/syntparam.o frams/util/multirange.o frams/util/multimap.o frams/param/paramtabobj.o common/loggers/loggers.o frams/param/paramobj.o frams/genetics/genooperators.o common/nonstd_math.o frams/util/validitychecks.o common/Convert.o frams/util/rndutil.o common/virtfile/stringfile.o $(PRINTFLOAT_OBJS) $(GEOMETRY_OBJS)
+SDK_OBJS=frams/util/list.o frams/util/advlist.o frams/param/param.o frams/util/sstring.o frams/util/sstringutils.o frams/util/3d.o frams/vm/classes/3dobject.o frams/model/model.o frams/model/modelparts.o frams/neuro/neurolibrary.o frams/genetics/geno.o frams/genetics/genoconv.o frams/util/extvalue.o frams/vm/classes/collectionobj.o frams/util/hashtable.o common/log.o common/util-string.o common/util-file.o common/nonstd_stdio.o frams/util/callbacks.o frams/param/syntparam.o frams/util/multirange.o frams/util/multimap.o frams/param/paramtabobj.o common/loggers/loggers.o frams/param/paramobj.o frams/genetics/genooperators.o common/nonstd_math.o frams/util/validitychecks.o common/Convert.o frams/util/rndutil.o common/virtfile/stringfile.o $(PRINTFLOAT_OBJS)
 
 GEOMETRY_OBJS=frams/model/geometry/meshbuilder.o frams/model/geometry/modelgeometryinfo.o frams/model/geometry/geometryutils.o
 

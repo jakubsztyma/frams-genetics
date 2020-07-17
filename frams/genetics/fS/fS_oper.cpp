@@ -349,7 +349,7 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 {
 	Node *randomNode, *selectedChild;
 	// Choose a parent with children
-	// It may be difficult to choose a eligible node, so the number of tries should be high
+	// It may be difficult to choose an eligible node, so the number of tries should be high
 	for (int i = 0; i < 10 * mutationTries; i++)
 	{
 		randomNode = geno.chooseNode();

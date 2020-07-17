@@ -47,10 +47,10 @@ class PartDistanceEstimator
 {
 
 public:
+	/// The maximal allowed difference between calculated distance and the real distance between parts
 	static constexpr double PRECISION = 0.05;
+	/// Used for deriving density for MeshBuilder
 	static constexpr double RELATIVE_DENSITY = 5.0;
-
-	static constexpr double CBRT_3 = std::cbrt(3);
 
 	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotations)
 	{
@@ -77,6 +77,7 @@ public:
 
 	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
 	{
+		static double CBRT_3 = std::cbrt(3);
 		double maxParentReachSq = pow(CBRT_3 * fS_Utils::max3(parentPart->scale), 2);
 		for (int i = 0; i < int(centers.size()); i++)
 		{

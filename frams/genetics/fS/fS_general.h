@@ -265,6 +265,9 @@ private:
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
 	GenotypeParams genotypeParams;
+	static std::map<string, double> minValues;
+	static std::map<string, double> defaultValues;
+	static std::map<string, double> maxValues;
 
 	vector<Node *> children;    /// Vector of all direct children
 	std::map<char, int> modifiers;     /// Vector of all modifiers
@@ -361,9 +364,6 @@ private:
 	void buildModel(Model &model, Node *parent);
 
 public:
-	static std::map<string, double> minValues;
-	static std::map<string, double> defaultValues;
-	static std::map<string, double> maxValues;
 	char joint = DEFAULT_JOINT;           /// Set of all joints
 	Part::Shape partType;  /// The type of the part
 	State *state = nullptr; /// The phenotypic state that inherits from ancestors

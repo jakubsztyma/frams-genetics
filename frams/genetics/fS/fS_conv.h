@@ -16,7 +16,7 @@ class GenoConv_fS0s : public GenoConverter
 public:
 	GenoConv_fS0s() : GenoConverter()
 	{
-		name = "Solid encoding";
+		name = "Solids tree-structure encoding";
 
 		in_format = "S";
 		out_format = "0s";
