@@ -88,7 +88,7 @@ public:
 	}
 
 
-	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double precision, double relativeDensity)
+	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
 	{
 		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
 
@@ -96,7 +96,7 @@ public:
 		double maxDistance = 2 * (fS_Utils::max3(parentTmpPart->scale) + fS_Utils::max3(tmpPart->scale));
 		double currentDistance = fS_Utils::avg(maxDistance, minDistance);
 		int collisionDetected = false;
-		while (maxDistance - minDistance > precision)
+		while (maxDistance - minDistance > distanceTolerance)
 		{
 			Pt3D vectorBetweenParts = directionVersor * currentDistance;
 			collisionDetected = PartDistanceEstimator::isCollision(parentTmpPart, centers, vectorBetweenParts);

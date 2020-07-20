@@ -246,10 +246,11 @@ public:
 
 struct GenotypeParams{
 	double modifierMultiplier;	// Every modifier changes the underlying value by this multiplier
-	/// The maximal allowed difference between calculated distance and the real distance between parts
-	double PRECISION;
+	/// When calculating the distance between parts, the internal result is a range of numbers
+	/// distanceTolerance is the maximal allowed size of this range
+	double distanceTolerance;
 	/// Used for deriving density for MeshBuilder
-	double RELATIVE_DENSITY;
+	double relativeDensity;
 };
 
 /**

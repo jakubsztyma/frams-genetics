@@ -658,8 +658,8 @@ fS_Genotype::fS_Genotype(const string &geno)
 	{
 		GenotypeParams genotypeParams;
 		genotypeParams.modifierMultiplier = 1.1;
-		genotypeParams.PRECISION = 0.1;
-		genotypeParams.RELATIVE_DENSITY = 10.0;
+		genotypeParams.distanceTolerance = 0.1;
+		genotypeParams.relativeDensity = 10.0;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
@@ -889,7 +889,7 @@ double Node::calculateDistanceFromParent()
 	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
-	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.PRECISION, genotypeParams.RELATIVE_DENSITY);
+	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
 
 	delete tmpPart;
 	delete parentTmpPart;
