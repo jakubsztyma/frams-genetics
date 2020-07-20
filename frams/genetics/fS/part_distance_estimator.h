@@ -90,10 +90,11 @@ public:
 
 	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
 	{
+		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
 
-		double minDistance = 0.0;
-		double maxDistance = 2 * (fS_Utils::max3(parentTmpPart->scale) + fS_Utils::max3(tmpPart->scale));
+		double minDistance = fS_Utils::min3(parentTmpPart->scale) + fS_Utils::min3(tmpPart->scale);
+		double maxDistance = CBRT_3 * (fS_Utils::max3(parentTmpPart->scale) + fS_Utils::max3(tmpPart->scale));
 		double currentDistance = fS_Utils::avg(maxDistance, minDistance);
 		int collisionDetected = false;
 		while (maxDistance - minDistance > distanceTolerance)
