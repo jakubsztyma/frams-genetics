@@ -141,14 +141,14 @@ public:
 	bool changeNeuroParam(fS_Genotype &geno);
 
 	/**
-	 * Change the value of the size parameter by given multiplier
-	 * Do not change the value if any of the size restrictions is not satisfied
+	 * Change the value of the scale parameter by given multiplier
+	 * Do not change the value if any of the scale restrictions is not satisfied
 	 * @param paramKey
 	 * @param multiplier
 	 * @param ensureCircleSection
 	 * @return True if the parameter value was change, false otherwise
 	 */
-	bool mutateSizeParam(Node *node, string key, bool ensureCircleSection);
+	bool mutateScaleParam(Node *node, string key, bool ensureCircleSection);
 };
 
 #endif

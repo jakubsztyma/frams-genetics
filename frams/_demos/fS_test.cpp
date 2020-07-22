@@ -196,17 +196,17 @@ void testUsePartType()
 	cylinder.push_back(Part::Shape::SHAPE_CYLINDER);
 
 	fS_Genotype geno("1.1:E");
-	ensure(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	ensure(geno.getAllNodes()[0]->partShape == Part::Shape::SHAPE_ELLIPSOID);
 	operators.changePartType(geno, cylinder);
-	ensure(geno.getAllNodes()[0]->partType == Part::Shape::SHAPE_CYLINDER);
+	ensure(geno.getAllNodes()[0]->partShape == Part::Shape::SHAPE_CYLINDER);
 	operators.addPart(geno, cylinder);
-	ensure(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CYLINDER);
+	ensure(geno.getAllNodes()[1]->partShape == Part::Shape::SHAPE_CYLINDER);
 	operators.removePart(geno);
 	operators.addPart(geno, cuboid);
-	ensure(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_CUBOID);
+	ensure(geno.getAllNodes()[1]->partShape == Part::Shape::SHAPE_CUBOID);
 	operators.removePart(geno);
 	operators.addPart(geno, ellipsoid);
-	ensure(geno.getAllNodes()[1]->partType == Part::Shape::SHAPE_ELLIPSOID);
+	ensure(geno.getAllNodes()[1]->partShape == Part::Shape::SHAPE_ELLIPSOID);
 
 }
 
@@ -267,7 +267,7 @@ void testCrossoverSimilarTrees()
 	}
 }
 
-void testAllPartSizesValid()
+void testAllPartScalesValid()
 {
 	string test_cases[] = {
 			"1.1:C{x=2000.0}",    // Too big dimension
@@ -500,18 +500,18 @@ void testMutateSizeParam()
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
 	{
-		for(int j=0; j < int(SIZE_PARAMS.size()); j++)
+		for(int j=0; j < int(SCALE_PARAMS.size()); j++)
 		{
 			fS_Genotype geno(test_cases[i]);
 			geno.getState(false);
 			std::cout<<test_cases[i]	<<std::endl;
 
-			bool result = operators.mutateSizeParam(geno.startNode, SIZE_PARAMS[j], false);
+			bool result = operators.mutateScaleParam(geno.startNode, SCALE_PARAMS[j], false);
 
 			geno.getState(false);
 			double volume = geno.startNode->calculateVolume();
 			Pt3D size;
-			geno.startNode->calculateSize(size);
+			geno.startNode->calculateScale(size);
 			ensure(result);
 			ensure(minVolume < volume && volume < maxVolume);
 			ensure(minRadius <= size.x && size.x <= maxRadius);
@@ -609,7 +609,7 @@ int main(int argc, char *argv[])
 		testOneGenotype(test_cases[i], expectedPartCount[i]);
 	}
 
-	testAllPartSizesValid();
+	testAllPartScalesValid();
 	testRearrangeInputs();
 	validationTest();
 	testCrossoverSimilarTrees();

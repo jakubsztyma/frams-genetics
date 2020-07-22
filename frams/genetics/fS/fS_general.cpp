@@ -32,10 +32,10 @@ void Node::prepareParams()
 				{RX,        -M_PI},
 				{RY,        -M_PI},
 				{RZ,        -M_PI},
-				{SIZE,      0.01},
-				{SIZE_X,    Model::getMinPart().scale.x},
-				{SIZE_Y,    Model::getMinPart().scale.y},
-				{SIZE_Z,    Model::getMinPart().scale.z}
+				{SCALE,      0.01},
+				{SCALE_X,    Model::getMinPart().scale.x},
+				{SCALE_Y,    Model::getMinPart().scale.y},
+				{SCALE_Z,    Model::getMinPart().scale.z}
 		};
 	}
 
@@ -50,10 +50,10 @@ void Node::prepareParams()
 				{RX,        M_PI},
 				{RY,        M_PI},
 				{RZ,        M_PI},
-				{SIZE,      100.0},
-				{SIZE_X,    Model::getMaxPart().scale.x},
-				{SIZE_Y,    Model::getMaxPart().scale.y},
-				{SIZE_Z,    Model::getMaxPart().scale.z}
+				{SCALE,      100.0},
+				{SCALE_X,    Model::getMaxPart().scale.x},
+				{SCALE_Y,    Model::getMaxPart().scale.y},
+				{SCALE_Z,    Model::getMaxPart().scale.z}
 		};
 	}
 	if(defaultValues.empty())
@@ -67,10 +67,10 @@ void Node::prepareParams()
 				{RX,        0.0},
 				{RY,        0.0},
 				{RZ,        0.0},
-				{SIZE,      1.0},
-				{SIZE_X,    Model::getDefPart().scale.x},
-				{SIZE_Y,    Model::getDefPart().scale.y},
-				{SIZE_Z,    Model::getDefPart().scale.z}
+				{SCALE,      1.0},
+				{SCALE_X,    Model::getDefPart().scale.x},
+				{SCALE_Y,    Model::getDefPart().scale.y},
+				{SCALE_Z,    Model::getDefPart().scale.z}
 		};
 	}
 }
@@ -217,11 +217,11 @@ int Node::getPartPosition(Substring &restOfGenotype)
 
 void Node::extractModifiers(Substring &restOfGenotype)
 {
-	int partTypePosition = getPartPosition(restOfGenotype);
-	if (partTypePosition == -1)
+	int partShapePosition = getPartPosition(restOfGenotype);
+	if (partShapePosition == -1)
 		throw fS_Exception("Part type missing", restOfGenotype.start);
 
-	for (int i = 0; i < partTypePosition; i++)
+	for (int i = 0; i < partShapePosition; i++)
 	{
 		// Extract modifiers and joint
 		char mType = restOfGenotype.at(i);
@@ -232,7 +232,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 		else
 			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
-	restOfGenotype.startFrom(partTypePosition);
+	restOfGenotype.startFrom(partShapePosition);
 }
 
 void Node::extractPartType(Substring &restOfGenotype)
@@ -241,7 +241,7 @@ void Node::extractPartType(Substring &restOfGenotype)
 	if (itr == GENE_TO_SHAPE.end())
 		throw fS_Exception("Invalid part type", restOfGenotype.start);
 
-	partType = itr->second;
+	partShape = itr->second;
 	restOfGenotype.startFrom(1);
 }
 
@@ -326,7 +326,7 @@ void Node::extractParams(Substring &restOfGenotype)
 		const char *val = buffer + valueStartIndex;
 		size_t len = length - valueStartIndex;
 		double value = fS_stod(val, restOfGenotype.start + start + valueStartIndex, &len);
-		if((key==SIZE_X || key==SIZE_Y || key==SIZE_Z) && value <= 0.0)
+		if((key==SCALE_X || key==SCALE_Y || key==SCALE_Z) && value <= 0.0)
 			throw fS_Exception("Invalid value of radius parameter", restOfGenotype.start + start + valueStartIndex);
 
 		params[key] = value;
@@ -381,7 +381,7 @@ void Node::getState(State *_state, bool calculateLocation)
 		// Rotate
 		state->rotate(getVectorRotation());
 
-		double distance = getDistance();
+		double distance = calculateDistanceFromParent();
 		state->addVector(distance);
 	}
 	for (int i = 0; i < int(children.size()); i++)
@@ -432,21 +432,21 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 	return children;
 }
 
-void Node::calculateSize(Pt3D &scale)
+void Node::calculateScale(Pt3D &scale)
 {
-	double sizeMultiplier = getParam(SIZE) * state->s;
-	scale.x = getParam(SIZE_X) * sizeMultiplier;
-	scale.y = getParam(SIZE_Y) * sizeMultiplier;
-	scale.z = getParam(SIZE_Z) * sizeMultiplier;
+	double scaleMultiplier = getParam(SCALE) * state->s;
+	scale.x = getParam(SCALE_X) * scaleMultiplier;
+	scale.y = getParam(SCALE_Y) * scaleMultiplier;
+	scale.z = getParam(SCALE_Z) * scaleMultiplier;
 }
 
 double Node::calculateVolume()
 {
 	double result;
-	Pt3D size;
-	calculateSize(size);
-	double radiiProduct = size.x * size.y * size.z;
-	switch (partType)
+	Pt3D scale;
+	calculateScale(scale);
+	double radiiProduct = scale.x * scale.y * scale.z;
+	switch (partShape)
 	{
 		case Part::Shape::SHAPE_CUBOID:
 			result = 8.0 * radiiProduct;
@@ -463,33 +463,28 @@ double Node::calculateVolume()
 	return result;
 }
 
-bool Node::isPartSizeValid()
+bool Node::isPartScaleValid()
 {
-	Pt3D size;
-	calculateSize(size);
+	Pt3D scale;
+	calculateScale(scale);
 	double volume = calculateVolume();
 	Part_MinMaxDef minP = Model::getMinPart();
 	Part_MinMaxDef maxP = Model::getMaxPart();
 
 	if (volume > maxP.volume || minP.volume > volume)
 		return false;
-	if (size.x < minP.scale.x || size.y < minP.scale.y || size.z < minP.scale.z)
+	if (scale.x < minP.scale.x || scale.y < minP.scale.y || scale.z < minP.scale.z)
 		return false;
-	if (size.x > maxP.scale.x || size.y > maxP.scale.y || size.z > maxP.scale.z)
+	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
 		return false;
 
-	if (partType == Part::Shape::SHAPE_ELLIPSOID && fS_Utils::max3(size) != fS_Utils::min3(size))
+	if (partShape == Part::Shape::SHAPE_ELLIPSOID && fS_Utils::max3(scale) != fS_Utils::min3(scale))
 		// When not all radii have different values
 		return false;
-	if (partType == Part::Shape::SHAPE_CYLINDER && size.y != size.z)
+	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)
 		// If base radii have different values
 		return false;
 	return true;
-}
-
-bool Node::hasPartSizeParam()
-{
-	return params.count(SIZE_X) > 0 || params.count(SIZE_Y) > 0 || params.count(SIZE_Z) > 0;
 }
 
 Pt3D Node::getVectorRotation()
@@ -536,12 +531,12 @@ void Node::buildModel(Model &model, Node *parent)
 
 void Node::createPart()
 {
-	part = new Part(partType);
+	part = new Part(partShape);
 	part->p = Pt3D(state->location);
 
 	part->friction = getParam(FRICTION) * state->fr;
 	part->ingest = getParam(INGESTION) * state->ing;
-	calculateSize(part->scale);
+	calculateScale(part->scale);
 	part->setRot(getRotation());
 }
 
@@ -580,7 +575,7 @@ void Node::getGeno(SString &result)
 		}
 		result += std::string(count, mod).c_str();
 	}
-	result += SHAPE_TO_GENE.at(partType);
+	result += SHAPE_TO_GENE.at(partShape);
 
 	if (!neurons.empty())
 	{
@@ -663,6 +658,8 @@ fS_Genotype::fS_Genotype(const string &geno)
 	{
 		GenotypeParams genotypeParams;
 		genotypeParams.modifierMultiplier = 1.1;
+		genotypeParams.distanceTolerance = 0.1;
+		genotypeParams.relativeDensity = 10.0;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
@@ -849,7 +846,7 @@ int fS_Genotype::checkValidityOfPartSizes()
 	vector<Node*> nodes = getAllNodes();
 	for (int i = 0; i < int(nodes.size()); i++)
 	{
-		if (!nodes[i]->isPartSizeValid())
+		if (!nodes[i]->isPartScaleValid())
 		{
 			return 1 + nodes[i]->partDescription->start;
 		}
@@ -883,3 +880,18 @@ void fS_Genotype::rearrangeNeuronConnections(fS_Neuron *changedNeuron, SHIFT shi
 	shiftNeuroConnections(neurons, changedNeuronIndex, changedNeuronIndex, shift);
 }
 
+double Node::calculateDistanceFromParent()
+{
+	Pt3D scale;
+	calculateScale(scale);
+	Pt3D parentScale;
+	parent->calculateScale(parentScale);    // Here we are sure that parent is not nullptr
+	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
+	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
+
+	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+
+	delete tmpPart;
+	delete parentTmpPart;
+	return result;
+}

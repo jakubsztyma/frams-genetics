@@ -50,7 +50,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 		int errorPosition = genotype.checkValidityOfPartSizes();
 		if (errorPosition != 0)
 		{
-			logPrintf("GenoOper_fS", "checkValidity", LOG_WARN, "Invalid part size");
+			logPrintf("GenoOper_fS", "checkValidity", LOG_WARN, "Invalid part scale");
 			return errorPosition;
 		}
 	}
@@ -296,9 +296,9 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 {
 	geno.getState(false);
 	Node *node = geno.chooseNode();
-	char partType = SHAPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
+	char partShape = SHAPE_TO_GENE.at(availablePartShapes[rndUint(availablePartShapes.size())]);
 
-	Substring substring(&partType, 0, 1);
+	Substring substring(&partShape, 0, 1);
 	Node *newNode = new Node(substring, node, node->genotypeParams);
 	// Add random rotation
 	string rotationParams[] {ROT_X, ROT_Y, ROT_Z};
@@ -321,26 +321,26 @@ bool GenoOper_fS::addPart(fS_Genotype &geno, const vector <Part::Shape> &availab
 		string selectedParam = rParams[rndUint(3)];
 		newNode->params[selectedParam] = RndGen.Uni(-M_PI / 2, M_PI / 2);
 	}
-	// Assign part size to default value
-	double volumeMultiplier = pow(node->getParam(SIZE) * node->state->s, 3);
+	// Assign part scale to default value
+	double volumeMultiplier = pow(node->getParam(SCALE) * node->state->s, 3);
 	double minVolume = Model::getMinPart().volume;
 	double defVolume = Model::getDefPart().volume * volumeMultiplier;    // Default value after applying modifiers
 	double maxVolume = Model::getMaxPart().volume;
 	double volume = std::min(maxVolume, std::max(minVolume, defVolume));
 	double relativeVolume = volume / volumeMultiplier;    // Volume without applying modifiers
 
-	double newRadius = std::cbrt(relativeVolume / volumeMultipliers.at(newNode->partType));
-	newNode->params[SIZE_X] = newRadius;
-	newNode->params[SIZE_Y] = newRadius;
-	newNode->params[SIZE_Z] = newRadius;
+	double newRadius = std::cbrt(relativeVolume / volumeMultipliers.at(newNode->partShape));
+	newNode->params[SCALE_X] = newRadius;
+	newNode->params[SCALE_Y] = newRadius;
+	newNode->params[SCALE_Z] = newRadius;
 	node->children.push_back(newNode);
 
 	if (mutateSize)
 	{
 		geno.getState(false);
-		mutateSizeParam(newNode, SIZE_X, true);
-		mutateSizeParam(newNode, SIZE_Y, true);
-		mutateSizeParam(newNode, SIZE_Z, true);
+		mutateScaleParam(newNode, SCALE_X, true);
+		mutateScaleParam(newNode, SCALE_Y, true);
+		mutateScaleParam(newNode, SCALE_Z, true);
 	}
 	return true;
 }
@@ -349,7 +349,7 @@ bool GenoOper_fS::removePart(fS_Genotype &geno)
 {
 	Node *randomNode, *selectedChild;
 	// Choose a parent with children
-	// It may be difficult to choose a eligible node, so the number of tries should be high
+	// It may be difficult to choose an eligible node, so the number of tries should be high
 	for (int i = 0; i < 10 * mutationTries; i++)
 	{
 		randomNode = geno.chooseNode();
@@ -379,42 +379,42 @@ bool GenoOper_fS::changePartType(fS_Genotype &geno, const vector <Part::Shape> &
 	{
 		Node *randomNode = geno.chooseNode();
 		int index = rndUint(availShapesLen);
-		if (availablePartShapes[index] == randomNode->partType)
+		if (availablePartShapes[index] == randomNode->partShape)
 			index = (index + 1 + rndUint(availShapesLen - 1)) % availShapesLen;
 		Part::Shape newType = availablePartShapes[index];
 
 #ifdef _DEBUG
-		if(newType == randomNode->partType)
+		if(newType == randomNode->partShape)
 			throw fS_Exception("Internal error: invalid part type chosen in mutation.", 1);
 #endif
 
 		geno.getState(false);
-		double sizeMultiplier = randomNode->getParam(SIZE) * randomNode->state->s;
-		double relativeVolume = randomNode->calculateVolume() / pow(sizeMultiplier, 3.0);
+		double scaleMultiplier = randomNode->getParam(SCALE) * randomNode->state->s;
+		double relativeVolume = randomNode->calculateVolume() / pow(scaleMultiplier, 3.0);
 
-		if (!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
+		if (!ensureCircleSection || newType == Part::Shape::SHAPE_CUBOID || (randomNode->partShape == Part::Shape::SHAPE_ELLIPSOID && newType == Part::Shape::SHAPE_CYLINDER))
 		{
-			double radiusQuotient = std::cbrt(volumeMultipliers.at(randomNode->partType) / volumeMultipliers.at(newType));
-			randomNode->params[SIZE_X] = randomNode->getParam(SIZE_X) * radiusQuotient;
-			randomNode->params[SIZE_Y] = randomNode->getParam(SIZE_Y) * radiusQuotient;
-			randomNode->params[SIZE_Z] = randomNode->getParam(SIZE_Z) * radiusQuotient;
-		} else if (randomNode->partType == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
+			double radiusQuotient = std::cbrt(volumeMultipliers.at(randomNode->partShape) / volumeMultipliers.at(newType));
+			randomNode->params[SCALE_X] = randomNode->getParam(SCALE_X) * radiusQuotient;
+			randomNode->params[SCALE_Y] = randomNode->getParam(SCALE_Y) * radiusQuotient;
+			randomNode->params[SCALE_Z] = randomNode->getParam(SCALE_Z) * radiusQuotient;
+		} else if (randomNode->partShape == Part::Shape::SHAPE_CUBOID && newType == Part::Shape::SHAPE_CYLINDER)
 		{
-			double newRadius = 0.5 * (randomNode->getParam(SIZE_X) + randomNode->getParam(SIZE_Y));
-			randomNode->params[SIZE_X] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
-			randomNode->params[SIZE_Y] = newRadius;
-			randomNode->params[SIZE_Z] = newRadius;
+			double newRadius = 0.5 * (randomNode->getParam(SCALE_X) + randomNode->getParam(SCALE_Y));
+			randomNode->params[SCALE_X] = 0.5 * relativeVolume / (M_PI * newRadius * newRadius);
+			randomNode->params[SCALE_Y] = newRadius;
+			randomNode->params[SCALE_Z] = newRadius;
 		} else if (newType == Part::Shape::SHAPE_ELLIPSOID)
 		{
 			double newRelativeRadius = cbrt(relativeVolume / volumeMultipliers.at(newType));
-			randomNode->params[SIZE_X] = newRelativeRadius;
-			randomNode->params[SIZE_Y] = newRelativeRadius;
-			randomNode->params[SIZE_Z] = newRelativeRadius;
+			randomNode->params[SCALE_X] = newRelativeRadius;
+			randomNode->params[SCALE_Y] = newRelativeRadius;
+			randomNode->params[SCALE_Z] = newRelativeRadius;
 		} else
 		{
 			throw fS_Exception("Invalid part type", 1);
 		}
-		randomNode->partType = newType;
+		randomNode->partShape = newType;
 		return true;
 	}
 	return false;
@@ -445,13 +445,13 @@ bool GenoOper_fS::addParam(fS_Genotype &geno)
 	if (randomNode->params.count(key) > 0)
 		return false;
 	// Do not allow invalid changes in part size
-	bool isRadiusOfBase = key == SIZE_Y || key == SIZE_Z;
-	bool isRadius = isRadiusOfBase || key == SIZE_X;
+	bool isRadiusOfBase = key == SCALE_Y || key == SCALE_Z;
+	bool isRadius = isRadiusOfBase || key == SCALE_X;
 	if (ensureCircleSection && isRadius)
 	{
-		if (randomNode->partType == Part::Shape::SHAPE_ELLIPSOID)
+		if (randomNode->partShape == Part::Shape::SHAPE_ELLIPSOID)
 			return false;
-		if (randomNode->partType == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
+		if (randomNode->partShape == Part::Shape::SHAPE_CYLINDER && isRadiusOfBase)
 			return false;
 	}
 	// Add modified default value for param
@@ -489,13 +489,13 @@ bool GenoOper_fS::removeParam(fS_Genotype &geno)
 
 bool GenoOper_fS::mutateParamValue(Node *node, string key)
 {
-	// Do not allow invalid changes in part size
-	if (std::find(SIZE_PARAMS.begin(), SIZE_PARAMS.end(), key) == SIZE_PARAMS.end())
+	// Do not allow invalid changes in part scale
+	if (std::find(SCALE_PARAMS.begin(), SCALE_PARAMS.end(), key) == SCALE_PARAMS.end())
 	{
 		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), Node::minValues.at(key), Node::maxValues.at(key), true);
 		return true;
 	} else
-		return mutateSizeParam(node, key, ensureCircleSection);
+		return mutateScaleParam(node, key, ensureCircleSection);
 }
 
 bool GenoOper_fS::changeParam(fS_Genotype &geno)
@@ -523,7 +523,7 @@ bool GenoOper_fS::changeModifier(fS_Genotype &geno)
 
 	randomNode->modifiers[randomModifier] += rndUint(2) == 0 ? 1 : -1;
 
-	bool isSizeMod = tolower(randomModifier) == SIZE_MODIFIER;
+	bool isSizeMod = tolower(randomModifier) == SCALE_MODIFIER;
 	if (isSizeMod && geno.checkValidityOfPartSizes() != 0)
 	{
 		randomNode->modifiers[randomModifier] = oldValue;
@@ -677,12 +677,12 @@ bool GenoOper_fS::changeNeuroParam(fS_Genotype &geno)
 	return GenoOperators::mutateRandomNeuroClassProperty(neu);
 }
 
-bool GenoOper_fS::mutateSizeParam(Node *node, string key, bool ensureCircleSection)
+bool GenoOper_fS::mutateScaleParam(Node *node, string key, bool ensureCircleSection)
 {
 	double oldValue = node->getParam(key);
 	double volume = node->calculateVolume();
 	double valueAtMinVolume, valueAtMaxVolume;
-	if(key == SIZE)
+	if(key == SCALE)
 	{
 		valueAtMinVolume = oldValue * std::cbrt(Model::getMinPart().volume / volume);
 		valueAtMaxVolume = oldValue * std::cbrt(Model::getMaxPart().volume / volume);
@@ -698,7 +698,7 @@ bool GenoOper_fS::mutateSizeParam(Node *node, string key, bool ensureCircleSecti
 
 	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, true);
 
-	if (!ensureCircleSection || node->isPartSizeValid())
+	if (!ensureCircleSection || node->isPartScaleValid())
 		return true;
 	else
 	{
