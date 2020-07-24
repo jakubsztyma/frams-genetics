@@ -340,7 +340,11 @@ double Node::getParam(const string &key)
 	auto item = params.find(key);
 	if (item != params.end())
 		return item->second;
-	return defaultValues.at(key);
+
+	auto defaultItem = defaultValues.find(key);
+	if(defaultItem == defaultValues.end())
+		throw fS_Exception("Default value missing", 0);
+	return defaultItem->second;
 }
 
 double Node::getParam(const string &key, double defaultValue)
@@ -685,6 +689,11 @@ fS_Genotype::fS_Genotype(const string &geno)
 		delete startNode;
 		throw e;
 	}
+	catch(...)
+	{
+		delete startNode;
+		throw fS_Exception("Unknown exception in fS", 0);
+	}
 }
 
 fS_Genotype::~fS_Genotype()
@@ -897,7 +906,15 @@ double Node::calculateDistanceFromParent()
 	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
-	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+	double result;
+	try
+	{
+		result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+	}
+	catch (...)
+	{
+		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
+	}
 
 	delete tmpPart;
 	delete parentTmpPart;
