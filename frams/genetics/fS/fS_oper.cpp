@@ -492,7 +492,10 @@ bool GenoOper_fS::mutateParamValue(Node *node, string key)
 	// Do not allow invalid changes in part scale
 	if (std::find(SCALE_PARAMS.begin(), SCALE_PARAMS.end(), key) == SCALE_PARAMS.end())
 	{
-		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), Node::minValues.at(key), Node::maxValues.at(key), true);
+		double max = Node::maxValues.at(key);
+		double min = Node::minValues.at(key);
+		double stddev = (max - min) * node->genotypeParams.paramMutationStrength;
+		node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, stddev, true);
 		return true;
 	} else
 		return mutateScaleParam(node, key, ensureCircleSection);
@@ -695,8 +698,9 @@ bool GenoOper_fS::mutateScaleParam(Node *node, string key, bool ensureCircleSect
 
 	double min = std::max(Node::minValues.at(key), valueAtMinVolume);
 	double max = std::min(Node::maxValues.at(key), valueAtMaxVolume);
+	double stdev = (max - min) * node->genotypeParams.paramMutationStrength;
 
-	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, true);
+	node->params[key] = GenoOperators::mutateCreep('f', node->getParam(key), min, max, stdev, true);
 
 	if (!ensureCircleSection || node->isPartScaleValid())
 		return true;

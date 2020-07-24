@@ -253,6 +253,8 @@ struct GenotypeParams{
 	double relativeDensity;
 	///
 	bool turnWithRotation;
+	///
+	double paramMutationStrength;
 };
 
 /**

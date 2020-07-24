@@ -499,6 +499,43 @@ void testMutateSizeParam()
 	}
 }
 
+void testGenotypeParams()
+{
+	int COUNT = 5;
+	float mm[COUNT] = {
+			1.0,
+			1.1,
+			1.5,
+			1.9,
+			5.0
+	};
+	bool twr[COUNT] = {
+			true,
+			true,
+			false,
+			false,
+			true
+	};
+	float pms[COUNT] = {
+			1.0,
+			0.5,
+			2.0,
+			10.0,
+			0.1
+	};
+	for (int i = 0; i < COUNT; i++)
+	{
+		char genotypeStr[20];
+		sprintf(genotypeStr, "%f,%d,%f:C", mm[i], twr[i], pms[i]);
+		fS_Genotype geno(genotypeStr);
+
+		GenotypeParams gp = geno.startNode->genotypeParams;
+		assert(fabs(gp.modifierMultiplier - mm[i]) < 1e-6);
+		assert(gp.turnWithRotation == twr[i]);
+		assert(fabs(gp.paramMutationStrength - pms[i]) < 1e-6);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	SString test_cases[] = {
@@ -572,6 +609,9 @@ int main(int argc, char *argv[])
 			"1.1,1:EE{ty=1.56}",
 			"1.1,1:EE{ty=0.78;ry=0.78}",
 			"1.1,1:EE{tx=30;ty=1.56;tz=45}",
+			"1.1,1,1:EE",
+			"1.1,1,1.5:EE",
+			"1.1,1,0.6:EE",
 	};
 
 
@@ -583,7 +623,7 @@ int main(int argc, char *argv[])
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
 			1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2, 2};
+			2, 2, 2, 2, 2, 2};
 	PreconfiguredGenetics genetics;
 
 
@@ -602,6 +642,7 @@ int main(int argc, char *argv[])
 	testChangePartType();
 	testUsePartType();
 	testMutateSizeParam();
+	testGenotypeParams();
 
 	cout << "FINISHED";
 	return 0;

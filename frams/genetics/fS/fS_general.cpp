@@ -671,6 +671,7 @@ fS_Genotype::fS_Genotype(const string &geno)
 		genotypeParams.distanceTolerance = 0.1;
 		genotypeParams.relativeDensity = 10.0;
 		genotypeParams.turnWithRotation = false;
+		genotypeParams.paramMutationStrength = 0.4;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
@@ -684,6 +685,11 @@ fS_Genotype::fS_Genotype(const string &geno)
 		if(paramStrings.size() >= 2)
 		{
 			genotypeParams.turnWithRotation = bool(atoi(paramStrings[1].c_str()));
+		}
+		if(paramStrings.size() >= 3)
+		{
+			size_t len2 = paramStrings[2].length();
+			genotypeParams.paramMutationStrength = fS_stod(paramStrings[2].c_str(), 0, &len2);
 		}
 
 		int genoStart = modeSeparatorIndex + 1;
