@@ -51,19 +51,27 @@ public:
 	}
 
 
-	static double calculateDistance(Part *tmpPart1, Part *tmpPart2, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
+	static double calculateDistance(Part tmpPart1, Part tmpPart2, double distanceTolerance, double relativeDensity)
 	{
-		static double CBRT_3 = std::cbrt(3);
-		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(tmpPart1, relativeDensity);
+		/// tmpPart1 and tmpPart2 are copied for purpose and should not be passed as reference
+		/// This function can change some of the properties of those parts
+		Pt3D directionVersor = tmpPart1.p - tmpPart2.p;
+		directionVersor.normalize();
 
-		double minDistance = tmpPart2->scale.min3() + tmpPart1->scale.min3();
-		double maxDistance = CBRT_3 * (tmpPart2->scale.max3() + tmpPart1->scale.max3());
+		tmpPart1.p = Pt3D(0);
+		tmpPart2.p = Pt3D(0);
+
+		static double CBRT_3 = std::cbrt(3);
+		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(&tmpPart1, relativeDensity);
+
+		double minDistance = tmpPart2.scale.min3() + tmpPart1.scale.min3();
+		double maxDistance = CBRT_3 * (tmpPart2.scale.max3() + tmpPart1.scale.max3());
 		double currentDistance = 0.5 * (maxDistance + minDistance);
 		int collisionDetected = false;
 		while (maxDistance - minDistance > distanceTolerance)
 		{
 			Pt3D vectorBetweenParts = directionVersor * currentDistance;
-			collisionDetected = PartDistanceEstimator::isCollision(tmpPart2, points, vectorBetweenParts);
+			collisionDetected = PartDistanceEstimator::isCollision(&tmpPart2, points, vectorBetweenParts);
 
 			if (collisionDetected)
 			{

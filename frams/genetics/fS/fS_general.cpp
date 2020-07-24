@@ -927,7 +927,8 @@ double Node::calculateDistanceFromParent()
 	double result;
 	try
 	{
-		result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+		tmpPart->p = state->v;
+		result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
 	}
 	catch (...)
 	{
