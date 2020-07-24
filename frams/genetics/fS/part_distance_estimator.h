@@ -70,6 +70,7 @@ public:
 		{
 			centers.push_back(point);
 		}
+		printf("findSurfacePoints2 %c\n", part->shape);
 		return centers;
 	}
 
@@ -84,8 +85,12 @@ public:
 			Pt3D shifted = centers[i] + vectorBetweenParts;
 			double distanceToCenterSq = shifted.x * shifted.x + shifted.y * shifted.y + shifted.z * shifted.z;
 			if (distanceToCenterSq <= maxParentReachSq && GeometryUtils::isPointInsidePart(shifted, parentPart))
+			{
+				printf("isCollision2 %c\n", parentPart->shape);
 				return true;
+			}
 		}
+		printf("isCollision2 %c\n", parentPart->shape);
 		return false;
 	}
 
@@ -115,7 +120,7 @@ public:
 				currentDistance = fS_Utils::avg(currentDistance, minDistance);
 			}
 		}
-		printf("calculateDistance\n");
+		printf("calculateDistance2\n");
 		return currentDistance;
 	}
 };

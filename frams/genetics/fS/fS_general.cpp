@@ -941,6 +941,6 @@ double Node::calculateDistanceFromParent()
 
 	delete tmpPart;
 	delete parentTmpPart;
-	printf("Node::calculateDistanceFromParent");
+	printf("Node::calculateDistanceFromParent2");
 	return result;
 }
