@@ -44,6 +44,7 @@ GenoOper_fS::GenoOper_fS()
 
 int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 {
+	printf("GenoOper_fS::checkValidity %s\n", geno);
 	try
 	{
 		fS_Genotype genotype(geno);

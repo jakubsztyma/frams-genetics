@@ -173,15 +173,15 @@ Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 
 	try
 	{
-		printf("1 Chars left: %d", restOfGeno.len);
+		printf("1 Chars left: %d\n", restOfGeno.len);
 		extractModifiers(restOfGeno);
-		printf("2 Chars left: %d", restOfGeno.len);
+		printf("2 Chars left: %d\n", restOfGeno.len);
 		extractPartType(restOfGeno);
-		printf("3 Chars left: %d", restOfGeno.len);
+		printf("3 Chars left: %d\n", restOfGeno.len);
 		extractNeurons(restOfGeno);
-		printf("4 Chars left: %d", restOfGeno.len);
+		printf("4 Chars left: %d\n", restOfGeno.len);
 		extractParams(restOfGeno);
-		printf("5 Chars left: %d", restOfGeno.len);
+		printf("5 Chars left: %d\n", restOfGeno.len);
 
 		partDescription->shortenBy(restOfGeno.len);
 		if (restOfGeno.len > 0)
@@ -189,6 +189,7 @@ Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 	}
 	catch(fS_Exception &e)
 	{
+		printf("Node::Node catch exception\n");
 		cleanUp();
 		throw e;
 	}
@@ -202,6 +203,7 @@ Node::~Node()
 
 void Node::cleanUp()
 {
+	printf("Node::cleanUp");
 	delete partDescription;
 	if (state != nullptr)
 		delete state;
@@ -209,6 +211,8 @@ void Node::cleanUp()
 		delete neurons[i];
 	for (int i = 0; i < int(children.size()); i++)
 		delete children[i];
+
+	printf("Node::cleanUp");
 }
 
 int Node::getPartPosition(Substring &restOfGenotype)
@@ -228,7 +232,10 @@ void Node::extractModifiers(Substring &restOfGenotype)
 	int partShapePosition = getPartPosition(restOfGenotype);
 	printf("partShapePosition: %d", partShapePosition);
 	if (partShapePosition == -1)
+	{
+		printf("Part type missing\n");
 		throw fS_Exception("Part type missing", restOfGenotype.start);
+	}
 
 	for (int i = 0; i < partShapePosition; i++)
 	{
@@ -688,6 +695,7 @@ int Node::getNodeCount()
 
 fS_Genotype::fS_Genotype(const string &geno)
 {
+	printf("fS_Genotype::fS_Genotype\n");
 	try
 	{
 		GenotypeParams genotypeParams;
@@ -712,11 +720,13 @@ fS_Genotype::fS_Genotype(const string &geno)
 
 		int genoStart = modeSeparatorIndex + 1;
 		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
+		printf("Substring: %s %d %d %d", geno.c_str(), genoStart, geno.length(), geno.length() - genoStart);
 		startNode = new Node(substring, nullptr, genotypeParams);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
 	{
+		printf("fS_Genotype::fS_Genotype catch exception\n");
 		delete startNode;
 		throw e;
 	}
