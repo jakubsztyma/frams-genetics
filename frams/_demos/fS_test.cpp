@@ -210,27 +210,6 @@ void testUsePartType()
 
 }
 
-void testTurnWithRotation()
-{
-	GenoConv_fS0s converter = GenoConv_fS0s();
-	fS_Genotype::TURN_WITH_ROTATION = true;
-	MultiMap map;
-	SString test_cases[]{
-			"1.1:EE{ty=1.56}",
-			"1.1:EE{ty=0.78;ry=0.78}",
-			"1.1:EE{tx=30;ty=1.56;tz=45}",
-	};
-
-	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
-	{
-		SString genotype_str = test_cases[i];
-		/// Test translate
-		cout << converter.convert(genotype_str, &map, false).c_str() << endl;
-	}
-	fS_Genotype::TURN_WITH_ROTATION = false;
-
-}
-
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases will almost always work when crossoverTries is big enough
@@ -590,6 +569,9 @@ int main(int argc, char *argv[])
 			"1.1:C{rx=0.78}R{tz=1.57;rx=0.78}",
 			"1.1:C{rx=0.78}E{tz=1.57;rx=0.78}",
 			"1.1:R{rx=0.78}E{tz=1.57;rx=0.78}",
+			"1.1,1:EE{ty=1.56}",
+			"1.1,1:EE{ty=0.78;ry=0.78}",
+			"1.1,1:EE{tx=30;ty=1.56;tz=45}",
 	};
 
 
@@ -600,7 +582,8 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			1, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+			1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			2, 2, 2};
 	PreconfiguredGenetics genetics;
 
 
@@ -618,7 +601,6 @@ int main(int argc, char *argv[])
 	testAddPart();
 	testChangePartType();
 	testUsePartType();
-	testTurnWithRotation();
 	testMutateSizeParam();
 
 	cout << "FINISHED";

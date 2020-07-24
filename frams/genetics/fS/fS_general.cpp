@@ -14,7 +14,6 @@
 #include "part_distance_estimator.h"
 
 int fS_Genotype::precision = 4;
-bool fS_Genotype::TURN_WITH_ROTATION = false;
 std::map<string, double> Node::minValues;
 std::map<string, double> Node::defaultValues;
 std::map<string, double> Node::maxValues;
@@ -495,7 +494,7 @@ Pt3D Node::getVectorRotation()
 Pt3D Node::getRotation()
 {
 	Pt3D rotation = Pt3D(getParam(RX, 0.0), getParam(RY, 0.0), getParam(RZ, 0.0));
-	if(fS_Genotype::TURN_WITH_ROTATION)
+	if(genotypeParams.turnWithRotation)
 		rotation += getVectorRotation();
 	return rotation;
 }
@@ -660,12 +659,21 @@ fS_Genotype::fS_Genotype(const string &geno)
 		genotypeParams.modifierMultiplier = 1.1;
 		genotypeParams.distanceTolerance = 0.1;
 		genotypeParams.relativeDensity = 10.0;
+		genotypeParams.turnWithRotation = false;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
 			throw fS_Exception("Genotype parameters missing", 0);
 
-		genotypeParams.modifierMultiplier = fS_stod(geno, 0, &modeSeparatorIndex);
+		std::vector<SString> paramStrings;
+		strSplit(SString(geno.c_str(), modeSeparatorIndex), ',', false, paramStrings);
+
+		size_t len0 = paramStrings[0].length();
+		genotypeParams.modifierMultiplier = fS_stod(paramStrings[0].c_str(), 0, &len0);
+		if(paramStrings.size() >= 2)
+		{
+			genotypeParams.turnWithRotation = bool(atoi(paramStrings[1].c_str()));
+		}
 
 		int genoStart = modeSeparatorIndex + 1;
 		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
