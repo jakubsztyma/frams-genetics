@@ -109,9 +109,16 @@ void State::addVector(const double length)
 	location += v * length;
 }
 
+void rotateVector(Pt3D &vector, const Pt3D &rotation)
+{
+	Orient rotmatrix = Orient_1;
+	rotmatrix.rotate(rotation);
+	vector = rotmatrix.transform(vector);
+}
+
 void State::rotate(const Pt3D &rotation)
 {
-       fS_Utils::rotateVector(v, rotation);
+       rotateVector(v, rotation);
        v.normalize();
 }
 
@@ -481,7 +488,7 @@ bool Node::isPartScaleValid()
 	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
 		return false;
 
-	if (partShape == Part::Shape::SHAPE_ELLIPSOID && fS_Utils::max3(scale) != fS_Utils::min3(scale))
+	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.max3() != scale.min3())
 		// When not all radii have different values
 		return false;
 	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)

@@ -7,109 +7,72 @@
 
 #include "frams/model/geometry/meshbuilder.h"
 
-class fS_Utils
-{
-public:
-	static void rotateVector(Pt3D &vector, const Pt3D &rotation)
-	{
-		Orient rotmatrix = Orient_1;
-		rotmatrix.rotate(rotation);
-		vector = rotmatrix.transform(vector);
-	}
-
-	static double avg(double a, double b)
-	{
-		return 0.5 * (a + b);
-	}
-
-	static double min3(const Pt3D &p)
-	{
-		double tmp = p.x;
-		if (p.y < tmp)
-			tmp = p.y;
-		if (p.z < tmp)
-			tmp = p.z;
-		return tmp;
-	}
-
-	static double max3(const Pt3D &p)
-	{
-		double tmp = p.x;
-		if (p.y > tmp)
-			tmp = p.y;
-		if (p.z > tmp)
-			tmp = p.z;
-		return tmp;
-	}
-};
-
 class PartDistanceEstimator
 {
-
 public:
 
-	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotations)
+	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotation)
 	{
-		Part *tmpPart = new Part(shape);
-		tmpPart->scale = scale;
-		tmpPart->setRot(rotations);
-		return tmpPart;
+		Part *tmpPart1 = new Part(shape);
+		tmpPart1->scale = scale;
+		tmpPart1->setRot(rotation);
+		return tmpPart1;
 	}
 
 	/// Get some of the points from the surface of the part
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
 		// Divide by maximal radius to avoid long computations
-		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
+		MeshBuilder::PartSurface surface(relativeDensity / part->scale.max3());
 		surface.initialize(part);
 
-		vector <Pt3D> centers;
+		vector <Pt3D> points;
 		Pt3D point;
 		while (surface.tryGetNext(point))
 		{
-			centers.push_back(point);
+			points.push_back(point);
 		}
-		return centers;
+		return points;
 	}
 
 	/// Check if there is a collision between the parts
-	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
+	static bool isCollision(Part *part, vector <Pt3D> &points, Pt3D &vectorBetweenParts)
 	{
 		static double CBRT_3 = std::cbrt(3);
-		double maxParentReachSq = pow(CBRT_3 * fS_Utils::max3(parentPart->scale), 2);
-		for (int i = 0; i < int(centers.size()); i++)
+		double maxPartReachSq = pow(CBRT_3 * part->scale.max3(), 2);
+		for (int i = 0; i < int(points.size()); i++)
 		{
-			Pt3D shifted = centers[i] + vectorBetweenParts;
-			double distanceToCenterSq = shifted.x * shifted.x + shifted.y * shifted.y + shifted.z * shifted.z;
-			if (distanceToCenterSq <= maxParentReachSq && GeometryUtils::isPointInsidePart(shifted, parentPart))
+			Pt3D shifted = points[i] + vectorBetweenParts;
+			double distanceToPointSq = shifted.x * shifted.x + shifted.y * shifted.y + shifted.z * shifted.z;
+			if (distanceToPointSq <= maxPartReachSq && GeometryUtils::isPointInsidePart(shifted, part))
 				return true;
 		}
 		return false;
 	}
 
 
-	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
+	static double calculateDistance(Part *tmpPart1, Part *tmpPart2, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
 	{
 		static double CBRT_3 = std::cbrt(3);
-		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
+		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(tmpPart1, relativeDensity);
 
-		double minDistance = fS_Utils::min3(parentTmpPart->scale) + fS_Utils::min3(tmpPart->scale);
-		double maxDistance = CBRT_3 * (fS_Utils::max3(parentTmpPart->scale) + fS_Utils::max3(tmpPart->scale));
-		double currentDistance = fS_Utils::avg(maxDistance, minDistance);
+		double minDistance = tmpPart2->scale.min3() + tmpPart1->scale.min3();
+		double maxDistance = CBRT_3 * (tmpPart2->scale.max3() + tmpPart1->scale.max3());
+		double currentDistance = 0.5 * (maxDistance + minDistance);
 		int collisionDetected = false;
 		while (maxDistance - minDistance > distanceTolerance)
 		{
 			Pt3D vectorBetweenParts = directionVersor * currentDistance;
-			collisionDetected = PartDistanceEstimator::isCollision(parentTmpPart, centers, vectorBetweenParts);
+			collisionDetected = PartDistanceEstimator::isCollision(tmpPart2, points, vectorBetweenParts);
 
 			if (collisionDetected)
 			{
 				minDistance = currentDistance;
-				currentDistance = fS_Utils::avg(maxDistance, currentDistance);
+				currentDistance = 0.5 * (maxDistance + currentDistance);
 			} else
 			{
 				maxDistance = currentDistance;
-				currentDistance = fS_Utils::avg(currentDistance, minDistance);
+				currentDistance = 0.5 * (currentDistance + minDistance);
 			}
 		}
 		return currentDistance;
