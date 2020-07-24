@@ -173,10 +173,15 @@ Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 
 	try
 	{
+		printf("1 Chars left: %d", restOfGeno.len);
 		extractModifiers(restOfGeno);
+		printf("2 Chars left: %d", restOfGeno.len);
 		extractPartType(restOfGeno);
+		printf("3 Chars left: %d", restOfGeno.len);
 		extractNeurons(restOfGeno);
+		printf("4 Chars left: %d", restOfGeno.len);
 		extractParams(restOfGeno);
+		printf("5 Chars left: %d", restOfGeno.len);
 
 		partDescription->shortenBy(restOfGeno.len);
 		if (restOfGeno.len > 0)
