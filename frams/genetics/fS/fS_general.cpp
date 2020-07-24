@@ -208,6 +208,7 @@ void Node::cleanUp()
 
 int Node::getPartPosition(Substring &restOfGenotype)
 {
+	printf("Node::getPartPosition %d", restOfGenotype.len);
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
 		if (GENE_TO_SHAPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPE.end())
@@ -218,8 +219,9 @@ int Node::getPartPosition(Substring &restOfGenotype)
 
 void Node::extractModifiers(Substring &restOfGenotype)
 {
-	printf("Node::extractModifiers %s\n", restOfGenotype.c_str());
+	printf("Node::extractModifiers %s %d %d\n", restOfGenotype.c_str(), restOfGenotype.start, restOfGenotype.len);
 	int partShapePosition = getPartPosition(restOfGenotype);
+	printf("partShapePosition: %d", partShapePosition);
 	if (partShapePosition == -1)
 		throw fS_Exception("Part type missing", restOfGenotype.start);
 
@@ -234,8 +236,10 @@ void Node::extractModifiers(Substring &restOfGenotype)
 		else
 			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
-	restOfGenotype.startFrom(partShapePosition);
+
 	printf("Node::extractModifiers2\n");
+	restOfGenotype.startFrom(partShapePosition);
+	printf("Node::extractModifiers3\n");
 
 }
 
