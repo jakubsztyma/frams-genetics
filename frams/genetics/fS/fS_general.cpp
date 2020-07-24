@@ -779,7 +779,12 @@ SString fS_Genotype::getGeno()
 	SString geno;
 	geno.reserve(100);
 
-	geno += doubleToString(startNode->genotypeParams.modifierMultiplier, fS_Genotype::precision).c_str();
+	GenotypeParams gp = startNode->genotypeParams;
+	geno += doubleToString(gp.modifierMultiplier, precision).c_str();
+	geno += ",";
+	geno += doubleToString(gp.turnWithRotation, precision).c_str();
+	geno += ",";
+	geno += doubleToString(gp.paramMutationStrength, precision).c_str();
 	geno += MODE_SEPARATOR;
 
 	startNode->getGeno(geno);
