@@ -59,6 +59,7 @@ public:
 	/// Get some of the points from the surface of the part
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
+		printf("findSurfacePoints %c\n", part->shape);
 		// Divide by maximal radius to avoid long computations
 		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
 		surface.initialize(part);
@@ -75,6 +76,7 @@ public:
 	/// Check if there is a collision between the parts
 	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
 	{
+		printf("isCollision %c\n", parentPart->shape);
 		static double CBRT_3 = std::cbrt(3);
 		double maxParentReachSq = pow(CBRT_3 * fS_Utils::max3(parentPart->scale), 2);
 		for (int i = 0; i < int(centers.size()); i++)
@@ -90,6 +92,7 @@ public:
 
 	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
 	{
+		printf("calculateDistance %c %c\n", tmpPart->shape, parentTmpPart->shape);
 		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
 
@@ -112,6 +115,7 @@ public:
 				currentDistance = fS_Utils::avg(currentDistance, minDistance);
 			}
 		}
+		printf("calculateDistance\n");
 		return currentDistance;
 	}
 };
