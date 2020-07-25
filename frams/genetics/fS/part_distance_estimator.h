@@ -62,16 +62,17 @@ public:
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
 		printf("findSurfacePoints %d\n", part->shape);
-		// Divide by maximal radius to avoid long computations
-		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
-		surface.initialize(part);
-
+//		// Divide by maximal radius to avoid long computations
+//		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
+//		surface.initialize(part);
+//
 		vector <Pt3D> centers;
-		Pt3D point;
-		while (surface.tryGetNext(point))
-		{
-			centers.push_back(point);
-		}
+//		Pt3D point;
+//		while (surface.tryGetNext(point))
+//		{
+//			centers.push_back(point);
+//		}
+		centers.push_back(Pt3D(0));
 		printf("findSurfacePoints2 %c\n", part->shape);
 		return centers;
 	}
@@ -79,27 +80,27 @@ public:
 	/// Check if there is a collision between the parts
 	static bool isCollision(Part *parentPart, vector <Pt3D> &centers, Pt3D &vectorBetweenParts)
 	{
-		printf("isCollision %c\n", parentPart->shape);
+		printf("isCollision %d\n", parentPart->shape);
 		static double CBRT_3 = std::cbrt(3);
 		double maxParentReachSq = pow(CBRT_3 * fS_Utils::max3(parentPart->scale), 2);
 		for (int i = 0; i < int(centers.size()); i++)
 		{
 			Pt3D shifted = centers[i] + vectorBetweenParts;
 			double distanceToCenterSq = shifted.x * shifted.x + shifted.y * shifted.y + shifted.z * shifted.z;
-			if (distanceToCenterSq <= maxParentReachSq && GeometryUtils::isPointInsidePart(shifted, parentPart))
+			if (distanceToCenterSq <= maxParentReachSq)
 			{
 				printf("isCollision2 %c\n", parentPart->shape);
 				return true;
 			}
 		}
-		printf("isCollision2 %c\n", parentPart->shape);
+		printf("isCollision2 %d\n", parentPart->shape);
 		return false;
 	}
 
 
 	static double calculateDistance(Part *tmpPart, Part *parentTmpPart, Pt3D &directionVersor, double distanceTolerance, double relativeDensity)
 	{
-		printf("calculateDistance %c %c\n", tmpPart->shape, parentTmpPart->shape);
+		printf("calculateDistance %d %d\n", tmpPart->shape, parentTmpPart->shape);
 		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> centers = PartDistanceEstimator::findSurfacePoints(tmpPart, relativeDensity);
 

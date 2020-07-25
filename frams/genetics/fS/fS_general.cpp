@@ -720,7 +720,7 @@ fS_Genotype::fS_Genotype(const string &geno)
 
 		int genoStart = modeSeparatorIndex + 1;
 		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
-		printf("Substring: %s %d %d %d", geno.c_str(), genoStart, geno.length(), geno.length() - genoStart);
+		printf("Substring: %s %d %d %d\n", geno.c_str(), genoStart, geno.length(), geno.length() - genoStart);
 		startNode = new Node(substring, nullptr, genotypeParams);
 		validateNeuroInputs();
 	}
