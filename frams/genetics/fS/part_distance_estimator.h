@@ -50,16 +50,18 @@ public:
 
 	static Part *buildTemporaryPart(Part::Shape shape, const Pt3D &scale, const Pt3D &rotations)
 	{
+		printf("buildTemporaryPart %d\n", shape);
 		Part *tmpPart = new Part(shape);
 		tmpPart->scale = scale;
 		tmpPart->setRot(rotations);
+		printf("buildTemporaryPart2 %d\n", tmpPart->shape);
 		return tmpPart;
 	}
 
 	/// Get some of the points from the surface of the part
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
-		printf("findSurfacePoints %c\n", part->shape);
+		printf("findSurfacePoints %d\n", part->shape);
 		// Divide by maximal radius to avoid long computations
 		MeshBuilder::PartSurface surface(relativeDensity / fS_Utils::max3(part->scale));
 		surface.initialize(part);

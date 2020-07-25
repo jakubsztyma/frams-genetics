@@ -951,10 +951,12 @@ double Node::calculateDistanceFromParent()
 	double result;
 	try
 	{
+		printf("Calculate distance %d %d\n", tmpPart->shape, parentTmpPart->shape);
 		result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
 	}
 	catch (...)
 	{
+		printf("Exception in calculating distance\n");
 		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
 	}
 
