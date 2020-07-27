@@ -23,7 +23,7 @@ public:
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
 		// Divide by maximal radius to avoid long computations
-		MeshBuilder::PartSurface surface(relativeDensity / part->scale.max3());
+		MeshBuilder::PartSurface surface(relativeDensity / part->scale.maxComponent());
 		surface.initialize(part);
 
 		vector <Pt3D> points;
@@ -39,7 +39,7 @@ public:
 	static bool isCollision(Part *part, vector <Pt3D> &points, Pt3D &vectorBetweenParts)
 	{
 		static double CBRT_3 = std::cbrt(3);
-		double maxPartReachSq = pow(CBRT_3 * part->scale.max3(), 2);
+		double maxPartReachSq = pow(CBRT_3 * part->scale.maxComponent(), 2);
 		for (int i = 0; i < int(points.size()); i++)
 		{
 			Pt3D shifted = points[i] + vectorBetweenParts;
@@ -64,8 +64,8 @@ public:
 		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(&tmpPart1, relativeDensity);
 
-		double minDistance = tmpPart2.scale.min3() + tmpPart1.scale.min3();
-		double maxDistance = CBRT_3 * (tmpPart2.scale.max3() + tmpPart1.scale.max3());
+		double minDistance = tmpPart2.scale.minComponent() + tmpPart1.scale.minComponent();
+		double maxDistance = CBRT_3 * (tmpPart2.scale.maxComponent() + tmpPart1.scale.maxComponent());
 		double currentDistance = 0.5 * (maxDistance + minDistance);
 		int collisionDetected = false;
 		while (maxDistance - minDistance > distanceTolerance)

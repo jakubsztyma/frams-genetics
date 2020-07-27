@@ -4,5 +4,5 @@
 
 for testset in SDK-tests.txt geometry-tests.txt similarity-tests.txt fS_tests.txt
 do
-	python3 ../../tester/tester.py "$@" -e '(.*)=../\1' -f $testset 
+	python3 ../../tester/tester.py "$@" -e '(.+)=../\1' -f $testset 
 done
