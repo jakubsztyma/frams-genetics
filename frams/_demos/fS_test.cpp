@@ -614,6 +614,10 @@ int main(int argc, char *argv[])
 			"1.1,1,0.6:EE",
 			"  1. 1:  \nE CE\n\n ",
 			"\n1.1:  \n  E C  E\n \n ",
+			":EE",
+			",,,:EE",
+			",1,:EE",
+			",,0.5:EE"
 	};
 
 
@@ -625,7 +629,8 @@ int main(int argc, char *argv[])
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
 			1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2, 2, 2, 2, 2, 3, 3};
+			2, 2, 2, 2, 2, 2, 3, 3, 2, 2,
+			2, 2};
 	PreconfiguredGenetics genetics;
 
 

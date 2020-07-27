@@ -683,13 +683,16 @@ fS_Genotype::fS_Genotype(const string &g)
 		std::vector<SString> paramStrings;
 		strSplit(SString(geno.c_str(), modeSeparatorIndex), ',', false, paramStrings);
 
-		size_t len0 = paramStrings[0].length();
-		genotypeParams.modifierMultiplier = fS_stod(paramStrings[0].c_str(), 0, &len0);
-		if(paramStrings.size() >= 2)
+		if(paramStrings.size() >= 1 && paramStrings[0] != "")
+		{
+			size_t len0 = paramStrings[0].length();
+			genotypeParams.modifierMultiplier = fS_stod(paramStrings[0].c_str(), 0, &len0);
+		}
+		if(paramStrings.size() >= 2 && paramStrings[1] != "")
 		{
 			genotypeParams.turnWithRotation = bool(atoi(paramStrings[1].c_str()));
 		}
-		if(paramStrings.size() >= 3)
+		if(paramStrings.size() >= 3 && paramStrings[2] != "")
 		{
 			size_t len2 = paramStrings[2].length();
 			genotypeParams.paramMutationStrength = fS_stod(paramStrings[2].c_str(), 0, &len2);
