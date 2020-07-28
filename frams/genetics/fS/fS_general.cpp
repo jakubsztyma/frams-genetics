@@ -708,11 +708,6 @@ fS_Genotype::fS_Genotype(const string &g)
 		delete startNode;
 		throw e;
 	}
-	catch(...)
-	{
-		delete startNode;
-		throw fS_Exception("Unknown exception in fS", 0);
-	}
 }
 
 fS_Genotype::~fS_Genotype()
@@ -788,7 +783,7 @@ SString fS_Genotype::getGeno()
 	GenotypeParams gp = startNode->genotypeParams;
 	geno += doubleToString(gp.modifierMultiplier, precision).c_str();
 	geno += ",";
-	geno += doubleToString(gp.turnWithRotation, precision).c_str();
+	geno += std::to_string(int(gp.turnWithRotation)).c_str();
 	geno += ",";
 	geno += doubleToString(gp.paramMutationStrength, precision).c_str();
 	geno += MODE_SEPARATOR;
@@ -931,15 +926,9 @@ double Node::calculateDistanceFromParent()
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
 	double result;
-	try
-	{
-		tmpPart->p = state->v;
-		result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
-	}
-	catch (...)
-	{
-		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
-	}
+	tmpPart->p = state->v;
+	result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+
 
 	delete tmpPart;
 	delete parentTmpPart;

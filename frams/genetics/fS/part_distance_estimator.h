@@ -55,11 +55,14 @@ public:
 	{
 		/// tmpPart1 and tmpPart2 are copied for purpose and should not be passed as reference
 		/// This function can change some of the properties of those parts
+		/// tmpPart1 will be approximated by surface points.
+		/// The collision between the parts is detected when any of those points is inside tmpPart2
+		/// If tmpPart1 and tmpPart2 are swapped, the calculated distance may slightly differ
 		Pt3D directionVersor = tmpPart1.p - tmpPart2.p;
 		directionVersor.normalize();
 
-		tmpPart1.p = Pt3D(0);
-		tmpPart2.p = Pt3D(0);
+		tmpPart1.p = Pt3D_0;
+		tmpPart2.p = Pt3D_0;
 
 		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(&tmpPart1, relativeDensity);
