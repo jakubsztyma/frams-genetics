@@ -203,7 +203,7 @@ Node::~Node()
 
 void Node::cleanUp()
 {
-	printf("Node::cleanUp");
+	printf("Node::cleanUp\n");
 	delete partDescription;
 	if (state != nullptr)
 		delete state;
@@ -212,7 +212,7 @@ void Node::cleanUp()
 	for (int i = 0; i < int(children.size()); i++)
 		delete children[i];
 
-	printf("Node::cleanUp");
+	printf("Node::cleanUp\n");
 }
 
 int Node::getPartPosition(Substring &restOfGenotype)
@@ -230,7 +230,7 @@ void Node::extractModifiers(Substring &restOfGenotype)
 {
 	printf("Node::extractModifiers %s %d %d\n", restOfGenotype.c_str(), restOfGenotype.start, restOfGenotype.len);
 	int partShapePosition = getPartPosition(restOfGenotype);
-	printf("partShapePosition: %d", partShapePosition);
+	printf("partShapePosition: %d\n", partShapePosition);
 	if (partShapePosition == -1)
 	{
 		printf("Part type missing\n");
