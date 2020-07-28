@@ -662,11 +662,8 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const string &g)
+fS_Genotype::fS_Genotype(const string &geno)
 {
-	string geno(g);
-	geno.erase(remove(geno.begin(), geno.end(), ' '), geno.end());
-	geno.erase(remove(geno.begin(), geno.end(), '\n'), geno.end());
 	try
 	{
 		GenotypeParams genotypeParams;
