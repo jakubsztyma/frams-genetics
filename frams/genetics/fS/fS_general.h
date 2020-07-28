@@ -251,6 +251,10 @@ struct GenotypeParams{
 	double distanceTolerance;
 	/// Used for deriving density for MeshBuilder
 	double relativeDensity;
+	///
+	bool turnWithRotation;
+	///
+	double paramMutationStrength;
 };
 
 /**
@@ -445,7 +449,6 @@ public:
 
 
 	static int precision; /// Number of decimal places for numbers in genotype
-	static bool TURN_WITH_ROTATION;
 
 	/**
 	 * Build internal representation from fS format

@@ -210,27 +210,6 @@ void testUsePartType()
 
 }
 
-void testTurnWithRotation()
-{
-	GenoConv_fS0s converter = GenoConv_fS0s();
-	fS_Genotype::TURN_WITH_ROTATION = true;
-	MultiMap map;
-	SString test_cases[]{
-			"1.1:EE{ty=1.56}",
-			"1.1:EE{ty=0.78;ry=0.78}",
-			"1.1:EE{tx=30;ty=1.56;tz=45}",
-	};
-
-	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
-	{
-		SString genotype_str = test_cases[i];
-		/// Test translate
-		cout << converter.convert(genotype_str, &map, false).c_str() << endl;
-	}
-	fS_Genotype::TURN_WITH_ROTATION = false;
-
-}
-
 /**
  * Cases when exchanging trees with similar size aways makes children of the equal parents equal to them
  * Test cases will almost always work when crossoverTries is big enough
@@ -520,6 +499,43 @@ void testMutateSizeParam()
 	}
 }
 
+void testGenotypeParams()
+{
+	int COUNT = 5;
+	float mm[COUNT] = {
+			1.0,
+			1.1,
+			1.5,
+			1.9,
+			5.0
+	};
+	bool twr[COUNT] = {
+			true,
+			true,
+			false,
+			false,
+			true
+	};
+	float pms[COUNT] = {
+			1.0,
+			0.5,
+			2.0,
+			10.0,
+			0.1
+	};
+	for (int i = 0; i < COUNT; i++)
+	{
+		char genotypeStr[20];
+		sprintf(genotypeStr, "%f,%d,%f:C", mm[i], twr[i], pms[i]);
+		fS_Genotype geno(genotypeStr);
+
+		GenotypeParams gp = geno.startNode->genotypeParams;
+		assert(fabs(gp.modifierMultiplier - mm[i]) < 1e-6);
+		assert(gp.turnWithRotation == twr[i]);
+		assert(fabs(gp.paramMutationStrength - pms[i]) < 1e-6);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	SString test_cases[] = {
@@ -590,6 +606,18 @@ int main(int argc, char *argv[])
 			"1.1:C{rx=0.78}R{tz=1.57;rx=0.78}",
 			"1.1:C{rx=0.78}E{tz=1.57;rx=0.78}",
 			"1.1:R{rx=0.78}E{tz=1.57;rx=0.78}",
+			"1.1,1:EE{ty=1.56}",
+			"1.1,1:EE{ty=0.78;ry=0.78}",
+			"1.1,1:EE{tx=30;ty=1.56;tz=45}",
+			"1.1,1,1:EE",
+			"1.1,1,1.5:EE",
+			"1.1,1,0.6:EE",
+			"  1. 1:  \nE CE\n\n ",
+			"\n1.1:  \n  E C  E\n \n ",
+			":EE",
+			",,,:EE",
+			",1,:EE",
+			",,0.5:EE"
 	};
 
 
@@ -600,7 +628,9 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 1, 1, 2, 1, 2,
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
-			1, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+			1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			2, 2, 2, 2, 2, 2, 3, 3, 2, 2,
+			2, 2};
 	PreconfiguredGenetics genetics;
 
 
@@ -618,8 +648,8 @@ int main(int argc, char *argv[])
 	testAddPart();
 	testChangePartType();
 	testUsePartType();
-	testTurnWithRotation();
 	testMutateSizeParam();
+	testGenotypeParams();
 
 	cout << "FINISHED";
 	return 0;

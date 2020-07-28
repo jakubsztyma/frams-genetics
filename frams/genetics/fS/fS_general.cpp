@@ -14,7 +14,6 @@
 #include "part_distance_estimator.h"
 
 int fS_Genotype::precision = 4;
-bool fS_Genotype::TURN_WITH_ROTATION = false;
 std::map<string, double> Node::minValues;
 std::map<string, double> Node::defaultValues;
 std::map<string, double> Node::maxValues;
@@ -110,9 +109,16 @@ void State::addVector(const double length)
 	location += v * length;
 }
 
+void rotateVector(Pt3D &vector, const Pt3D &rotation)
+{
+	Orient rotmatrix = Orient_1;
+	rotmatrix.rotate(rotation);
+	vector = rotmatrix.transform(vector);
+}
+
 void State::rotate(const Pt3D &rotation)
 {
-       fS_Utils::rotateVector(v, rotation);
+       rotateVector(v, rotation);
        v.normalize();
 }
 
@@ -341,7 +347,11 @@ double Node::getParam(const string &key)
 	auto item = params.find(key);
 	if (item != params.end())
 		return item->second;
-	return defaultValues.at(key);
+
+	auto defaultItem = defaultValues.find(key);
+	if(defaultItem == defaultValues.end())
+		throw fS_Exception("Default value missing", 0);
+	return defaultItem->second;
 }
 
 double Node::getParam(const string &key, double defaultValue)
@@ -478,7 +488,7 @@ bool Node::isPartScaleValid()
 	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
 		return false;
 
-	if (partShape == Part::Shape::SHAPE_ELLIPSOID && fS_Utils::max3(scale) != fS_Utils::min3(scale))
+	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.max3() != scale.min3())
 		// When not all radii have different values
 		return false;
 	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)
@@ -495,7 +505,7 @@ Pt3D Node::getVectorRotation()
 Pt3D Node::getRotation()
 {
 	Pt3D rotation = Pt3D(getParam(RX, 0.0), getParam(RY, 0.0), getParam(RZ, 0.0));
-	if(fS_Genotype::TURN_WITH_ROTATION)
+	if(genotypeParams.turnWithRotation)
 		rotation += getVectorRotation();
 	return rotation;
 }
@@ -652,20 +662,41 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const string &geno)
+fS_Genotype::fS_Genotype(const string &g)
 {
+	string geno(g);
+	geno.erase(remove(geno.begin(), geno.end(), ' '), geno.end());
+	geno.erase(remove(geno.begin(), geno.end(), '\n'), geno.end());
 	try
 	{
 		GenotypeParams genotypeParams;
 		genotypeParams.modifierMultiplier = 1.1;
 		genotypeParams.distanceTolerance = 0.1;
 		genotypeParams.relativeDensity = 10.0;
+		genotypeParams.turnWithRotation = false;
+		genotypeParams.paramMutationStrength = 0.4;
 
 		size_t modeSeparatorIndex = geno.find(MODE_SEPARATOR);
 		if (modeSeparatorIndex == string::npos)
 			throw fS_Exception("Genotype parameters missing", 0);
 
-		genotypeParams.modifierMultiplier = fS_stod(geno, 0, &modeSeparatorIndex);
+		std::vector<SString> paramStrings;
+		strSplit(SString(geno.c_str(), modeSeparatorIndex), ',', false, paramStrings);
+
+		if(paramStrings.size() >= 1 && paramStrings[0] != "")
+		{
+			size_t len0 = paramStrings[0].length();
+			genotypeParams.modifierMultiplier = fS_stod(paramStrings[0].c_str(), 0, &len0);
+		}
+		if(paramStrings.size() >= 2 && paramStrings[1] != "")
+		{
+			genotypeParams.turnWithRotation = bool(atoi(paramStrings[1].c_str()));
+		}
+		if(paramStrings.size() >= 3 && paramStrings[2] != "")
+		{
+			size_t len2 = paramStrings[2].length();
+			genotypeParams.paramMutationStrength = fS_stod(paramStrings[2].c_str(), 0, &len2);
+		}
 
 		int genoStart = modeSeparatorIndex + 1;
 		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
@@ -676,6 +707,11 @@ fS_Genotype::fS_Genotype(const string &geno)
 	{
 		delete startNode;
 		throw e;
+	}
+	catch(...)
+	{
+		delete startNode;
+		throw fS_Exception("Unknown exception in fS", 0);
 	}
 }
 
@@ -749,7 +785,12 @@ SString fS_Genotype::getGeno()
 	SString geno;
 	geno.reserve(100);
 
-	geno += doubleToString(startNode->genotypeParams.modifierMultiplier, fS_Genotype::precision).c_str();
+	GenotypeParams gp = startNode->genotypeParams;
+	geno += doubleToString(gp.modifierMultiplier, precision).c_str();
+	geno += ",";
+	geno += doubleToString(gp.turnWithRotation, precision).c_str();
+	geno += ",";
+	geno += doubleToString(gp.paramMutationStrength, precision).c_str();
 	geno += MODE_SEPARATOR;
 
 	startNode->getGeno(geno);
@@ -889,7 +930,16 @@ double Node::calculateDistanceFromParent()
 	Part *tmpPart = PartDistanceEstimator::buildTemporaryPart(partShape, scale, getRotation());
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
-	double result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+	double result;
+	try
+	{
+		tmpPart->p = state->v;
+		result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+	}
+	catch (...)
+	{
+		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
+	}
 
 	delete tmpPart;
 	delete parentTmpPart;

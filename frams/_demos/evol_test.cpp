@@ -29,6 +29,9 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 	Model model = Model(ind.geno, Model::SHAPETYPE_UNKNOWN);
 	double fitness = 0;
 	const char *p = fitness_def;
+
+	Orient axes;
+	Pt3D sizes;
 	while (*p)
 	{
 		switch (*p)
@@ -72,17 +75,19 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 				break;
 			case 'h':
 			case 'H':
-				fitness += criterion(*p, model.size.z);
+				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
+				fitness += criterion(*p, sizes.x);
 				break;
 			case 'w':
 			case 'W':
-				fitness += criterion(*p, model.size.x);
+				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
+				fitness += criterion(*p, sizes.y);
 				break;
 			case 'd':
 			case 'D':
-				fitness += criterion(*p, model.size.y);
+				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
+				fitness += criterion(*p, sizes.z);
 				break;
-				// TODO add more criteria as described in main() below
 			default:
 				printf("Unknown fitness criterion symbol: '%c'\n", *p);
 				exit(3);
@@ -155,7 +160,6 @@ int main(int argc, char *argv[])
 		printf("  h or H - height.\n");
 		printf("  w or W- width.\n");
 		printf("  d or D - depth.\n");
-		//TODO add b - bounding box volume (from Model), s - surface area (from geometry), v - volume (from geometry), h,w,d - three consecutive dimensions (from geometry)
 
 		printf("\nThe output consists of 7 columns separated by the TAB character.\n");
 		printf("The first column is the number of mutated or crossed over and evaluated genotypes.\n");

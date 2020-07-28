@@ -9,7 +9,10 @@
 #include <frams/util/rndutil.h>
 #include "frams/model/modelparts.h"
 #include "frams/genetics/fS/fS_general.h"
+#include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/part_distance_estimator.h"
+
+static double PI_2 = 1.57;
 
 double calculateWithParams(Node *node, double precision, double relativeDensity)
 {
@@ -21,34 +24,37 @@ double calculateWithParams(Node *node, double precision, double relativeDensity)
 
 int main(int argc, char *argv[])
 {
+	GenoConv_fS0s converter = GenoConv_fS0s();
 	auto start = std::chrono::steady_clock::now();
 
-	int genoCount = 10;
+	int genoCount = 1;
 	if(argc >= 2)
 		genoCount = std::stod(argv[1]);
-	int precisionsCount = 10;
-	int densitiesCount = 10;
+	int precisionsCount = 20;
+	int densitiesCount = 20;
 
 	double precisions[precisionsCount];
 	for (int pi = 0; pi < precisionsCount; pi++)
-		precisions[pi] = 1.0 * pow(0.25, pi);
+		precisions[pi] = 0.001 + pi * 0.008;
 
 	double densities[precisionsCount];
 	for (int di = 0; di < densitiesCount; di++)
-		densities[di] = 1.0 * pow(1.6, di);
+		densities[di] = 1.0 + 5.0 * di;
 
 	char test_cases[genoCount][300];
+	string partShapes = "ECR";
 	for(int i=0; i<genoCount; i++)
 	{
 		sprintf(
 				test_cases[i],
-				"1.1:E{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}E{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}",
-				RndGen.Uni(0.01, 10.0), RndGen.Uni(0.01, 10.0), RndGen.Uni(0.01, 10.0),
-				RndGen.Uni(-1.57, 1.57), RndGen.Uni(-1.57, 1.57),RndGen.Uni(-1.57, 1.57),
-				RndGen.Uni(-1.57, 1.57), RndGen.Uni(-1.57, 1.57),RndGen.Uni(-1.57, 1.57),
-				RndGen.Uni(0.01, 10.0), RndGen.Uni(0.01, 10.0), RndGen.Uni(0.01, 10.0),
-				RndGen.Uni(-1.57, 1.57), RndGen.Uni(-1.57, 1.57),RndGen.Uni(-1.57, 1.57),
-		RndGen.Uni(-1.57, 1.57), RndGen.Uni(-1.57, 1.57),RndGen.Uni(-1.57, 1.57)
+				"1.1:%c{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}%c{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}",
+				partShapes[rndUint(3)], partShapes[rndUint(3)],
+				RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0),
+				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
+				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
+				RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0),
+				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
+		RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2)
 				);
 	}
 
@@ -59,6 +65,12 @@ int main(int argc, char *argv[])
 
 	for(int gi=0; gi<genoCount; gi++)
 	{
+		SString genotype_str = test_cases[gi];
+		auto s = std::chrono::steady_clock::now();
+		converter.convert(genotype_str, 0, false);
+		auto e = std::chrono::steady_clock::now();
+		double conversionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count();
+
 		fS_Genotype geno(test_cases[gi]);
 		geno.getState(false);
 		Node *parent = geno.getAllNodes()[0];
@@ -80,7 +92,8 @@ int main(int argc, char *argv[])
 				double normalizedDifference = difference / correctResult;
 
 				resultsSum[pi][di] += normalizedDifference;
-				resultsTimeSum[pi][di] += std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count();
+				double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count();
+				resultsTimeSum[pi][di] += elapsed / conversionTime;
 			}
 		}
 	}
@@ -90,7 +103,7 @@ int main(int argc, char *argv[])
 	{
 		for (int di = 0; di < densitiesCount; di++)
 		{
-			std::cout<<precisions[pi]<<" "<<densities[di]<<" "<<resultsSum[pi][di] / genoCount<<" "<<resultsTimeSum[pi][di] / genoCount<<std::endl;
+			std::cout<<precisions[pi]<<","<<densities[di]<<","<<resultsSum[pi][di] / genoCount<<","<<resultsTimeSum[pi][di] / genoCount<<std::endl;
 		}
 	}
 
