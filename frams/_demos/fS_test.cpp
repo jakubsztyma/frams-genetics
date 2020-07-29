@@ -605,7 +605,7 @@ int main(int argc, char *argv[])
 
 	GenMan genman;
 	bool canvalidate = true;
-	Geno geno("1.1:EE", "S");
+	Geno geno("1.1:EE\u0016", "S");
 	genman.testValidity(geno, canvalidate);
 
 	cout << "FINISHED";
