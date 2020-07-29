@@ -6,6 +6,7 @@
 
 SString GenoConv_fS0s::convert(SString &i, MultiMap *map, bool using_checkpoints)
 {
+	printf("GenoConv_fS0s::convert\n");
 	fS_Genotype *genotype;
 	try
 	{

@@ -587,21 +587,26 @@ int main(int argc, char *argv[])
 	PreconfiguredGenetics genetics;
 
 
-	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
-	{
-		testOneGenotype(test_cases[i], expectedPartCount[i]);
-	}
+//	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
+//	{
+//		testOneGenotype(test_cases[i], expectedPartCount[i]);
+//	}
+//
+//	testAllPartScalesValid();
+//	testRearrangeInputs();
+//	validationTest();
+//	testCrossoverSimilarTrees();
+//	testRearrangeBeforeCrossover();
+//	testRearrangeAfterCrossover();
+//	testAddPart();
+//	testChangePartType();
+//	testUsePartType();
+//	testMutateSizeParam();
 
-	testAllPartScalesValid();
-	testRearrangeInputs();
-	validationTest();
-	testCrossoverSimilarTrees();
-	testRearrangeBeforeCrossover();
-	testRearrangeAfterCrossover();
-	testAddPart();
-	testChangePartType();
-	testUsePartType();
-	testMutateSizeParam();
+	GenMan genman;
+	bool canvalidate = true;
+	Geno geno("1.1:EE", "S");
+	genman.testValidity(geno, canvalidate);
 
 	cout << "FINISHED";
 	return 0;

@@ -165,7 +165,7 @@ fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 
 Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 {
-	printf("Node::Node %s\n", restOfGeno.c_str());
+	printf("    Node::Node %s\n", restOfGeno.c_str());
 	prepareParams();
 	partDescription = new Substring(restOfGeno);
 	genotypeParams = _genotypeParams;
@@ -173,15 +173,15 @@ Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 
 	try
 	{
-		printf("1 Chars left: %d\n", restOfGeno.len);
+		printf("    1 Chars left: %d\n", restOfGeno.len);
 		extractModifiers(restOfGeno);
-		printf("2 Chars left: %d\n", restOfGeno.len);
+		printf("    2 Chars left: %d\n", restOfGeno.len);
 		extractPartType(restOfGeno);
-		printf("3 Chars left: %d\n", restOfGeno.len);
+		printf("    3 Chars left: %d\n", restOfGeno.len);
 		extractNeurons(restOfGeno);
-		printf("4 Chars left: %d\n", restOfGeno.len);
+		printf("    4 Chars left: %d\n", restOfGeno.len);
 		extractParams(restOfGeno);
-		printf("5 Chars left: %d\n", restOfGeno.len);
+		printf("    5 Chars left: %d\n", restOfGeno.len);
 
 		partDescription->shortenBy(restOfGeno.len);
 		if (restOfGeno.len > 0)
@@ -189,11 +189,11 @@ Node::Node(Substring &restOfGeno, Node *_parent, GenotypeParams _genotypeParams)
 	}
 	catch(fS_Exception &e)
 	{
-		printf("Node::Node catch exception\n");
+		printf("    Node::Node catch exception\n");
 		cleanUp();
 		throw e;
 	}
-	printf("Node::Node2\n");
+	printf("    Node::Node2\n");
 }
 
 Node::~Node()
@@ -203,7 +203,7 @@ Node::~Node()
 
 void Node::cleanUp()
 {
-	printf("Node::cleanUp\n");
+	printf("    Node::cleanUp\n");
 	delete partDescription;
 	if (state != nullptr)
 		delete state;
@@ -212,12 +212,12 @@ void Node::cleanUp()
 	for (int i = 0; i < int(children.size()); i++)
 		delete children[i];
 
-	printf("Node::cleanUp\n");
+	printf("    Node::cleanUp\n");
 }
 
 int Node::getPartPosition(Substring &restOfGenotype)
 {
-	printf("Node::getPartPosition %d", restOfGenotype.len);
+	printf("    Node::getPartPosition %d\n", restOfGenotype.len);
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
 		if (GENE_TO_SHAPE.find(restOfGenotype.at(i)) != GENE_TO_SHAPE.end())
@@ -228,12 +228,12 @@ int Node::getPartPosition(Substring &restOfGenotype)
 
 void Node::extractModifiers(Substring &restOfGenotype)
 {
-	printf("Node::extractModifiers %s %d %d\n", restOfGenotype.c_str(), restOfGenotype.start, restOfGenotype.len);
+	printf("    Node::extractModifiers %s %d %d\n", restOfGenotype.c_str(), restOfGenotype.start, restOfGenotype.len);
 	int partShapePosition = getPartPosition(restOfGenotype);
-	printf("partShapePosition: %d\n", partShapePosition);
+	printf("    partShapePosition: %d\n", partShapePosition);
 	if (partShapePosition == -1)
 	{
-		printf("Part type missing\n");
+		printf("    Part type missing\n");
 		throw fS_Exception("Part type missing", restOfGenotype.start);
 	}
 
@@ -249,22 +249,22 @@ void Node::extractModifiers(Substring &restOfGenotype)
 			throw fS_Exception("Invalid modifier", restOfGenotype.start + i);
 	}
 
-	printf("Node::extractModifiers2\n");
+	printf("    Node::extractModifiers2\n");
 	restOfGenotype.startFrom(partShapePosition);
-	printf("Node::extractModifiers3\n");
+	printf("    Node::extractModifiers3\n");
 
 }
 
 void Node::extractPartType(Substring &restOfGenotype)
 {
-	printf("Node::extractPartType %s\n", restOfGenotype.c_str());
+	printf("    Node::extractPartType %s\n", restOfGenotype.c_str());
 	auto itr = GENE_TO_SHAPE.find(restOfGenotype.at(0));
 	if (itr == GENE_TO_SHAPE.end())
 		throw fS_Exception("Invalid part type", restOfGenotype.start);
 
 	partShape = itr->second;
 	restOfGenotype.startFrom(1);
-	printf("Node::extractPartType2\n");
+	printf("    Node::extractPartType2\n");
 }
 
 vector<int> getSeparatorPositions(const char *str, int len, char separator, char endSign, int &endIndex)
@@ -287,7 +287,7 @@ vector<int> getSeparatorPositions(const char *str, int len, char separator, char
 
 void Node::extractNeurons(Substring &restOfGenotype)
 {
-	printf("Node::extractNeurons %s\n", restOfGenotype.c_str());
+	printf("    Node::extractNeurons %s\n", restOfGenotype.c_str());
 
 	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != NEURON_START)
 		return;
@@ -307,13 +307,13 @@ void Node::extractNeurons(Substring &restOfGenotype)
 	}
 
 	restOfGenotype.startFrom(neuronsEndIndex + 2);
-	printf("Node::extractNeurons2\n");
+	printf("    Node::extractNeurons2\n");
 
 }
 
 void Node::extractParams(Substring &restOfGenotype)
 {
-	printf("Node::extractParams %s\n", restOfGenotype.c_str());
+	printf("    Node::extractParams %s\n", restOfGenotype.c_str());
 
 	if (restOfGenotype.len == 0 || restOfGenotype.at(0) != PARAM_START)
 		return;
@@ -362,7 +362,7 @@ void Node::extractParams(Substring &restOfGenotype)
 	}
 
 	restOfGenotype.startFrom(paramsEndIndex + 2);
-	printf("Node::extractParams2\n");
+	printf("    Node::extractParams2\n");
 
 }
 
@@ -375,7 +375,7 @@ double Node::getParam(const string &key)
 	auto defaultItem = defaultValues.find(key);
 	if(defaultItem == defaultValues.end())
 	{
-		printf("Default value missing");
+		printf("    Default value missing");
 		throw fS_Exception("Default value missing", 0);
 	}
 	return defaultItem->second;
@@ -392,7 +392,7 @@ double Node::getParam(const string &key, double defaultValue)
 
 void Node::getState(State *_state, bool calculateLocation)
 {
-	printf("Node::getState\n");
+	printf("    Node::getState\n");
 	if (state != nullptr)
 		delete state;
 	if (parent == nullptr)
@@ -424,18 +424,18 @@ void Node::getState(State *_state, bool calculateLocation)
 	}
 	for (int i = 0; i < int(children.size()); i++)
 		children[i]->getState(state, calculateLocation);
-	printf("Node::getState2\n");
+	printf("    Node::getState2\n");
 }
 
 void Node::getChildren(Substring &restOfGenotype)
 {
-	printf("Node::getChildren %s\n", restOfGenotype.c_str());
+	printf("    Node::getChildren %s\n", restOfGenotype.c_str());
 	vector<Substring> branches = getBranches(restOfGenotype);
 	for (int i = 0; i < int(branches.size()); i++)
 	{
 		children.push_back(new Node(branches[i], this, genotypeParams));
 	}
-	printf("Node::getChildren2\n");
+	printf("    Node::getChildren2\n");
 }
 
 vector<Substring> Node::getBranches(Substring &restOfGenotype)
@@ -695,7 +695,7 @@ int Node::getNodeCount()
 
 fS_Genotype::fS_Genotype(const string &geno)
 {
-	printf("fS_Genotype::fS_Genotype\n");
+	printf("    fS_Genotype::fS_Genotype\n");
 	try
 	{
 		GenotypeParams genotypeParams;
@@ -720,13 +720,13 @@ fS_Genotype::fS_Genotype(const string &geno)
 
 		int genoStart = modeSeparatorIndex + 1;
 		Substring substring(geno.c_str(), genoStart, geno.length() - genoStart);
-		printf("Substring: %s %d %d %d\n", geno.c_str(), genoStart, geno.length(), geno.length() - genoStart);
+		printf("    Substring: %s %d %d %d\n", geno.c_str(), genoStart, geno.length(), geno.length() - genoStart);
 		startNode = new Node(substring, nullptr, genotypeParams);
 		validateNeuroInputs();
 	}
 	catch (fS_Exception &e)
 	{
-		printf("fS_Genotype::fS_Genotype catch exception\n");
+		printf("    fS_Genotype::fS_Genotype catch exception\n");
 		delete startNode;
 		throw e;
 	}
@@ -940,7 +940,7 @@ void fS_Genotype::rearrangeNeuronConnections(fS_Neuron *changedNeuron, SHIFT shi
 
 double Node::calculateDistanceFromParent()
 {
-	printf("Node::calculateDistanceFromParent");
+	printf("    Node::calculateDistanceFromParent");
 	Pt3D scale;
 	calculateScale(scale);
 	Pt3D parentScale;
@@ -951,17 +951,17 @@ double Node::calculateDistanceFromParent()
 	double result;
 	try
 	{
-		printf("Calculate distance %d %d\n", tmpPart->shape, parentTmpPart->shape);
+		printf("    Calculate distance %d %d\n", tmpPart->shape, parentTmpPart->shape);
 		result = PartDistanceEstimator::calculateDistance(tmpPart, parentTmpPart, state->v, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
 	}
 	catch (...)
 	{
-		printf("Exception in calculating distance\n");
+		printf("    Exception in calculating distance\n");
 		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
 	}
 
 	delete tmpPart;
 	delete parentTmpPart;
-	printf("Node::calculateDistanceFromParent2");
+	printf("    Node::calculateDistanceFromParent2");
 	return result;
 }

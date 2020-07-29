@@ -47,6 +47,24 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 	printf("GenoOper_fS::checkValidity %s\n", geno);
 	try
 	{
+		try
+		{
+			throw "Example exception";
+		}
+		catch (const char* ex)
+		{
+			std::cout<<"Caught exception: "<<ex<<std::endl;
+		}
+		try
+		{
+			throw fS_Exception("Example exception 2", 0);
+		}
+		catch(fS_Exception &e)
+		{
+			std::cout<<"Caught exception: "<<e.what()<<std::endl;
+		}
+
+
 		fS_Genotype genotype(geno);
 		int errorPosition = genotype.checkValidityOfPartSizes();
 		if (errorPosition != 0)
@@ -66,6 +84,7 @@ int GenoOper_fS::checkValidity(const char *geno, const char *genoname)
 
 int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 {
+	std::cout<<"GenoOper_fS::mutate"<<std::endl;
 	try
 	{
 		fS_Genotype genotype(geno);
@@ -145,6 +164,7 @@ int GenoOper_fS::mutate(char *&geno, float &chg, int &method)
 
 int GenoOper_fS::crossOver(char *&g0, char *&g1, float &chg0, float &chg1)
 {
+	std::cout<<"GenoOper_fS::crossOver"<<std::endl;
 	try
 	{
 		assert(PARENT_COUNT == 2); // Cross over works only for 2 parents
