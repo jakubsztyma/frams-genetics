@@ -12,7 +12,8 @@
 #include "frams/genetics/fS/fS_conv.h"
 #include "frams/genetics/fS/part_distance_estimator.h"
 
-static double PI_2 = 1.57;
+const double S_MIN = 0.05;
+const double S_MAX = 5.0;
 
 double calculateWithParams(Node *node, double precision, double relativeDensity)
 {
@@ -49,12 +50,12 @@ int main(int argc, char *argv[])
 				test_cases[i],
 				"1.1:%c{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}%c{x=%f;y=%f;z=%f;rx=%f;ry=%f;rz=%f;tx=%f;ty=%f;tz=%f}",
 				partShapes[rndUint(3)], partShapes[rndUint(3)],
-				RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0),
-				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
-				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
-				RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0), RndGen.Uni(0.05, 5.0),
-				RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2),
-		RndGen.Uni(-PI_2, PI_2), RndGen.Uni(-PI_2, PI_2),RndGen.Uni(-PI_2, PI_2)
+				RndGen.Uni(S_MIN, S_MAX), RndGen.Uni(S_MIN, S_MAX), RndGen.Uni(S_MIN, S_MAX),
+				RndGen.Uni(-M_PI_2, M_PI_2), RndGen.Uni(-M_PI_2, M_PI_2),RndGen.Uni(-M_PI_2, M_PI_2),
+				RndGen.Uni(-M_PI_2, M_PI_2), RndGen.Uni(-M_PI_2, M_PI_2),RndGen.Uni(-M_PI_2, M_PI_2),
+				RndGen.Uni(S_MIN, S_MAX), RndGen.Uni(S_MIN, S_MAX), RndGen.Uni(S_MIN, S_MAX),
+				RndGen.Uni(-M_PI_2, M_PI_2), RndGen.Uni(-M_PI_2, M_PI_2),RndGen.Uni(-M_PI_2, M_PI_2),
+		RndGen.Uni(-M_PI_2, M_PI_2), RndGen.Uni(-M_PI_2, M_PI_2),RndGen.Uni(-M_PI_2, M_PI_2)
 				);
 	}
 

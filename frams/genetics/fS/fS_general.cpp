@@ -452,7 +452,7 @@ void Node::calculateScale(Pt3D &scale)
 
 double Node::calculateVolume()
 {
-	double result;
+	double result = 0.0;
 	Pt3D scale;
 	calculateScale(scale);
 	double radiiProduct = scale.x * scale.y * scale.z;
@@ -488,8 +488,8 @@ bool Node::isPartScaleValid()
 	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
 		return false;
 
-	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.max3() != scale.min3())
-		// When not all radii have different values
+	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.maxComponentValue() != scale.minComponentValue())
+		// When any radius has a different value than the others
 		return false;
 	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)
 		// If base radii have different values
@@ -662,11 +662,8 @@ int Node::getNodeCount()
 	return allNodes.size();
 }
 
-fS_Genotype::fS_Genotype(const string &g)
+fS_Genotype::fS_Genotype(const string &geno)
 {
-	string geno(g);
-	geno.erase(remove(geno.begin(), geno.end(), ' '), geno.end());
-	geno.erase(remove(geno.begin(), geno.end(), '\n'), geno.end());
 	try
 	{
 		GenotypeParams genotypeParams;
@@ -707,11 +704,6 @@ fS_Genotype::fS_Genotype(const string &g)
 	{
 		delete startNode;
 		throw e;
-	}
-	catch(...)
-	{
-		delete startNode;
-		throw fS_Exception("Unknown exception in fS", 0);
 	}
 }
 
@@ -788,7 +780,7 @@ SString fS_Genotype::getGeno()
 	GenotypeParams gp = startNode->genotypeParams;
 	geno += doubleToString(gp.modifierMultiplier, precision).c_str();
 	geno += ",";
-	geno += doubleToString(gp.turnWithRotation, precision).c_str();
+	geno += std::to_string(int(gp.turnWithRotation)).c_str();
 	geno += ",";
 	geno += doubleToString(gp.paramMutationStrength, precision).c_str();
 	geno += MODE_SEPARATOR;
@@ -931,15 +923,9 @@ double Node::calculateDistanceFromParent()
 	Part *parentTmpPart = PartDistanceEstimator::buildTemporaryPart(parent->partShape, parentScale, parent->getRotation());
 
 	double result;
-	try
-	{
-		tmpPart->p = state->v;
-		result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
-	}
-	catch (...)
-	{
-		throw fS_Exception("Exception thrown while calculating distance from parent", 0);
-	}
+	tmpPart->p = state->v;
+	result = PartDistanceEstimator::calculateDistance(*tmpPart, *parentTmpPart, genotypeParams.distanceTolerance, genotypeParams.relativeDensity);
+
 
 	delete tmpPart;
 	delete parentTmpPart;

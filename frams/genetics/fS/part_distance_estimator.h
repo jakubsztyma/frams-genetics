@@ -23,7 +23,7 @@ public:
 	static vector <Pt3D> findSurfacePoints(Part *part, double  relativeDensity)
 	{
 		// Divide by maximal radius to avoid long computations
-		MeshBuilder::PartSurface surface(relativeDensity / part->scale.maxComponent());
+		MeshBuilder::PartSurface surface(relativeDensity / part->scale.maxComponentValue());
 		surface.initialize(part);
 
 		vector <Pt3D> points;
@@ -39,7 +39,7 @@ public:
 	static bool isCollision(Part *part, vector <Pt3D> &points, Pt3D &vectorBetweenParts)
 	{
 		static double CBRT_3 = std::cbrt(3);
-		double maxPartReachSq = pow(CBRT_3 * part->scale.maxComponent(), 2);
+		double maxPartReachSq = pow(CBRT_3 * part->scale.maxComponentValue(), 2);
 		for (int i = 0; i < int(points.size()); i++)
 		{
 			Pt3D shifted = points[i] + vectorBetweenParts;
@@ -55,17 +55,20 @@ public:
 	{
 		/// tmpPart1 and tmpPart2 are copied for purpose and should not be passed as reference
 		/// This function can change some of the properties of those parts
+		/// tmpPart1 will be approximated by surface points.
+		/// The collision between the parts is detected when any of those points is inside tmpPart2
+		/// If tmpPart1 and tmpPart2 are swapped, the calculated distance may slightly differ
 		Pt3D directionVersor = tmpPart1.p - tmpPart2.p;
 		directionVersor.normalize();
 
-		tmpPart1.p = Pt3D(0);
-		tmpPart2.p = Pt3D(0);
+		tmpPart1.p = Pt3D_0;
+		tmpPart2.p = Pt3D_0;
 
 		static double CBRT_3 = std::cbrt(3);
 		vector <Pt3D> points = PartDistanceEstimator::findSurfacePoints(&tmpPart1, relativeDensity);
 
-		double minDistance = tmpPart2.scale.minComponent() + tmpPart1.scale.minComponent();
-		double maxDistance = CBRT_3 * (tmpPart2.scale.maxComponent() + tmpPart1.scale.maxComponent());
+		double minDistance = tmpPart2.scale.minComponentValue() + tmpPart1.scale.minComponentValue();
+		double maxDistance = CBRT_3 * (tmpPart2.scale.maxComponentValue() + tmpPart1.scale.maxComponentValue());
 		double currentDistance = 0.5 * (maxDistance + minDistance);
 		int collisionDetected = false;
 		while (maxDistance - minDistance > distanceTolerance)
