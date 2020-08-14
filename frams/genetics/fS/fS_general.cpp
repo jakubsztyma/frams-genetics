@@ -452,7 +452,7 @@ void Node::calculateScale(Pt3D &scale)
 
 double Node::calculateVolume()
 {
-	double result;
+	double result = 0.0;
 	Pt3D scale;
 	calculateScale(scale);
 	double radiiProduct = scale.x * scale.y * scale.z;
@@ -488,8 +488,8 @@ bool Node::isPartScaleValid()
 	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
 		return false;
 
-	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.max3() != scale.min3())
-		// When not all radii have different values
+	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.maxComponentValue() != scale.minComponentValue())
+		// When any radius has a different value than the others
 		return false;
 	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)
 		// If base radii have different values
