@@ -420,6 +420,7 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 	int start = 1;
 	char c;
 	const char *str = restOfGenotype.c_str();
+	bool insideSpecifiation = false;	// True when inside parameter or neuron specification
 	for (int i = 0; i < restOfGenotype.len; i++)
 	{
 		if (depth < 0)
@@ -427,7 +428,11 @@ vector<Substring> Node::getBranches(Substring &restOfGenotype)
 		c = str[i];
 		if (c == BRANCH_START)
 			depth++;
-		else if ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len)
+		else if (c == PARAM_START || c == NEURON_START)
+			insideSpecifiation = true;
+		else if (c == PARAM_END || c == NEURON_END)
+			insideSpecifiation = false;
+		else if (!insideSpecifiation && ((c == BRANCH_SEPARATOR && depth == 1) || i + 1 == restOfGenotype.len))
 		{
 			Substring substring(restOfGenotype);
 			substring.startFrom(start);

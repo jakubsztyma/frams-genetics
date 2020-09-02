@@ -18,10 +18,10 @@
 #define MODE_SEPARATOR ':'
 #define BRANCH_START '('
 #define BRANCH_END ')'
-#define BRANCH_SEPARATOR '^'
+#define BRANCH_SEPARATOR ','
 #define PARAM_START '{'
 #define PARAM_END '}'
-const char PARAM_SEPARATOR = ';';
+const char PARAM_SEPARATOR = ',';
 const char PARAM_KEY_VALUE_SEPARATOR = '=';
 #define NEURON_START '['
 const char NEURON_END = ']';
