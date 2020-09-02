@@ -615,7 +615,8 @@ int main(int argc, char *argv[])
 			":EE",
 			",,,:EE",
 			",1,:EE",
-			",,0.5:EE"
+			",,0.5:EE",
+			"1.1:E[M:p=0.5,a=1'2;T'0;T'0'1]",
 	};
 
 
@@ -628,7 +629,7 @@ int main(int argc, char *argv[])
 			1, 1, 2, 1, 2, 2, 2, 1, 1, 2,
 			1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 			2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2};
+			2, 2, 1};
 	PreconfiguredGenetics genetics;
 
 
