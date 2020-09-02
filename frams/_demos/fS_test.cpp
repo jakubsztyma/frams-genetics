@@ -69,8 +69,8 @@ void testRearrangeBeforeCrossover()
 			"1.1:E[N'1;2;0]E[N;N;N]",
 			"1.1:E[N'1'3;N'2'4;N]E[N'3;N'4'5;N'3]",
 			"1.1:E[Sin;N;G]E[Rnd;N;T]",
-			"1.1:E[N'1'3;N'2'4;N](E[N'3;N'4'5;N'3]^E[N'3;N'4'6'7])",
-			"1.1:E[N'1'3;N'2'4;N](E[N'0'3;N'4'5;N'3'6]^E[N'3;N'4'6'7])",
+			"1.1:E[N'1'3;N'2'4;N](E[N'3;N'4'5;N'3],E[N'3;N'4'6'7])",
+			"1.1:E[N'1'3;N'2'4;N](E[N'0'3;N'4'5;N'3'6],E[N'3;N'4'6'7])",
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -95,8 +95,8 @@ void testRearrangeAfterCrossover()
 			"1.1:E[N'0'1;N'0]E[N]",
 			"1.1:E[N'0'1;N'0]E[Rnd;N;N]",
 			"1.1:E[N'0'1;N'0]E[Rnd;N;N]E[N;N]",
-			"1.1:E[N'0'1;N'0](E[Rnd;N;N]^E[N'2'3;N'2])",
-			"1.1:E[N'0'1;N'0](E[Rnd;N;N]^E[N'2'3;N'2]C[N'2'4])",
+			"1.1:E[N'0'1;N'0](E[Rnd;N;N],E[N'2'3;N'2])",
+			"1.1:E[N'0'1;N'0](E[Rnd;N;N],E[N'2'3;N'2]C[N'2'4])",
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -168,8 +168,8 @@ void testChangePartType()
 			"1.1:R",
 			"1.1:SSSSC",
 			"1.1:sssssE",
-			"1.1:sssssC{x=0.3;y=2.3;z=1.1}",
-			"1.1:SSSSSSE{x=0.3;y=2.3;z=1.1}",
+			"1.1:sssssC{x=0.3,y=2.3,z=1.1}",
+			"1.1:SSSSSSE{x=0.3,y=2.3,z=1.1}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -219,13 +219,13 @@ void testCrossoverSimilarTrees()
 	GenoOper_fS operators;
 	string test_cases[] = {
 			"1.1:EE",
-			"1.1:E(E^E)",
+			"1.1:E(E,E)",
 			"1.1:EEEE",
 			"1.1:ECRE",
-			"1.1:E(RE^CRE)",
-			"1.1:E(EEE^EEE^EEE)",
-			"1.1:E(CRE^CRE^CRE)",
-			"1.1:EEEEEECRE(CRE^CRE^CRE)",
+			"1.1:E(RE,CRE)",
+			"1.1:E(EEE,EEE,EEE)",
+			"1.1:E(CRE,CRE,CRE)",
+			"1.1:EEEEEECRE(CRE,CRE,CRE)",
 	};
 
 	float f1, f2;
@@ -258,13 +258,13 @@ void testAllPartScalesValid()
 			"1.1:E{x=1.1}",        // Invalid size params
 			"1.1:E{y=1.1}",
 			"1.1:E{z=1.1}",
-			"1.1:R{z=1.1;y=1.2}",
+			"1.1:R{z=1.1,y=1.2}",
 			"1.1:R{z=1.1}",
 			"1.1:R{y=1.1}",
 			"1.1:SR{z=999.0}",
-			"1.1:C(R^E{z=1.1})",
-			"1.1:C{x=1.5;y=1.5;z=1.5}",    // Test volume
-			"1.1:C{x=1.8;y=1.8}",
+			"1.1:C(R,E{z=1.1})",
+			"1.1:C{x=1.5,y=1.5,z=1.5}",    // Test volume
+			"1.1:C{x=1.8,y=1.8}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -404,7 +404,7 @@ void validationTest()
 			"1.1:E[G'1:w'2]",    // Invalid neuro connection value
 			"1.1:E{",    // Lacking param end
 			"1.1:E[",    // Lacking neuro end
-			"1.1:E{x=1.5;y=0.0}",    // Lacking param end
+			"1.1:E{x=1.5,y=0.0}",    // Lacking param end
 			"1.1:E[2]",    // Invalid neuron connection key
 			"1.1:E[-2]",    // Invalid neuron connection key
 			"1.1:E[;;3]",    // Invalid neuron connection key
@@ -473,8 +473,8 @@ void testMutateSizeParam()
 			"1.1:C{x=2.4}",
 			"1.1:E{x=4.9}",
 			"1.1:R{x=3.3}",
-			"1.1:C{x=4.9;y=0.5}",
-			"1.1:C{x=4.9;y=0.25;z=2.0}",
+			"1.1:C{x=4.9,y=0.5}",
+			"1.1:C{x=4.9,y=0.25,z=2.0}",
 	};
 
 	for (int i = 0; i < int(sizeof(test_cases) / sizeof(test_cases[0])); i++)
@@ -543,8 +543,8 @@ int main(int argc, char *argv[])
 			"1.1:C",
 			"1.1:R",
 			"1.1:EEE",
-			"1.1:E(E^E)",
-			"1.1:E(E(E^E)^E^E(E^E)^E)",
+			"1.1:E(E,E)",
+			"1.1:E(E(E,E),E,E(E,E),E)",
 			"1.1:EbE",
 			"1.1:CcC",
 			"1.1:ERbRcCRbCbE",
@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
 			"1.1:EE{tz=0.78}E{tx=0.78}E{ty=0.78}",
 			"1.1:EE{tz=-1.56}E{tx=-1.56}E{ty=-1.56}",
 			"1.1:EE{x=3.0}",
-			"1.1:EE{x=3.0;y=3.0;z=3.0}",
+			"1.1:EE{x=3.0,y=3.0,z=3.0}",
 			"1.1:SSE",
 			"1.1:ssE",
 			"1.1:SSSE",
@@ -570,17 +570,17 @@ int main(int argc, char *argv[])
 			"1.1:IIE",
 			"1.1:E{i=0.3}E{i=0.5}",
 			"1.1:IIE{i=0.5}",
-			"1.1:EE{ty=180.0;x=3.0}",
-			"1.1:EE{ty=1.56;z=5.0}",
-			"1.1:E{x=1.5;z=2.0}E{tz=1.56;x=2.0;y=5.0;z=3.0}",
-			"1.1:E{y=3.0;z=4.0}E{y=4.0;z=5.0}",
-			"1.1:E{y=399.0;z=599.0}E{y=799.0;z=999.0}",
+			"1.1:EE{ty=180.0,x=3.0}",
+			"1.1:EE{ty=1.56,z=5.0}",
+			"1.1:E{x=1.5,z=2.0}E{tz=1.56,x=2.0,y=5.0,z=3.0}",
+			"1.1:E{y=3.0,z=4.0}E{y=4.0,z=5.0}",
+			"1.1:E{y=399.0,z=599.0}E{y=799.0,z=999.0}",
 			"1.1:EE{ty=0.78}",
 			"1.1:EE{ty=1.56}",
-			"1.1:EE{ry=1.56;z=2.0}",
-			"1.1:E{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
-			"1.1:EE{ry=0.78;z=2.0}",
-			"1.1:EE{ry=0.52;z=2.0}",
+			"1.1:EE{ry=1.56,z=2.0}",
+			"1.1:E{ry=1.56,z=2.0}E{ry=1.56,z=2.0}",
+			"1.1:EE{ry=0.78,z=2.0}",
+			"1.1:EE{ry=0.52,z=2.0}",
 			"1.1:E[N]",
 			"1.1:E[N;N]",
 			"1.1:E[N]E[N]",
@@ -588,7 +588,7 @@ int main(int argc, char *argv[])
 			"1.1:E[N]E[N'0]",
 			"1.1:E[Sin;T'0]",
 			"1.1:E[Sin'2;T'0;T'0'1]",
-			"1.1:E[Sin'2;T'0;T'0'1]{ry=1.56;z=2.0}E{ry=1.56;z=2.0}",
+			"1.1:E[Sin'2;T'0;T'0'1]{ry=1.56,z=2.0}E{ry=1.56,z=2.0}",
 			"1.1:E[Sin'2:2.0;T'0:3.0;T'0:4.0'1:5.0]",
 			"1.1:E[N]E[G'0]",
 			"1.1:E[N]E[Rnd'0]",
@@ -598,17 +598,17 @@ int main(int argc, char *argv[])
 			"1.1:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
 			"1.3:SE",
 			"1.1:EC{ry=0.78}",
-			"1.1:EC{ry=0.78;rx=0.78}",
-			"1.1:C{ry=0.78;rx=0.78}C{ry=0.78;rx=0.78}",
-			"1.1:E{rx=0.78}E{tz=1.57;rx=0.78}",
-			"1.1:R{rx=0.78}R{tz=1.57;rx=0.78}",
-			"1.1:C{rx=0.78}C{tz=1.57;rx=0.78}",
-			"1.1:C{rx=0.78}R{tz=1.57;rx=0.78}",
-			"1.1:C{rx=0.78}E{tz=1.57;rx=0.78}",
-			"1.1:R{rx=0.78}E{tz=1.57;rx=0.78}",
+			"1.1:EC{ry=0.78,rx=0.78}",
+			"1.1:C{ry=0.78,rx=0.78}C{ry=0.78,rx=0.78}",
+			"1.1:E{rx=0.78}E{tz=1.57,rx=0.78}",
+			"1.1:R{rx=0.78}R{tz=1.57,rx=0.78}",
+			"1.1:C{rx=0.78}C{tz=1.57,rx=0.78}",
+			"1.1:C{rx=0.78}R{tz=1.57,rx=0.78}",
+			"1.1:C{rx=0.78}E{tz=1.57,rx=0.78}",
+			"1.1:R{rx=0.78}E{tz=1.57,rx=0.78}",
 			"1.1,1:EE{ty=1.56}",
-			"1.1,1:EE{ty=0.78;ry=0.78}",
-			"1.1,1:EE{tx=30;ty=1.56;tz=45}",
+			"1.1,1:EE{ty=0.78,ry=0.78}",
+			"1.1,1:EE{tx=30,ty=1.56,tz=45}",
 			"1.1,1,1:EE",
 			"1.1,1,1.5:EE",
 			"1.1,1,0.6:EE",
