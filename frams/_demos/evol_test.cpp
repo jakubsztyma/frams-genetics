@@ -32,6 +32,8 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 
 	Orient axes;
 	Pt3D sizes;
+	double area = 0;
+	double volume = 0;
 	while (*p)
 	{
 		switch (*p)
@@ -87,6 +89,13 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 			case 'D':
 				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
 				fitness += criterion(*p, sizes.z);
+				break;
+			case 'u':
+			case 'U':
+				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
+				volume = sizes.x * sizes.y * sizes.z;
+				area = ModelGeometryInfo::area(model, 1.0);
+				fitness += criterion(*p, model.getPartCount() < 20 ? pow(area, 1.5) / volume : 0);
 				break;
 			default:
 				printf("Unknown fitness criterion symbol: '%c'\n", *p);

@@ -457,25 +457,9 @@ void Node::calculateScale(Pt3D &scale)
 
 double Node::calculateVolume()
 {
-	double result = 0.0;
-	Pt3D scale;
-	calculateScale(scale);
-	double radiiProduct = scale.x * scale.y * scale.z;
-	switch (partShape)
-	{
-		case Part::Shape::SHAPE_CUBOID:
-			result = 8.0 * radiiProduct;
-			break;
-		case Part::Shape::SHAPE_CYLINDER:
-			result = 2.0 * M_PI * radiiProduct;
-			break;
-		case Part::Shape::SHAPE_ELLIPSOID:
-			result = (4.0 / 3.0) * M_PI * radiiProduct;
-			break;
-		default:
-			logMessage("fS", "calculateVolume", LOG_ERROR, "Invalid part type");
-	}
-	return result;
+	Part *tmpPart = new Part(partShape);
+	calculateScale(tmpPart->scale);
+	return GenoOperators::calculateSolidVolume(tmpPart);
 }
 
 bool Node::isPartScaleValid()
