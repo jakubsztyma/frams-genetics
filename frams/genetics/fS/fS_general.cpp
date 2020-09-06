@@ -126,7 +126,7 @@ int findEndOfNeuronParamString(SString neuronDefinition)
 {
 	for(int i=1; i< neuronDefinition.size(); i++)
 	{
-		if(neuronDefinition[i - 1] == '\'' && isdigit(neuronDefinition[i]))
+		if(neuronDefinition[i - 1] == ',' && isdigit(neuronDefinition[i]))
 			return i - 1;
 	}
 
@@ -144,9 +144,7 @@ fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 	int endOfNeuronParamString = findEndOfNeuronParamString(neuronDefinition);
 	SString neuronParamString = neuronDefinition.substr(0, endOfNeuronParamString);
 	SString neuronInputString = neuronDefinition.substr(endOfNeuronParamString + 1);
-//	std::cout<<neuronDefinition.c_str()<<" "<<neuronParamString.c_str()<<" "<<neuronInputString.c_str()<<std::endl;
 
-	int inputStart = 0;
 	SString details = "N";
 
 	SString tmp = neuronParamString;

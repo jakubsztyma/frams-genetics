@@ -64,13 +64,13 @@ void testRearrangeBeforeCrossover()
 	string test_cases[] = {
 			"1.1:EE[N]",
 			"1.1:E[N;N;N]E[N;N;N]",
-			"1.1:E[N;N;N]E[N'3;N'4'5;N'3]",
-			"1.1:E[N'3;4;]E[N'3;N'4'5;N'3]",
-			"1.1:E[N'1;2;0]E[N;N;N]",
-			"1.1:E[N'1'3;N'2'4;N]E[N'3;N'4'5;N'3]",
+			"1.1:E[N;N;N]E[N,3;N,4,5;N,3]",
+			"1.1:E[N,3;4;]E[N,3;N,4,5;N,3]",
+			"1.1:E[N,1;2;0]E[N;N;N]",
+			"1.1:E[N,1,3;N,2,4;N]E[N,3;N,4,5;N,3]",
 			"1.1:E[Sin;N;G]E[Rnd;N;T]",
-			"1.1:E[N'1'3;N'2'4;N](E[N'3;N'4'5;N'3],E[N'3;N'4'6'7])",
-			"1.1:E[N'1'3;N'2'4;N](E[N'0'3;N'4'5;N'3'6],E[N'3;N'4'6'7])",
+			"1.1:E[N,1,3;N,2,4;N](E[N,3;N,4,5;N,3],E[N,3;N,4,6,7])",
+			"1.1:E[N,1,3;N,2,4;N](E[N,0,3;N,4,5;N,3,6],E[N,3;N,4,6,7])",
 	};
 	int expectedSubStart[] = {
 			0, 3, 3, 3, 3, 3, 3, 3, 3
@@ -92,11 +92,11 @@ void testRearrangeAfterCrossover()
 {
 	GenoOper_fS operators;
 	string test_cases[] = {
-			"1.1:E[N'0'1;N'0]E[N]",
-			"1.1:E[N'0'1;N'0]E[Rnd;N;N]",
-			"1.1:E[N'0'1;N'0]E[Rnd;N;N]E[N;N]",
-			"1.1:E[N'0'1;N'0](E[Rnd;N;N],E[N'2'3;N'2])",
-			"1.1:E[N'0'1;N'0](E[Rnd;N;N],E[N'2'3;N'2]C[N'2'4])",
+			"1.1:E[N,0,1;N,0]E[N]",
+			"1.1:E[N,0,1;N,0]E[Rnd;N;N]",
+			"1.1:E[N,0,1;N,0]E[Rnd;N;N]E[N;N]",
+			"1.1:E[N,0,1;N,0](E[Rnd;N;N],E[N,2,3;N,2])",
+			"1.1:E[N,0,1;N,0](E[Rnd;N;N],E[N,2,3;N,2]C[N,2,4])",
 	};
 	int subStart[] {
 			0, 0, 0, 0, 0,
@@ -400,8 +400,8 @@ void validationTest()
 			"1.1:E{qw=1.0}",    // Wrong param key
 			"1.1:E{f=}",    // Wrong param value
 			"1.1:E{f=fr}",    // Wrong param value
-			"1.1:E[G'w'2]",    // Invalid neuro connection key
-			"1.1:E[G'1:w'2]",    // Invalid neuro connection value
+			"1.1:E[G,w,2]",    // Invalid neuro connection key
+			"1.1:E[G,1:w,2]",    // Invalid neuro connection value
 			"1.1:E{",    // Lacking param end
 			"1.1:E[",    // Lacking neuro end
 			"1.1:E{x=1.5,y=0.0}",    // Lacking param end
@@ -431,7 +431,7 @@ void validationTest()
 void testRearrangeInputs()
 {
 	const int size = 6;
-	string before = "1.1:E[T]bE[N'2'3]cRbC[T;G'1'2]bE[N'1'2'3;T]{x=3.0;y=3.0;z=3.0}";
+	string before = "1.1:E[T]bE[N,2,3]cRbC[T;G,1,2]bE[N,1,2,3;T]{x=3.0;y=3.0;z=3.0}";
 	SHIFT shift[size]{
 			SHIFT::RIGHT,
 			SHIFT::RIGHT,
@@ -585,14 +585,14 @@ int main(int argc, char *argv[])
 			"1.1:E[N;N]",
 			"1.1:E[N]E[N]",
 			"1.1:E[T]",
-			"1.1:E[N]E[N'0]",
-			"1.1:E[Sin;T'0]",
-			"1.1:E[Sin'2;T'0;T'0'1]",
-			"1.1:E[Sin'2;T'0;T'0'1]{ry=1.56,z=2.0}E{ry=1.56,z=2.0}",
-			"1.1:E[Sin'2:2.0;T'0:3.0;T'0:4.0'1:5.0]",
-			"1.1:E[N]E[G'0]",
-			"1.1:E[N]E[Rnd'0]",
-			"1.1:E[Rnd]E[Rnd'0'1;Sin'0]",
+			"1.1:E[N]E[N,0]",
+			"1.1:E[Sin;T,0]",
+			"1.1:E[Sin,2;T,0;T,0,1]",
+			"1.1:E[Sin,2;T,0;T,0,1]{ry=1.56,z=2.0}E{ry=1.56,z=2.0}",
+			"1.1:E[Sin,2:2.0;T,0:3.0;T,0:4.0,1:5.0]",
+			"1.1:E[N]E[G,0]",
+			"1.1:E[N]E[Rnd,0]",
+			"1.1:E[Rnd]E[Rnd,0,1;Sin,0]",
 			"1.1:E{s=1.5}",
 			"1.1:SE{s=1.1;x=1.2;z=1.3}",
 			"1.1:SE{s=0.9}E{s=1.1;x=1.2;z=1.3}",
@@ -616,7 +616,7 @@ int main(int argc, char *argv[])
 			",,,:EE",
 			",1,:EE",
 			",,0.5:EE",
-			"1.1:E[M:p=0.5,a=1'2;T'0;T'0'1]",
+			"1.1:E[M:p=0.5,a=1,2;T,0;T,0,1]",
 	};
 
 
