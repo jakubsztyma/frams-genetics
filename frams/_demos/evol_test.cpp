@@ -34,6 +34,7 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 	Pt3D sizes;
 	double area = 0;
 	double volume = 0;
+	double tmp = 0;
 	while (*p)
 	{
 		switch (*p)
@@ -71,10 +72,10 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 			case 'S':
 				fitness += criterion(*p, ModelGeometryInfo::area(model, 1.0));
 				break;
-			case 'v':
-			case 'V':
-				fitness += criterion(*p, ModelGeometryInfo::volume(model, 1.0));
-				break;
+//			case 'v':
+//			case 'V':
+//				fitness += criterion(*p, ModelGeometryInfo::volume(model, 1.0));
+//				break;
 			case 'h':
 			case 'H':
 				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
@@ -90,12 +91,19 @@ double get_fitness(const Individual &ind, const char *fitness_def)
 				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
 				fitness += criterion(*p, sizes.z);
 				break;
-			case 'u':
-			case 'U':
-				ModelGeometryInfo::findSizesAndAxes(model, 1.0, sizes, axes);
-				volume = sizes.x * sizes.y * sizes.z;
+			case 'v':
+			case 'V':
+				volume = ModelGeometryInfo::volume(model, 1.0);
 				area = ModelGeometryInfo::area(model, 1.0);
-				fitness += criterion(*p, model.getPartCount() < 20 ? pow(area, 1.5) / volume : 0);
+				tmp = model.getPartCount() < 20 ? volume / area : 0;
+				fitness += criterion(*p, tmp);
+				break;
+			case 'a':
+			case 'A':
+				volume = ModelGeometryInfo::volume(model, 1.0);
+				area = ModelGeometryInfo::area(model, 1.0);
+				tmp = model.getPartCount() < 20 ? area / (0.01 + volume) : 0;
+				fitness += criterion(*p, tmp);
 				break;
 			default:
 				printf("Unknown fitness criterion symbol: '%c'\n", *p);

@@ -422,8 +422,8 @@ void validationTest()
 	for (int i = 0; i < int(sizeof(invalidGenotypes) / sizeof(invalidGenotypes[0])); i++)
 	{
 		MultiMap map;
-		ensure(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		SString genes = converter.convert(invalidGenotypes[i], &map, false);
+		ensure(operators.checkValidity(invalidGenotypes[i].c_str(), "") == errorIndexes[i]);
 		ensure(genes == "");
 	}
 }
@@ -649,6 +649,29 @@ int main(int argc, char *argv[])
 	testUsePartType();
 	testMutateSizeParam();
 	testGenotypeParams();
+
+//	SString genotypes[] = {
+//		"CR",
+//		"C(R,E)",
+//		"CRE",
+//		"E(R\\{ty=1.57\\},R)",
+//		"E(R\\{ty=-1.57\\},R(CC\\{ty=1.57\\})",
+//		"EE",
+//		"EbR",
+//		"ERcC",
+//		"ESEE",
+//		"EssEE",
+//		"ESSSEssE",
+//		"E\\{f=0.3;rx=0.6;s=1.15\\}",
+//		"SSESE\\{s=1.2;sx=1.3\\}",
+//		"E[N;N]E[N]",
+//		"1.3,1,0.5:E",
+//		",,:E",
+//		"1.1:CC\\{ty=1.0\\}",
+//	};
+//	GenMan gm;
+//	for (int i = 0; i < int(sizeof(genotypes) / sizeof(genotypes[0])); i++)
+//		cout<<gm.LaTeXize(genotypes[i].c_str())<<endl;
 
 	cout << "FINISHED";
 	return 0;

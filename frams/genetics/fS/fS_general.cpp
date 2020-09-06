@@ -122,6 +122,16 @@ void State::rotate(const Pt3D &rotation)
        v.normalize();
 }
 
+int findEndOfNeuronParamString(SString neuronDefinition)
+{
+	for(int i=1; i< neuronDefinition.size(); i++)
+	{
+		if(neuronDefinition[i - 1] == '\'' && isdigit(neuronDefinition[i]))
+			return i - 1;
+	}
+
+	return neuronDefinition.size();
+}
 
 fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 {
@@ -130,26 +140,33 @@ fS_Neuron::fS_Neuron(const char *str, int _start, int length)
 	if (length == 0)
 		return;
 
-	vector<SString> inputStrings;
-	strSplit(SString(str, length), NEURON_INTERNAL_SEPARATOR, false, inputStrings);
-	if (inputStrings.empty())
-		return;
+	SString neuronDefinition(str, length);
+	int endOfNeuronParamString = findEndOfNeuronParamString(neuronDefinition);
+	SString neuronParamString = neuronDefinition.substr(0, endOfNeuronParamString);
+	SString neuronInputString = neuronDefinition.substr(endOfNeuronParamString + 1);
+//	std::cout<<neuronDefinition.c_str()<<" "<<neuronParamString.c_str()<<" "<<neuronInputString.c_str()<<std::endl;
 
 	int inputStart = 0;
 	SString details = "N";
 
-	SString tmp = inputStrings[0];
+	SString tmp = neuronParamString;
 	if(tmp.indexOf(':') != -1)
 		tmp = tmp.substr(0, tmp.indexOf(':'));
 
 	if (NeuroLibrary::staticlibrary.findClassIndex(tmp, true) != -1)
 	{
-		inputStart = 1;
-		details = inputStrings[0];
+		details = neuronParamString;
+	}
+	else{
+		neuronInputString = neuronParamString;
 	}
 	setDetails(details);
 
-	for (int i = inputStart; i < int(inputStrings.size()); i++)
+	vector<SString> inputStrings;
+	strSplit(neuronInputString, NEURON_INTERNAL_SEPARATOR, false, inputStrings);
+	if (inputStrings.empty() || inputStrings[0] == SString())
+		return;
+	for (int i = 0; i < int(inputStrings.size()); i++)
 	{
 		SString keyValue = inputStrings[i];
 		int separatorIndex = keyValue.indexOf(NEURON_I_W_SEPARATOR);

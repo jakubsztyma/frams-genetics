@@ -273,6 +273,7 @@ private:
 	Node *parent;
 	Part *part;     /// A part object built from node. Used in building the Model
 	int partCodeLen; /// The length of substring that directly describes the corresponding part
+
 	static std::map<string, double> minValues;	/// Min parameter values
 	static std::map<string, double> defaultValues;	/// Default parameter values
 	static std::map<string, double> maxValues;	/// Max parameter values
