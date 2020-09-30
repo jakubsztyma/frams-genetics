@@ -11,7 +11,7 @@
 #include "frams/neuro/neurolibrary.h"
 #include "../genooperators.h"
 #include "common/nonstd_math.h"
-#include "part_distance_estimator.h"
+#include "../../model/geometry/part_distance_estimator.h"
 
 int fS_Genotype::precision = 4;
 std::map<string, double> Node::minValues;
