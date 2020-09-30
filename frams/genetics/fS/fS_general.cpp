@@ -474,31 +474,14 @@ double Node::calculateVolume()
 {
 	Part *tmpPart = new Part(partShape);
 	calculateScale(tmpPart->scale);
-	return GenoOperators::calculateSolidVolume(tmpPart);
+	return GeometryUtils::calculateSolidVolume(tmpPart);
 }
 
 bool Node::isPartScaleValid()
 {
 	Pt3D scale;
 	calculateScale(scale);
-	double volume = calculateVolume();
-	Part_MinMaxDef minP = Model::getMinPart();
-	Part_MinMaxDef maxP = Model::getMaxPart();
-
-	if (volume > maxP.volume || minP.volume > volume)
-		return false;
-	if (scale.x < minP.scale.x || scale.y < minP.scale.y || scale.z < minP.scale.z)
-		return false;
-	if (scale.x > maxP.scale.x || scale.y > maxP.scale.y || scale.z > maxP.scale.z)
-		return false;
-
-	if (partShape == Part::Shape::SHAPE_ELLIPSOID && scale.maxComponentValue() != scale.minComponentValue())
-		// When any radius has a different value than the others
-		return false;
-	if (partShape == Part::Shape::SHAPE_CYLINDER && scale.y != scale.z)
-		// If base radii have different values
-		return false;
-	return true;
+	return GeometryUtils::isSolidPartScaleValid(partShape, scale);
 }
 
 Pt3D Node::getVectorRotation()
